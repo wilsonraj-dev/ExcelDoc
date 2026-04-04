@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="exceldoc.client/exceldoc.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="ExcelDoc.Server/ExcelDoc.Server.csproj" />
+</Solution>
