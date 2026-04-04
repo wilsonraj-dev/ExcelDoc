@@ -6,9 +6,6 @@ namespace ExcelDoc.Server.DTOs.Processamentos
     public class UploadProcessamentoRequestDto
     {
         [Required]
-        public int UsuarioExecutorId { get; set; }
-
-        [Required]
         public int EmpresaId { get; set; }
 
         [Required]

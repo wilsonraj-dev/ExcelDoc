@@ -1,11 +1,14 @@
 using ExcelDoc.Server.DTOs.Configuracoes;
 using ExcelDoc.Server.Services.Interfaces;
+using ExcelDoc.Server.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelDoc.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = AuthRoles.All)]
     public class ConfiguracoesController : ControllerBase
     {
         private readonly IConfiguracaoService _configuracaoService;
@@ -16,11 +19,11 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpGet("{empresaId:int}")]
-        public async Task<IActionResult> GetByEmpresaId(int empresaId, [FromQuery] int usuarioExecutorId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetByEmpresaId(int empresaId, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _configuracaoService.GetByEmpresaIdAsync(empresaId, usuarioExecutorId, cancellationToken);
+                var result = await _configuracaoService.GetByEmpresaIdAsync(empresaId, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)

@@ -7,7 +7,7 @@ namespace ExcelDoc.Server.Services.Interfaces
     {
         Task<ProcessamentoResponseDto> CriarEEnfileirarAsync(UploadProcessamentoRequestDto request, CancellationToken cancellationToken = default);
 
-        Task<ProcessamentoResponseDto> GetByIdAsync(int processamentoId, int usuarioExecutorId, CancellationToken cancellationToken = default);
+        Task<ProcessamentoResponseDto> GetByIdAsync(int processamentoId, CancellationToken cancellationToken = default);
 
         Task<PagedResultDto<ProcessamentoResponseDto>> GetPagedAsync(ProcessamentoQueryDto query, CancellationToken cancellationToken = default);
 

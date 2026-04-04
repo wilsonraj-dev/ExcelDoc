@@ -53,7 +53,7 @@ namespace ExcelDoc.Server.Services
                 throw new InvalidOperationException("Arquivo é obrigatório.");
             }
 
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.UsuarioExecutorId, request.EmpresaId, false, cancellationToken);
+            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
 
             var documento = await _documentoRepository.GetByIdAsync(request.DocumentoId, cancellationToken)
                 ?? throw new KeyNotFoundException("Documento não encontrado.");
@@ -84,7 +84,7 @@ namespace ExcelDoc.Server.Services
 
             var entity = new Processamento
             {
-                FK_IdUsuario = request.UsuarioExecutorId,
+                FK_IdUsuario = usuario.Id,
                 FK_IdEmpresa = request.EmpresaId,
                 FK_IdDocumento = documento.Id,
                 NomeArquivo = request.Arquivo.FileName,
@@ -111,18 +111,18 @@ namespace ExcelDoc.Server.Services
             return Map(entity);
         }
 
-        public async Task<ProcessamentoResponseDto> GetByIdAsync(int processamentoId, int usuarioExecutorId, CancellationToken cancellationToken = default)
+        public async Task<ProcessamentoResponseDto> GetByIdAsync(int processamentoId, CancellationToken cancellationToken = default)
         {
             var processamento = await _processamentoRepository.GetByIdAsync(processamentoId, cancellationToken)
                 ?? throw new KeyNotFoundException("Processamento não encontrado.");
 
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(usuarioExecutorId, processamento.FK_IdEmpresa, false, cancellationToken);
+            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(processamento.FK_IdEmpresa, false, cancellationToken);
             return Map(processamento);
         }
 
         public async Task<PagedResultDto<ProcessamentoResponseDto>> GetPagedAsync(ProcessamentoQueryDto query, CancellationToken cancellationToken = default)
         {
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(query.UsuarioExecutorId, query.EmpresaId, false, cancellationToken);
+            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(query.EmpresaId, false, cancellationToken);
 
             var pageNumber = Math.Max(1, query.PageNumber);
             var pageSize = Math.Clamp(query.PageSize, 1, _processingOptions.MaxPageSize);
@@ -142,7 +142,7 @@ namespace ExcelDoc.Server.Services
             var processamento = await _processamentoRepository.GetByIdAsync(processamentoId, cancellationToken)
                 ?? throw new KeyNotFoundException("Processamento não encontrado.");
 
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(query.UsuarioExecutorId, processamento.FK_IdEmpresa, false, cancellationToken);
+            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(processamento.FK_IdEmpresa, false, cancellationToken);
 
             var pageNumber = Math.Max(1, query.PageNumber);
             var pageSize = Math.Clamp(query.PageSize, 1, _processingOptions.MaxPageSize);

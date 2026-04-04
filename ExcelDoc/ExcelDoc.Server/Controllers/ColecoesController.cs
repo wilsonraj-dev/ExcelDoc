@@ -1,11 +1,14 @@
 using ExcelDoc.Server.DTOs.Colecoes;
 using ExcelDoc.Server.Services.Interfaces;
+using ExcelDoc.Server.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelDoc.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = AuthRoles.All)]
     public class ColecoesController : ControllerBase
     {
         private readonly IColecaoService _colecaoService;
@@ -16,11 +19,11 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] int empresaId, [FromQuery] int usuarioExecutorId, CancellationToken cancellationToken)
+        public async Task<IActionResult> Get([FromQuery] int empresaId, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _colecaoService.GetByEmpresaIdAsync(empresaId, usuarioExecutorId, cancellationToken);
+                var result = await _colecaoService.GetByEmpresaIdAsync(empresaId, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)

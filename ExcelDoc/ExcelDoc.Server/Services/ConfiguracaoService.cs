@@ -24,9 +24,9 @@ namespace ExcelDoc.Server.Services
             _logger = logger;
         }
 
-        public async Task<ConfiguracaoResponseDto> GetByEmpresaIdAsync(int empresaId, int usuarioExecutorId, CancellationToken cancellationToken = default)
+        public async Task<ConfiguracaoResponseDto> GetByEmpresaIdAsync(int empresaId, CancellationToken cancellationToken = default)
         {
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(usuarioExecutorId, empresaId, false, cancellationToken);
+            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(empresaId, false, cancellationToken);
 
             var entity = await _configuracaoRepository.GetByEmpresaIdAsync(empresaId, cancellationToken)
                 ?? throw new KeyNotFoundException("Configuração da empresa não encontrada.");
@@ -36,7 +36,7 @@ namespace ExcelDoc.Server.Services
 
         public async Task<ConfiguracaoResponseDto> UpsertAsync(ConfiguracaoRequestDto request, CancellationToken cancellationToken = default)
         {
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.UsuarioExecutorId, request.EmpresaId, false, cancellationToken);
+            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
 
             var entity = await _configuracaoRepository.GetByEmpresaIdAsync(request.EmpresaId, cancellationToken);
 
@@ -59,7 +59,7 @@ namespace ExcelDoc.Server.Services
 
             await _configuracaoRepository.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Configuração atualizada para empresa {EmpresaId} por usuário {UsuarioId}", request.EmpresaId, request.UsuarioExecutorId);
+            _logger.LogInformation("Configuração atualizada para empresa {EmpresaId} por usuário {UsuarioId}", request.EmpresaId, usuario.Id);
 
             return Map(entity);
         }

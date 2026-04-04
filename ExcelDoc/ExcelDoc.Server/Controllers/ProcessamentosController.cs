@@ -1,11 +1,14 @@
 using ExcelDoc.Server.DTOs.Processamentos;
 using ExcelDoc.Server.Services.Interfaces;
+using ExcelDoc.Server.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelDoc.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = AuthRoles.All)]
     public class ProcessamentosController : ControllerBase
     {
         private readonly IProcessamentoService _processamentoService;
@@ -22,7 +25,7 @@ namespace ExcelDoc.Server.Controllers
             try
             {
                 var result = await _processamentoService.CriarEEnfileirarAsync(request, cancellationToken);
-                return AcceptedAtAction(nameof(GetById), new { processamentoId = result.Id, usuarioExecutorId = request.UsuarioExecutorId }, result);
+                return AcceptedAtAction(nameof(GetById), new { processamentoId = result.Id }, result);
             }
             catch (Exception ex)
             {
@@ -31,11 +34,11 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpGet("{processamentoId:int}")]
-        public async Task<IActionResult> GetById(int processamentoId, [FromQuery] int usuarioExecutorId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetById(int processamentoId, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _processamentoService.GetByIdAsync(processamentoId, usuarioExecutorId, cancellationToken);
+                var result = await _processamentoService.GetByIdAsync(processamentoId, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)

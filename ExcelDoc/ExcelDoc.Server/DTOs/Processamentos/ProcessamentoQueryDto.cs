@@ -4,8 +4,6 @@ namespace ExcelDoc.Server.DTOs.Processamentos
 {
     public class ProcessamentoQueryDto
     {
-        public int UsuarioExecutorId { get; set; }
-
         public int EmpresaId { get; set; }
 
         public StatusProcessamento? Status { get; set; }

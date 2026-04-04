@@ -5,9 +5,6 @@ namespace ExcelDoc.Server.DTOs.Configuracoes
     public class ConfiguracaoRequestDto
     {
         [Required]
-        public int UsuarioExecutorId { get; set; }
-
-        [Required]
         public int EmpresaId { get; set; }
 
         [Required]

@@ -13,6 +13,7 @@ namespace ExcelDoc.Server.IoC
         {
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
             services.AddSingleton<ISystemClock, SystemClock>();
+            services.AddHttpContextAccessor();
 
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
             services.AddScoped<IConfiguracaoRepository, ConfiguracaoRepository>();
@@ -20,10 +21,13 @@ namespace ExcelDoc.Server.IoC
             services.AddScoped<IColecaoRepository, ColecaoRepository>();
             services.AddScoped<IProcessamentoRepository, ProcessamentoRepository>();
 
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IPasswordHasherService, PasswordHasherService>();
             services.AddScoped<IEncryptionService, EncryptionService>();
             services.AddScoped<IHashArquivoService, HashArquivoService>();
             services.AddScoped<IArquivoStorageService, ArquivoStorageService>();
             services.AddScoped<IExcelReaderService, ExcelReaderService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUsuarioAcessoService, UsuarioAcessoService>();
             services.AddScoped<IDocumentoService, DocumentoService>();
             services.AddScoped<IConfiguracaoService, ConfiguracaoService>();

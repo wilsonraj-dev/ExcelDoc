@@ -19,16 +19,16 @@ namespace ExcelDoc.Server.Services
             _logger = logger;
         }
 
-        public async Task<IReadOnlyCollection<ColecaoResponseDto>> GetByEmpresaIdAsync(int empresaId, int usuarioExecutorId, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyCollection<ColecaoResponseDto>> GetByEmpresaIdAsync(int empresaId, CancellationToken cancellationToken = default)
         {
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(usuarioExecutorId, empresaId, false, cancellationToken);
+            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(empresaId, false, cancellationToken);
             var colecoes = await _colecaoRepository.GetByEmpresaIdAsync(empresaId, cancellationToken);
             return colecoes.Select(Map).ToList();
         }
 
         public async Task<ColecaoResponseDto> ClonePadraoAsync(CloneColecaoRequestDto request, CancellationToken cancellationToken = default)
         {
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.UsuarioExecutorId, request.EmpresaId, false, cancellationToken);
+            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
 
             var colecaoPadrao = await _colecaoRepository.GetByIdWithMappingsAsync(request.ColecaoPadraoId, cancellationToken)
                 ?? throw new KeyNotFoundException("Coleção padrão não encontrada.");
@@ -56,14 +56,14 @@ namespace ExcelDoc.Server.Services
             await _colecaoRepository.AddAsync(novaColecao, cancellationToken);
             await _colecaoRepository.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Coleção padrão {ColecaoPadraoId} clonada para empresa {EmpresaId} pelo usuário {UsuarioId}", request.ColecaoPadraoId, request.EmpresaId, request.UsuarioExecutorId);
+            _logger.LogInformation("Coleção padrão {ColecaoPadraoId} clonada para empresa {EmpresaId} pelo usuário {UsuarioId}", request.ColecaoPadraoId, request.EmpresaId, usuario.Id);
 
             return Map(novaColecao);
         }
 
         public async Task<ColecaoResponseDto> AtualizarMapeamentosAsync(int colecaoId, AtualizarMapeamentosRequestDto request, CancellationToken cancellationToken = default)
         {
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.UsuarioExecutorId, request.EmpresaId, false, cancellationToken);
+            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
 
             var colecao = await _colecaoRepository.GetByIdWithMappingsAsync(colecaoId, cancellationToken)
                 ?? throw new KeyNotFoundException("Coleção não encontrada.");
