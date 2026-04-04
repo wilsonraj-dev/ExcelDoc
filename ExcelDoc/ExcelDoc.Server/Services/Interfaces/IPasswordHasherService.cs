@@ -5,5 +5,7 @@ namespace ExcelDoc.Server.Services.Interfaces
         string Hash(string password);
 
         bool Verify(string password, string passwordHash);
+
+        bool NeedsRehash(string passwordHash);
     }
 }

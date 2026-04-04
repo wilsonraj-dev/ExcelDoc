@@ -14,15 +14,18 @@ namespace ExcelDoc.Server.Services
     public class AuthService : IAuthService
     {
         private readonly JwtOptions _jwtOptions;
+        private readonly ILogger<AuthService> _logger;
         private readonly IPasswordHasherService _passwordHasherService;
         private readonly IUsuarioRepository _usuarioRepository;
 
         public AuthService(
             IOptions<JwtOptions> jwtOptions,
+            ILogger<AuthService> logger,
             IPasswordHasherService passwordHasherService,
             IUsuarioRepository usuarioRepository)
         {
             _jwtOptions = jwtOptions.Value;
+            _logger = logger;
             _passwordHasherService = passwordHasherService;
             _usuarioRepository = usuarioRepository;
         }
@@ -40,6 +43,14 @@ namespace ExcelDoc.Server.Services
             if (!_passwordHasherService.Verify(request.Senha, usuario.SenhaHash))
             {
                 throw new UnauthorizedAccessException("Credenciais inválidas.");
+            }
+
+            if (_passwordHasherService.NeedsRehash(usuario.SenhaHash))
+            {
+                usuario.SenhaHash = _passwordHasherService.Hash(request.Senha);
+                await _usuarioRepository.SaveChangesAsync(cancellationToken);
+
+                _logger.LogInformation("Senha do usuário {UsuarioId} migrada automaticamente para BCrypt.", usuario.Id);
             }
 
             var expiresAt = DateTime.UtcNow.AddMinutes(Math.Max(1, _jwtOptions.ExpirationMinutes));

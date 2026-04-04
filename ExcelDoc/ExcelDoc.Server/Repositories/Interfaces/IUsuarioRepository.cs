@@ -7,5 +7,7 @@ namespace ExcelDoc.Server.Repositories.Interfaces
         Task<Usuario?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
         Task<Usuario?> GetByLoginAsync(string login, CancellationToken cancellationToken = default);
+
+        Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

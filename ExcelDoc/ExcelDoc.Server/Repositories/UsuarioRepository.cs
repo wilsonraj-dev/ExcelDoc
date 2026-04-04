@@ -24,8 +24,12 @@ namespace ExcelDoc.Server.Repositories
         public Task<Usuario?> GetByLoginAsync(string login, CancellationToken cancellationToken = default)
         {
             return _context.Usuarios
-                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.NomeUsuario == login || (x.Email != null && x.Email == login), cancellationToken);
+        }
+
+        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return _context.SaveChangesAsync(cancellationToken);
         }
     }
 }
