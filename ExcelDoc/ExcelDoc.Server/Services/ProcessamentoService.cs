@@ -96,6 +96,8 @@ namespace ExcelDoc.Server.Services
                 HashArquivo = hash
             };
 
+            entity.Documento = documento;
+
             await _processamentoRepository.AddAsync(entity, cancellationToken);
             await _processamentoRepository.SaveChangesAsync(cancellationToken);
 
@@ -146,7 +148,7 @@ namespace ExcelDoc.Server.Services
 
             var pageNumber = Math.Max(1, query.PageNumber);
             var pageSize = Math.Clamp(query.PageSize, 1, _processingOptions.MaxPageSize);
-            var result = await _processamentoRepository.GetItemsPagedAsync(processamentoId, pageNumber, pageSize, cancellationToken);
+            var result = await _processamentoRepository.GetItemsPagedAsync(processamentoId, query.Status, query.ApenasComErro, pageNumber, pageSize, cancellationToken);
 
             return new PagedResultDto<ProcessamentoItemResponseDto>
             {
@@ -194,6 +196,8 @@ namespace ExcelDoc.Server.Services
                 UsuarioId = processamento.FK_IdUsuario,
                 EmpresaId = processamento.FK_IdEmpresa,
                 DocumentoId = processamento.FK_IdDocumento,
+                NomeDocumento = processamento.Documento?.NomeDocumento ?? string.Empty,
+                EndpointDocumento = processamento.Documento?.Endpoint ?? string.Empty,
                 NomeArquivo = processamento.NomeArquivo,
                 DataExecucao = processamento.DataExecucao,
                 Status = processamento.Status,

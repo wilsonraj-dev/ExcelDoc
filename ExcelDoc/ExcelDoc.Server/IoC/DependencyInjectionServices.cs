@@ -16,6 +16,7 @@ namespace ExcelDoc.Server.IoC
             services.AddHttpContextAccessor();
 
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+            services.AddScoped<IEmpresaRepository, EmpresaRepository>();
             services.AddScoped<IConfiguracaoRepository, ConfiguracaoRepository>();
             services.AddScoped<IDocumentoRepository, DocumentoRepository>();
             services.AddScoped<IColecaoRepository, ColecaoRepository>();
@@ -29,6 +30,7 @@ namespace ExcelDoc.Server.IoC
             services.AddScoped<IExcelReaderService, ExcelReaderService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUsuarioAcessoService, UsuarioAcessoService>();
+            services.AddScoped<IEmpresaService, EmpresaService>();
             services.AddScoped<IDocumentoService, DocumentoService>();
             services.AddScoped<IConfiguracaoService, ConfiguracaoService>();
             services.AddScoped<IColecaoService, ColecaoService>();

@@ -14,7 +14,7 @@ namespace ExcelDoc.Server.Repositories.Interfaces
 
         Task<(IReadOnlyCollection<Processamento> Items, int TotalCount)> GetPagedAsync(int empresaId, StatusProcessamento? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
-        Task<(IReadOnlyCollection<ProcessamentoItem> Items, int TotalCount)> GetItemsPagedAsync(int processamentoId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+        Task<(IReadOnlyCollection<ProcessamentoItem> Items, int TotalCount)> GetItemsPagedAsync(int processamentoId, StatusProcessamentoItem? status, bool apenasComErro, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
         Task AddItemAsync(ProcessamentoItem item, CancellationToken cancellationToken = default);
 

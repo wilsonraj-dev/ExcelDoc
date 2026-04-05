@@ -54,6 +54,8 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+await ApplicationDbInitializer.InitializeAsync(app.Services);
+
 app.UseDefaultFiles();
 app.MapStaticAssets();
 

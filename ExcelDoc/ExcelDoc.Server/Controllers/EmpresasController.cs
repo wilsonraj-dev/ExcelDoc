@@ -1,5 +1,5 @@
+using ExcelDoc.Server.DTOs.Empresas;
 using ExcelDoc.Server.Security;
-using ExcelDoc.Server.DTOs.Documentos;
 using ExcelDoc.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,13 +9,13 @@ namespace ExcelDoc.Server.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = AuthRoles.All)]
-    public class DocumentosController : ControllerBase
+    public class EmpresasController : ControllerBase
     {
-        private readonly IDocumentoService _documentoService;
+        private readonly IEmpresaService _empresaService;
 
-        public DocumentosController(IDocumentoService documentoService)
+        public EmpresasController(IEmpresaService empresaService)
         {
-            _documentoService = documentoService;
+            _empresaService = empresaService;
         }
 
         [HttpGet]
@@ -23,7 +23,7 @@ namespace ExcelDoc.Server.Controllers
         {
             try
             {
-                var result = await _documentoService.GetAllAsync(cancellationToken);
+                var result = await _empresaService.GetDisponiveisAsync(cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -33,25 +33,11 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] DocumentoRequestDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Post([FromBody] EmpresaRequestDto request, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _documentoService.CriarAsync(request, cancellationToken);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return ToActionResult(ex);
-            }
-        }
-
-        [HttpPut("{documentoId:int}")]
-        public async Task<IActionResult> Put(int documentoId, [FromBody] DocumentoRequestDto request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var result = await _documentoService.AtualizarAsync(documentoId, request, cancellationToken);
+                var result = await _empresaService.CriarAsync(request, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)

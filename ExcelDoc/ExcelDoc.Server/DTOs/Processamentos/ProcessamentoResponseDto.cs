@@ -12,6 +12,10 @@ namespace ExcelDoc.Server.DTOs.Processamentos
 
         public int DocumentoId { get; set; }
 
+        public string NomeDocumento { get; set; } = string.Empty;
+
+        public string EndpointDocumento { get; set; } = string.Empty;
+
         public string NomeArquivo { get; set; } = string.Empty;
 
         public DateTime DataExecucao { get; set; }

@@ -28,6 +28,7 @@ namespace ExcelDoc.Server.Repositories
         {
             return _context.Processamentos
                 .AsNoTracking()
+                .Include(x => x.Documento)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
@@ -56,6 +57,7 @@ namespace ExcelDoc.Server.Repositories
 
             var totalCount = await query.CountAsync(cancellationToken);
             var items = await query
+                .Include(x => x.Documento)
                 .OrderByDescending(x => x.DataExecucao)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -64,11 +66,21 @@ namespace ExcelDoc.Server.Repositories
             return (items, totalCount);
         }
 
-        public async Task<(IReadOnlyCollection<ProcessamentoItem> Items, int TotalCount)> GetItemsPagedAsync(int processamentoId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        public async Task<(IReadOnlyCollection<ProcessamentoItem> Items, int TotalCount)> GetItemsPagedAsync(int processamentoId, StatusProcessamentoItem? status, bool apenasComErro, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var query = _context.ProcessamentoItens
                 .AsNoTracking()
                 .Where(x => x.FK_IdProcessamento == processamentoId);
+
+            if (status.HasValue)
+            {
+                query = query.Where(x => x.Status == status.Value);
+            }
+
+            if (apenasComErro)
+            {
+                query = query.Where(x => x.Erro != null && x.Erro != string.Empty);
+            }
 
             var totalCount = await query.CountAsync(cancellationToken);
             var items = await query
