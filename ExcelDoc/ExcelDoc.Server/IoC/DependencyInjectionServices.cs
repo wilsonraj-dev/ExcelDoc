@@ -23,6 +23,7 @@ namespace ExcelDoc.Server.IoC
             services.AddScoped<IProcessamentoRepository, ProcessamentoRepository>();
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IPasswordHasherService, PasswordHasherService>();
             services.AddScoped<IEncryptionService, EncryptionService>();
             services.AddScoped<IHashArquivoService, HashArquivoService>();

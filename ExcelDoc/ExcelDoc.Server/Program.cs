@@ -19,6 +19,7 @@ builder.Services.Configure<ProcessingOptions>(builder.Configuration.GetSection(P
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(StorageOptions.SectionName));
 builder.Services.Configure<EncryptionOptions>(builder.Configuration.GetSection(EncryptionOptions.SectionName));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
 
 builder.Services.AddDbContext<ExcelDocDbContext>(options =>
     options.UseMySQL(connectionString));

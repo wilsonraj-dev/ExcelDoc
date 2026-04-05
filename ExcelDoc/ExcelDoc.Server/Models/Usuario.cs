@@ -17,6 +17,11 @@ namespace ExcelDoc.Server.Models
         [MaxLength(200)]
         public string? Email { get; set; }
 
+        [MaxLength(20)]
+        public string? ResetPasswordCode { get; set; }
+
+        public DateTime? ResetPasswordCodeExpiresAtUtc { get; set; }
+
         public TipoUsuario TipoUsuario { get; set; }
 
         public int? FK_IdEmpresa { get; set; }

@@ -1,0 +1,38 @@
+<div class="auth-card">
+  <div class="auth-card__header">
+    <h2>Login</h2>
+    <p>Acesse a plataforma usando usuário ou e-mail.</p>
+  </div>
+
+  <form class="auth-form" (ngSubmit)="onSubmit()">
+    <label>
+      <span>Usuário ou e-mail</span>
+      <input type="text" name="login" [(ngModel)]="login" placeholder="Digite seu usuário ou e-mail" autocomplete="username" />
+    </label>
+
+    <label>
+      <span>Senha</span>
+      <input type="password" name="senha" [(ngModel)]="senha" placeholder="Digite sua senha" autocomplete="current-password" />
+    </label>
+
+    <button type="submit" [disabled]="isSubmitting">
+      {{ isSubmitting ? 'Entrando...' : 'Entrar' }}
+    </button>
+  </form>
+
+  <p class="feedback feedback--error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p class="feedback feedback--success" *ngIf="successMessage">{{ successMessage }}</p>
+
+  <div class="session-card" *ngIf="session">
+    <h3>Sessão ativa</h3>
+    <p><strong>Usuário:</strong> {{ session.nomeUsuario }}</p>
+    <p><strong>Perfil:</strong> {{ session.tipoUsuario }}</p>
+    <p><strong>Expira em:</strong> {{ session.expiresAtUtc | date:'dd/MM/yyyy HH:mm' : 'UTC' }}</p>
+    <button type="button" class="button-secondary" (click)="logout()">Remover JWT</button>
+  </div>
+
+  <div class="auth-links">
+    <a routerLink="/criar-usuario">Criar usuário</a>
+    <a routerLink="/esqueci-a-senha" [queryParams]="login ? { email: login } : null">Esqueci a senha</a>
+  </div>
+</div>

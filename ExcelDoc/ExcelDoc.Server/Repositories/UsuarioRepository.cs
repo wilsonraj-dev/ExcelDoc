@@ -14,6 +14,27 @@ namespace ExcelDoc.Server.Repositories
             _context = context;
         }
 
+        public Task AddAsync(Usuario usuario, CancellationToken cancellationToken = default)
+        {
+            return _context.Usuarios.AddAsync(usuario, cancellationToken).AsTask();
+        }
+
+        public Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default)
+        {
+            return _context.Usuarios.AnyAsync(x => x.Email != null && x.Email == email, cancellationToken);
+        }
+
+        public Task<bool> ExistsByNomeUsuarioAsync(string nomeUsuario, CancellationToken cancellationToken = default)
+        {
+            return _context.Usuarios.AnyAsync(x => x.NomeUsuario == nomeUsuario, cancellationToken);
+        }
+
+        public Task<Usuario?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+        {
+            return _context.Usuarios
+                .FirstOrDefaultAsync(x => x.Email != null && x.Email == email, cancellationToken);
+        }
+
         public Task<Usuario?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return _context.Usuarios

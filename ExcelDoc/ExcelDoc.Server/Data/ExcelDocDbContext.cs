@@ -60,6 +60,12 @@ namespace ExcelDoc.Server.Data
                 entity.Property(e => e.Email)
                     .HasMaxLength(200);
 
+                entity.Property(e => e.ResetPasswordCode)
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.ResetPasswordCodeExpiresAtUtc)
+                    .HasPrecision(0);
+
                 entity.Property(e => e.TipoUsuario)
                     .HasConversion<string>()
                     .HasMaxLength(30);
