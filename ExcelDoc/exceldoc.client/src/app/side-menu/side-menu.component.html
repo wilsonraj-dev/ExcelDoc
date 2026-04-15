@@ -1,0 +1,19 @@
+<aside class="side-menu" *ngIf="isAuthenticated">
+  <div class="side-menu__brand">
+    <span class="side-menu__badge">ExcelDoc</span>
+    <h1>Menu principal</h1>
+    <p>Acesse rapidamente os formulários do sistema.</p>
+  </div>
+
+  <mat-nav-list class="side-menu__nav" aria-label="Menu lateral">
+    <a
+      mat-list-item
+      *ngFor="let item of availableMenuItems"
+      [routerLink]="item.route"
+      routerLinkActive="is-active">
+      <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+      <span matListItemTitle>{{ item.label }}</span>
+      <span matListItemLine>{{ item.description }}</span>
+    </a>
+  </mat-nav-list>
+</aside>

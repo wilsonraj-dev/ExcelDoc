@@ -116,6 +116,7 @@ namespace ExcelDoc.Server.Services
                 UsuarioId = usuario.Id,
                 NomeUsuario = usuario.NomeUsuario,
                 TipoUsuario = usuario.TipoUsuario.ToString(),
+                NomeEmpresa = usuario.Empresa?.NomeEmpresa,
                 EmpresaId = usuario.FK_IdEmpresa
             };
         }

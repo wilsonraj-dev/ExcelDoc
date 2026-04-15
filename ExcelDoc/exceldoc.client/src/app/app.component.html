@@ -1,11 +1,42 @@
-<main class="app-shell">
-  <section class="hero">
-    <span class="hero__badge">ExcelDoc</span>
-    <h1>{{ title }}</h1>
-    <p>Autenticação com JWT, cadastro de usuário e recuperação de senha por código.</p>
-  </section>
+<ng-container *ngIf="isAuthenticated; else authLayout">
+  <main class="app-shell">
+    <app-side-menu></app-side-menu>
 
-  <section class="content">
-    <router-outlet></router-outlet>
-  </section>
-</main>
+    <section class="workspace">
+      <mat-toolbar class="topbar" *ngIf="session as currentSession">
+        <div class="topbar__session">
+          <div class="topbar__session-item">
+            <span>Usuário</span>
+            <strong>{{ currentSession.nomeUsuario }}</strong>
+          </div>
+
+          <div class="topbar__session-item">
+            <span>Empresa</span>
+            <strong>{{ companyLabel }}</strong>
+          </div>
+
+          <div class="topbar__session-item">
+            <span>Perfil</span>
+            <strong>{{ currentSession.tipoUsuario }}</strong>
+          </div>
+
+          <button type="button" mat-stroked-button color="primary" class="topbar__logout" (click)="logout()">
+            Logout
+          </button>
+        </div>
+      </mat-toolbar>
+
+      <section class="content">
+        <router-outlet></router-outlet>
+      </section>
+    </section>
+  </main>
+</ng-container>
+
+<ng-template #authLayout>
+  <main class="auth-shell">
+    <section class="auth-shell__content">
+      <router-outlet></router-outlet>
+    </section>
+  </main>
+</ng-template>

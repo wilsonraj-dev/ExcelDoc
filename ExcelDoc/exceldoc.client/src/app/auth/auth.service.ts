@@ -2,6 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 
+export const AUTH_ROLES = {
+  administrator: 'Administrador',
+  user: 'Usuario'
+} as const;
+
 export interface LoginRequest {
   login: string;
   senha: string;
@@ -13,6 +18,7 @@ export interface LoginResponse {
   usuarioId: number;
   nomeUsuario: string;
   tipoUsuario: string;
+  nomeEmpresa?: string | null;
   empresaId?: number | null;
 }
 
@@ -95,5 +101,29 @@ export class AuthService {
       this.logout();
       return null;
     }
+  }
+
+  isAdministrator(session: LoginResponse | null = this.getSession()): boolean {
+    return session?.tipoUsuario === AUTH_ROLES.administrator;
+  }
+
+  hasRequiredRoles(requiredRoles: readonly string[] = [], session: LoginResponse | null = this.getSession()): boolean {
+    if (!session) {
+      return false;
+    }
+
+    if (!requiredRoles.length) {
+      return true;
+    }
+
+    return requiredRoles.includes(session.tipoUsuario);
+  }
+
+  getDefaultRoute(session: LoginResponse | null = this.getSession()): string {
+    if (this.hasRequiredRoles([AUTH_ROLES.administrator, AUTH_ROLES.user], session)) {
+      return '/configuracoes-empresa';
+    }
+
+    return '/login';
   }
 }

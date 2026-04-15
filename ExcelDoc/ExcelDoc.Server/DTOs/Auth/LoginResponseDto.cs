@@ -12,6 +12,8 @@ namespace ExcelDoc.Server.DTOs.Auth
 
         public string TipoUsuario { get; set; } = string.Empty;
 
+        public string? NomeEmpresa { get; set; }
+
         public int? EmpresaId { get; set; }
     }
 }

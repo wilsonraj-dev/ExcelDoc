@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, LoginResponse } from '../auth.service';
 
 @Component({
@@ -8,21 +8,29 @@ import { AuthService, LoginResponse } from '../auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   errorMessage = '';
+  hidePassword = true;
   isSubmitting = false;
   login = '';
   senha = '';
   successMessage = '';
-  session: LoginResponse | null;
 
   constructor(
     private readonly authService: AuthService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly router: Router
   ) {
-    this.session = this.authService.getSession();
     this.login = this.route.snapshot.queryParamMap.get('login')?.trim() ?? '';
     this.successMessage = this.route.snapshot.queryParamMap.get('message')?.trim() ?? '';
+  }
+
+  ngOnInit(): void {
+    const session = this.authService.getSession();
+
+    if (session) {
+      void this.router.navigate([this.authService.getDefaultRoute(session)]);
+    }
   }
 
   onSubmit(): void {
@@ -37,21 +45,14 @@ export class LoginComponent {
     this.isSubmitting = true;
     this.authService.login({ login: this.login.trim(), senha: this.senha }).subscribe({
       next: (response: LoginResponse) => {
-        this.session = response;
-        this.successMessage = 'Login realizado com sucesso. O JWT foi salvo no navegador.';
         this.senha = '';
         this.isSubmitting = false;
+        void this.router.navigate([this.authService.getDefaultRoute(response)]);
       },
       error: (error: HttpErrorResponse) => {
         this.errorMessage = error.error?.detail ?? 'Não foi possível realizar o login.';
         this.isSubmitting = false;
       }
     });
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.session = null;
-    this.successMessage = 'Sessão removida do navegador.';
   }
 }

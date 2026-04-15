@@ -1,68 +1,54 @@
-:host {
-  display: block;
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 3rem);
 }
 
-.auth-card {
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 0.5rem;
+  border-radius: 24px;
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.16);
+}
+
+.login-card__avatar {
   display: grid;
-  gap: 1.5rem;
+  place-items: center;
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
 }
 
-.auth-card__header h2 {
-  margin: 0;
-  font-size: 2rem;
+.full-width {
+  width: 100%;
 }
 
-.auth-card__header p {
-  margin: 0.5rem 0 0;
-  color: #475569;
-}
-
-.auth-form {
+.login-form {
   display: grid;
   gap: 1rem;
+  margin-top: 1rem;
 }
 
-label {
-  display: grid;
-  gap: 0.4rem;
-  font-weight: 600;
+.login-btn {
+  margin-top: 0.25rem;
+  height: 48px;
+  font-size: 16px;
 }
 
-span {
-  color: #334155;
+.spinner-inline {
+  display: inline-flex;
+  margin-right: 0.5rem;
+  vertical-align: middle;
 }
 
-input {
-  width: 100%;
-  border: 1px solid #cbd5e1;
-  border-radius: 14px;
-  padding: 0.95rem 1rem;
-  background: #f8fafc;
-}
-
-input:focus {
-  outline: 2px solid rgba(37, 99, 235, 0.18);
-  border-color: #2563eb;
-}
-
-button {
-  border: none;
-  border-radius: 14px;
-  padding: 1rem;
-  background: #2563eb;
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.7;
-  cursor: wait;
-}
-
-.button-secondary {
-  background: #e2e8f0;
-  color: #0f172a;
+.login-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 1rem 1rem;
+  flex-wrap: wrap;
 }
 
 .feedback {
@@ -73,36 +59,27 @@ button:disabled {
 }
 
 .feedback--error {
+  margin-bottom: 1rem;
   background: #fee2e2;
   color: #991b1b;
 }
 
 .feedback--success {
+  margin-bottom: 1rem;
   background: #dcfce7;
   color: #166534;
 }
 
-.session-card {
-  padding: 1.25rem;
-  border-radius: 18px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-}
+@media (max-width: 600px) {
+  .login-container {
+    min-height: auto;
+  }
 
-.session-card h3,
-.session-card p {
-  margin: 0 0 0.5rem;
-}
+  .login-card__actions {
+    justify-content: stretch;
+  }
 
-.auth-links {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.auth-links a {
-  color: #2563eb;
-  text-decoration: none;
-  font-weight: 600;
+  .login-card__actions a {
+    width: 100%;
+  }
 }

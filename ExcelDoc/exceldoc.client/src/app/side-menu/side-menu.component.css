@@ -1,0 +1,72 @@
+:host {
+  display: block;
+}
+
+.side-menu {
+  min-height: 100vh;
+  display: grid;
+  align-content: start;
+  gap: 2rem;
+  padding: 2rem 1.5rem;
+  background: linear-gradient(180deg, #0f172a, #1e293b);
+  color: #ffffff;
+}
+
+.side-menu__brand {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.side-menu__badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.side-menu__brand h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.side-menu__brand p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.6;
+}
+
+.side-menu__nav {
+  padding: 0;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.16);
+}
+
+:host ::ng-deep .side-menu__nav .mat-mdc-list-item {
+  min-height: 72px;
+  margin: 0.35rem 0;
+  border-radius: 14px;
+  color: #e2e8f0;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+:host ::ng-deep .side-menu__nav .mat-mdc-list-item:hover,
+:host ::ng-deep .side-menu__nav .mat-mdc-list-item.is-active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  transform: translateX(2px);
+}
+
+:host ::ng-deep .side-menu__nav .mat-icon {
+  color: inherit;
+}
+
+@media (max-width: 960px) {
+  .side-menu {
+    min-height: auto;
+    padding: 1.5rem 1rem;
+  }
+}
