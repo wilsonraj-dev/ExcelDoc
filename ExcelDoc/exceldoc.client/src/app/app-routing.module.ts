@@ -27,7 +27,7 @@ const routes: Routes = [
     path: 'documentos',
     loadChildren: () => import('./features/documentos/documentos.module').then((module) => module.DocumentosModule),
     canActivate: [AuthGuard],
-    data: { roles: [AUTH_ROLES.administrator, AUTH_ROLES.user] }
+    data: { roles: [AUTH_ROLES.administrator] }
   },
   {
     path: 'colecoes',
