@@ -15,14 +15,22 @@
       </ng-template>
     </div>
 
-    <button
-      *ngIf="isAdministrator && selectedEmpresa"
-      type="button"
-      mat-stroked-button
-      color="primary"
-      (click)="voltarParaEmpresas()">
-      Voltar para empresas
-    </button>
+    <div class="settings-header__actions" *ngIf="isAdministrator">
+      <button type="button"
+              mat-flat-button
+              color="primary"
+              routerLink="/criar-empresa">
+        Cadastrar empresa
+      </button>
+
+      <button *ngIf="selectedEmpresa"
+              type="button"
+              mat-stroked-button
+              color="primary"
+              (click)="voltarParaEmpresas()">
+        Voltar para empresas
+      </button>
+    </div>
   </div>
 
   <p class="feedback feedback--error" *ngIf="errorMessage">{{ errorMessage }}</p>
@@ -37,7 +45,7 @@
   <mat-card *ngIf="isAdministrator && !selectedEmpresa" class="settings-card">
     <mat-card-content>
       <div class="table-wrapper" *ngIf="empresas.length; else noCompaniesTemplate">
-        <table mat-table [dataSource]="empresas" class="settings-table">
+        <table mat-table [dataSource]="empresasDataSource" class="settings-table">
           <ng-container matColumnDef="nomeEmpresa">
             <th mat-header-cell *matHeaderCellDef>Empresa</th>
             <td mat-cell *matCellDef="let empresa">{{ empresa.nomeEmpresa }}</td>
@@ -46,11 +54,10 @@
           <ng-container matColumnDef="acoes">
             <th mat-header-cell *matHeaderCellDef>Ações</th>
             <td mat-cell *matCellDef="let empresa">
-              <button
-                type="button"
-                mat-flat-button
-                color="primary"
-                (click)="visualizarConfiguracao(empresa)">
+              <button type="button"
+                      mat-flat-button
+                      color="primary"
+                      (click)="visualizarConfiguracao(empresa)">
                 Visualizar configuração
               </button>
             </td>
@@ -59,6 +66,12 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
+
+        <mat-paginator [pageSize]="pageSizeOptions[0]"
+                       [pageSizeOptions]="pageSizeOptions"
+                       showFirstLastButtons
+                       aria-label="Paginação da lista de empresas">
+        </mat-paginator>
       </div>
     </mat-card-content>
   </mat-card>

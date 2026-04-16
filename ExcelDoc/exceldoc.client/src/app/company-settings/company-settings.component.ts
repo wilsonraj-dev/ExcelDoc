@@ -1,7 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, OnInit, ViewChild, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService, LoginResponse } from '../auth/auth.service';
@@ -21,8 +23,9 @@ interface CompanySettingsFormValue {
   templateUrl: './company-settings.component.html',
   styleUrl: './company-settings.component.css'
 })
-export class CompanySettingsComponent implements OnInit {
+export class CompanySettingsComponent implements OnInit, AfterViewInit {
   readonly displayedColumns = ['nomeEmpresa', 'acoes'];
+  readonly pageSizeOptions = [5, 10, 15, 20, 25];
   readonly form = new FormGroup({
     linkServiceLayer: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(500)] }),
     database: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(150)] }),
@@ -33,6 +36,7 @@ export class CompanySettingsComponent implements OnInit {
   });
 
   empresas: EmpresaResponse[] = [];
+  readonly empresasDataSource = new MatTableDataSource<EmpresaResponse>([]);
   errorMessage = '';
   infoMessage = '';
   isAdministrator = false;
@@ -47,6 +51,13 @@ export class CompanySettingsComponent implements OnInit {
 
   private readonly destroyRef = inject(DestroyRef);
   private loadedEmpresaId: number | null = null;
+
+  @ViewChild(MatPaginator)
+  set paginator(paginator: MatPaginator | undefined) {
+    if (paginator) {
+      this.empresasDataSource.paginator = paginator;
+    }
+  }
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -80,6 +91,12 @@ export class CompanySettingsComponent implements OnInit {
     }
 
     return this.hasExistingConfiguration ? 'Salvar alterações' : 'Criar configuração';
+  }
+
+  ngAfterViewInit(): void {
+    if (this.empresasDataSource.paginator) {
+      this.empresasDataSource.paginator.pageSize = this.pageSizeOptions[0];
+    }
   }
 
   ngOnInit(): void {
@@ -277,6 +294,7 @@ export class CompanySettingsComponent implements OnInit {
       .subscribe({
         next: (empresas: EmpresaResponse[]) => {
           this.empresas = [...empresas].sort((left, right) => left.nomeEmpresa.localeCompare(right.nomeEmpresa));
+          this.empresasDataSource.data = this.empresas;
           this.syncSelectedEmpresa();
         },
         error: (error: HttpErrorResponse) => {

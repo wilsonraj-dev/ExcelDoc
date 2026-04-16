@@ -15,40 +15,29 @@
   flex-wrap: wrap;
 }
 
-.settings-header h2 {
-  margin: 0;
-  font-size: 2rem;
-}
+  .settings-header h2 {
+    margin: 0;
+    font-size: 2rem;
+  }
 
-.settings-header p {
-  margin: 0.5rem 0 0;
-  color: #475569;
+  .settings-header p {
+    margin: 0.5rem 0 0;
+    color: #475569;
+  }
+
+.settings-header__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .settings-card {
   border-radius: 24px;
 }
 
-.feedback {
-  margin: 0;
-  padding: 0.85rem 1rem;
-  border-radius: 14px;
-  font-size: 0.95rem;
-}
-
-.feedback--error {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
 .feedback--info {
   background: #e0f2fe;
   color: #075985;
-}
-
-.feedback--success {
-  background: #dcfce7;
-  color: #166534;
 }
 
 .loading-state {
@@ -100,9 +89,9 @@
   gap: 1rem;
 }
 
-.settings-form__grid mat-form-field {
-  width: 100%;
-}
+  .settings-form__grid mat-form-field {
+    width: 100%;
+  }
 
 .settings-form__actions {
   display: flex;
@@ -115,6 +104,14 @@
 }
 
 @media (max-width: 720px) {
+  .settings-header__actions {
+    width: 100%;
+  }
+
+    .settings-header__actions button {
+      width: 100%;
+    }
+
   .settings-form__grid {
     grid-template-columns: 1fr;
   }
@@ -123,7 +120,7 @@
     justify-content: stretch;
   }
 
-  .settings-form__actions button {
-    width: 100%;
-  }
+    .settings-form__actions button {
+      width: 100%;
+    }
 }
