@@ -20,6 +20,7 @@ namespace ExcelDoc.Server.IoC
             services.AddScoped<IConfiguracaoRepository, ConfiguracaoRepository>();
             services.AddScoped<IDocumentoRepository, DocumentoRepository>();
             services.AddScoped<IColecaoRepository, ColecaoRepository>();
+            services.AddScoped<IMapeamentoRepository, MapeamentoRepository>();
             services.AddScoped<IProcessamentoRepository, ProcessamentoRepository>();
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -35,6 +36,7 @@ namespace ExcelDoc.Server.IoC
             services.AddScoped<IDocumentoService, DocumentoService>();
             services.AddScoped<IConfiguracaoService, ConfiguracaoService>();
             services.AddScoped<IColecaoService, ColecaoService>();
+            services.AddScoped<IMapeamentoService, MapeamentoService>();
             services.AddScoped<IPayloadBuilderService, PayloadBuilderService>();
             services.AddScoped<ISapServiceLayerClient, SapServiceLayerClient>();
             services.AddScoped<IProcessamentoService, ProcessamentoService>();
