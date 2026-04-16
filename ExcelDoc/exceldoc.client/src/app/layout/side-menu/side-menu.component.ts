@@ -37,7 +37,7 @@ export class SideMenuComponent {
       description: 'Centralize o fluxo documental.',
       icon: 'description',
       route: '/documentos',
-      roles: [AUTH_ROLES.administrator, AUTH_ROLES.user],
+      roles: [AUTH_ROLES.administrator],
       exact: true
     },
     {
