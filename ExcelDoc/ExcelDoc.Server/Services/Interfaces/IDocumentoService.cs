@@ -6,8 +6,12 @@ namespace ExcelDoc.Server.Services.Interfaces
     {
         Task<IReadOnlyCollection<DocumentoResponseDto>> GetAllAsync(CancellationToken cancellationToken = default);
 
+        Task<DocumentoResponseDto> GetByIdAsync(int documentoId, CancellationToken cancellationToken = default);
+
         Task<DocumentoResponseDto> CriarAsync(DocumentoRequestDto request, CancellationToken cancellationToken = default);
 
         Task<DocumentoResponseDto> AtualizarAsync(int documentoId, DocumentoRequestDto request, CancellationToken cancellationToken = default);
+
+        Task ExcluirAsync(int documentoId, CancellationToken cancellationToken = default);
     }
 }

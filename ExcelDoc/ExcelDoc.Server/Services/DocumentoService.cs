@@ -2,6 +2,7 @@ using ExcelDoc.Server.DTOs.Documentos;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExcelDoc.Server.Services
 {
@@ -25,6 +26,16 @@ namespace ExcelDoc.Server.Services
             return documentos
                 .Select(Map)
                 .ToList();
+        }
+
+        public async Task<DocumentoResponseDto> GetByIdAsync(int documentoId, CancellationToken cancellationToken = default)
+        {
+            await _usuarioAcessoService.GetUsuarioAtualAsync(true, cancellationToken);
+
+            var documento = await _documentoRepository.GetByIdAsync(documentoId, cancellationToken)
+                ?? throw new KeyNotFoundException("Documento não encontrado.");
+
+            return Map(documento);
         }
 
         public async Task<DocumentoResponseDto> CriarAsync(DocumentoRequestDto request, CancellationToken cancellationToken = default)
@@ -51,6 +62,24 @@ namespace ExcelDoc.Server.Services
             await _documentoRepository.SaveChangesAsync(cancellationToken);
 
             return Map(documento);
+        }
+
+        public async Task ExcluirAsync(int documentoId, CancellationToken cancellationToken = default)
+        {
+            await ValidarAdministradorAsync(cancellationToken);
+
+            var documento = await _documentoRepository.GetTrackedByIdAsync(documentoId, cancellationToken)
+                ?? throw new KeyNotFoundException("Documento não encontrado.");
+
+            try
+            {
+                _documentoRepository.Remove(documento);
+                await _documentoRepository.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException)
+            {
+                throw new InvalidOperationException("Não foi possível excluir o documento porque ele está vinculado a outros registros.");
+            }
         }
 
         public async Task<DocumentoResponseDto> AtualizarAsync(int documentoId, DocumentoRequestDto request, CancellationToken cancellationToken = default)
@@ -98,6 +127,11 @@ namespace ExcelDoc.Server.Services
             if (string.IsNullOrWhiteSpace(endpoint))
             {
                 throw new InvalidOperationException("Endpoint do documento é obrigatório.");
+            }
+
+            if (!endpoint.StartsWith('/'))
+            {
+                throw new InvalidOperationException("Endpoint do documento deve começar com '/'.");
             }
         }
 

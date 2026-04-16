@@ -16,6 +16,8 @@ namespace ExcelDoc.Server.Repositories.Interfaces
 
         Task AddAsync(Documento documento, CancellationToken cancellationToken = default);
 
+        void Remove(Documento documento);
+
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

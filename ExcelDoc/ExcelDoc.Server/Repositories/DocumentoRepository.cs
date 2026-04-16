@@ -57,6 +57,11 @@ namespace ExcelDoc.Server.Repositories
             await _context.Documentos.AddAsync(documento, cancellationToken);
         }
 
+        public void Remove(Documento documento)
+        {
+            _context.Documentos.Remove(documento);
+        }
+
         public Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return _context.SaveChangesAsync(cancellationToken);

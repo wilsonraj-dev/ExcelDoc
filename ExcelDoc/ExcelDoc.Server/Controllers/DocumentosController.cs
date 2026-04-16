@@ -32,6 +32,20 @@ namespace ExcelDoc.Server.Controllers
             }
         }
 
+        [HttpGet("{documentoId:int}")]
+        public async Task<IActionResult> GetById(int documentoId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await _documentoService.GetByIdAsync(documentoId, cancellationToken);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ToActionResult(ex);
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] DocumentoRequestDto request, CancellationToken cancellationToken)
         {
@@ -39,6 +53,20 @@ namespace ExcelDoc.Server.Controllers
             {
                 var result = await _documentoService.CriarAsync(request, cancellationToken);
                 return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ToActionResult(ex);
+            }
+        }
+
+        [HttpDelete("{documentoId:int}")]
+        public async Task<IActionResult> Delete(int documentoId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _documentoService.ExcluirAsync(documentoId, cancellationToken);
+                return NoContent();
             }
             catch (Exception ex)
             {
