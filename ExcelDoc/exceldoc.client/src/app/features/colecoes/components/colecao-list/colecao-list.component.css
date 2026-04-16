@@ -2,17 +2,61 @@
   display: block;
 }
 
-.colecao-page {
+.settings-page {
   display: grid;
   gap: 1.5rem;
 }
 
-.colecao-page__header {
-  align-items: center;
+.settings-header {
   display: flex;
-  gap: 1rem;
   justify-content: space-between;
-  padding-bottom: 1rem;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+  .settings-header h2 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  .settings-header p {
+    margin: 0.5rem 0 0;
+    color: #475569;
+  }
+
+.settings-header__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.settings-card {
+  border-radius: 24px;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 120px;
+  color: #475569;
+}
+
+.loading-state--inline {
+  min-height: 0;
+  justify-content: flex-start;
+  padding: 1rem 0;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.colecao-page {
+  display: grid;
+  gap: 1.5rem;
 }
 
 .colecao-page__content {
@@ -26,15 +70,13 @@
   grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
 }
 
-.colecao-page__loading {
-  display: flex;
-  justify-content: center;
-  padding: 2rem 0;
-}
-
 .colecao-page__table {
   display: grid;
   gap: 1rem;
+}
+
+.colecao-page__table-content {
+  width: 100%;
 }
 
 .colecao-page__scope {
@@ -94,21 +136,16 @@
   padding: 0.75rem 1rem;
 }
 
-table {
-  width: 100%;
-}
-
 mat-form-field {
   width: 100%;
 }
 
 @media (max-width: 768px) {
-  .colecao-page__header {
-    align-items: stretch;
-    flex-direction: column;
+  .settings-header__actions {
+    width: 100%;
   }
 
-    .colecao-page__header button {
+    .settings-header__actions button {
       width: 100%;
     }
 

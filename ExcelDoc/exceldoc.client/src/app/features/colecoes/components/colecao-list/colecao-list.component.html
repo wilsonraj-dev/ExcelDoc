@@ -1,105 +1,111 @@
-<mat-card class="colecao-page" appearance="outlined">
-  <mat-card-header class="colecao-page__header">
+<div class="settings-page">
+  <div class="settings-header">
     <div>
-      <mat-card-title>Cadastro de coleções</mat-card-title>
-      <mat-card-subtitle>Gerencie coleções globais e customizadas por empresa.</mat-card-subtitle>
+      <h2>Cadastro de coleções</h2>
+      <p>Gerencie coleções globais e customizadas por empresa.</p>
     </div>
 
-    <button type="button" mat-flat-button color="primary" (click)="novaColecao()">
-      <mat-icon>add</mat-icon>
-      Nova Coleção
-    </button>
-  </mat-card-header>
-
-  <mat-card-content class="colecao-page__content">
-    <p class="colecao-page__error" *ngIf="errorMessage">{{ errorMessage }}</p>
-
-    <form class="colecao-page__filters" [formGroup]="filterForm">
-      <mat-form-field appearance="outline">
-        <mat-label>Filtrar por nome</mat-label>
-        <input matInput formControlName="termo" placeholder="Ex.: Itens do documento" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Tipo da coleção</mat-label>
-        <mat-select formControlName="tipoColecao">
-          <mat-option *ngFor="let option of tipoColecaoOptions" [value]="option.value">
-            {{ option.label }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </form>
-
-    <div class="colecao-page__loading" *ngIf="isLoading">
-      <app-loading-spinner message="Carregando coleções..."></app-loading-spinner>
+    <div class="settings-header__actions">
+      <button type="button" mat-flat-button color="primary" (click)="novaColecao()">
+        <mat-icon>add</mat-icon>
+        Nova Coleção
+      </button>
     </div>
+  </div>
 
-    <ng-container *ngIf="!isLoading">
-      <div class="colecao-page__table" *ngIf="hasColecoes; else emptyState">
-        <table mat-table [dataSource]="dataSource">
-          <ng-container matColumnDef="nomeColecao">
-            <th mat-header-cell *matHeaderCellDef>Nome da Coleção</th>
-            <td mat-cell *matCellDef="let colecao">{{ colecao.nomeColecao }}</td>
-          </ng-container>
+  <mat-card class="settings-card colecao-page" appearance="outlined">
+    <mat-card-content class="colecao-page__content">
+      <p class="colecao-page__error" *ngIf="errorMessage">{{ errorMessage }}</p>
 
-          <ng-container matColumnDef="tipoColecao">
-            <th mat-header-cell *matHeaderCellDef>Tipo da Coleção</th>
-            <td mat-cell *matCellDef="let colecao">{{ getTipoColecaoLabel(colecao) }}</td>
-          </ng-container>
+      <form class="colecao-page__filters" [formGroup]="filterForm">
+        <mat-form-field appearance="outline">
+          <mat-label>Filtrar por nome</mat-label>
+          <input matInput formControlName="termo" placeholder="Ex.: Itens do documento" />
+        </mat-form-field>
 
-          <ng-container matColumnDef="tipo">
-            <th mat-header-cell *matHeaderCellDef>Tipo</th>
-            <td mat-cell *matCellDef="let colecao">
-              <div class="colecao-page__scope">
-                <mat-chip-set>
-                  <mat-chip class="colecao-page__badge" [class.colecao-page__badge--padrao]="isPadrao(colecao)">
-                    {{ getEscopoLabel(colecao) }}
-                  </mat-chip>
-                </mat-chip-set>
-                <span class="colecao-page__scope-description">{{ getEscopoDescricao(colecao) }}</span>
-              </div>
-            </td>
-          </ng-container>
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo da coleção</mat-label>
+          <mat-select formControlName="tipoColecao">
+            <mat-option *ngFor="let option of tipoColecaoOptions" [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </form>
 
-          <ng-container matColumnDef="acoes">
-            <th mat-header-cell *matHeaderCellDef>Ações</th>
-            <td mat-cell *matCellDef="let colecao" class="colecao-page__actions-cell">
-              <div class="colecao-page__actions">
-                <button type="button"
-                        mat-stroked-button
-                        color="primary"
-                        [disabled]="!canManageColecao(colecao)"
-                        (click)="editar(colecao)">
-                  <mat-icon>edit</mat-icon>
-                  Editar
-                </button>
-
-                <button type="button"
-                        mat-stroked-button
-                        color="warn"
-                        [disabled]="!canManageColecao(colecao) || deletingColecaoId === colecao.id"
-                        (click)="excluir(colecao)">
-                  <mat-icon>delete</mat-icon>
-                  {{ deletingColecaoId === colecao.id ? 'Excluindo...' : 'Excluir' }}
-                </button>
-              </div>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-        </table>
-
-        <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons></mat-paginator>
+      <div class="loading-state loading-state--inline" *ngIf="isLoading">
+        <app-loading-spinner message="Carregando coleções..."></app-loading-spinner>
       </div>
-    </ng-container>
 
-    <ng-template #emptyState>
-      <section class="colecao-page__empty-state">
-        <mat-icon>folder_copy</mat-icon>
-        <h3>Nenhuma coleção encontrada</h3>
-        <p>Cadastre coleções padrão ou personalizadas para reutilizar estruturas de integração.</p>
-      </section>
-    </ng-template>
-  </mat-card-content>
-</mat-card>
+      <ng-container *ngIf="!isLoading">
+        <div class="colecao-page__table" *ngIf="hasColecoes; else emptyState">
+          <div class="table-wrapper">
+            <table mat-table [dataSource]="dataSource" class="colecao-page__table-content">
+              <ng-container matColumnDef="nomeColecao">
+                <th mat-header-cell *matHeaderCellDef>Nome da Coleção</th>
+                <td mat-cell *matCellDef="let colecao">{{ colecao.nomeColecao }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="tipoColecao">
+                <th mat-header-cell *matHeaderCellDef>Tipo da Coleção</th>
+                <td mat-cell *matCellDef="let colecao">{{ getTipoColecaoLabel(colecao) }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="tipo">
+                <th mat-header-cell *matHeaderCellDef>Tipo</th>
+                <td mat-cell *matCellDef="let colecao">
+                  <div class="colecao-page__scope">
+                    <mat-chip-set>
+                      <mat-chip class="colecao-page__badge" [class.colecao-page__badge--padrao]="isPadrao(colecao)">
+                        {{ getEscopoLabel(colecao) }}
+                      </mat-chip>
+                    </mat-chip-set>
+                    <span class="colecao-page__scope-description">{{ getEscopoDescricao(colecao) }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="acoes">
+                <th mat-header-cell *matHeaderCellDef>Ações</th>
+                <td mat-cell *matCellDef="let colecao" class="colecao-page__actions-cell">
+                  <div class="colecao-page__actions">
+                    <button type="button"
+                            mat-stroked-button
+                            color="primary"
+                            [disabled]="!canManageColecao(colecao)"
+                            (click)="editar(colecao)">
+                      <mat-icon>edit</mat-icon>
+                      Editar
+                    </button>
+
+                    <button type="button"
+                            mat-stroked-button
+                            color="warn"
+                            [disabled]="!canManageColecao(colecao) || deletingColecaoId === colecao.id"
+                            (click)="excluir(colecao)">
+                      <mat-icon>delete</mat-icon>
+                      {{ deletingColecaoId === colecao.id ? 'Excluindo...' : 'Excluir' }}
+                    </button>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            </table>
+          </div>
+
+          <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons></mat-paginator>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyState>
+        <section class="colecao-page__empty-state">
+          <mat-icon>folder_copy</mat-icon>
+          <h3>Nenhuma coleção encontrada</h3>
+          <p>Cadastre coleções padrão ou personalizadas para reutilizar estruturas de integração.</p>
+        </section>
+      </ng-template>
+    </mat-card-content>
+  </mat-card>
+</div>

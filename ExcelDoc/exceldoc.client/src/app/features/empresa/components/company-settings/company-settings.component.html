@@ -20,6 +20,7 @@
               mat-flat-button
               color="primary"
               routerLink="/empresa/criar">
+        <mat-icon>add</mat-icon>
         Cadastrar empresa
       </button>
 
@@ -83,8 +84,7 @@
   <mat-card *ngIf="canShowForm" class="settings-card">
     <mat-card-content>
       <div class="loading-state loading-state--inline" *ngIf="loadingConfiguration">
-        <mat-spinner diameter="32"></mat-spinner>
-        <span>Carregando configuração...</span>
+        <app-loading-spinner message="Carregando configuração..."></app-loading-spinner>
       </div>
 
       <form class="settings-form" [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingConfiguration">
