@@ -15,6 +15,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
@@ -41,7 +42,8 @@ import { LoadingSpinnerComponent } from './components/loading-spinner/loading-sp
     MatSelectModule,
     MatSnackBarModule,
     MatTableModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MatTooltipModule
   ],
   exports: [
     CommonModule,
@@ -63,6 +65,7 @@ import { LoadingSpinnerComponent } from './components/loading-spinner/loading-sp
     MatSnackBarModule,
     MatTableModule,
     MatToolbarModule,
+    MatTooltipModule,
     LoadingSpinnerComponent,
     ConfirmDialogComponent
   ]

@@ -1,0 +1,158 @@
+<div class="mapeamento-editor-container">
+  <div class="header-bar">
+    <div class="header-left">
+      <button mat-icon-button (click)="voltar()" matTooltip="Voltar para coleções">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h2>Mapeamento de Campos</h2>
+      <span class="colecao-badge">Coleção #{{ colecaoId }}</span>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="fileInput.click()" matTooltip="Carregar Excel para preview dos valores">
+        <mat-icon>upload_file</mat-icon>
+        Preview Excel
+      </button>
+      <input #fileInput type="file" accept=".xlsx,.xls" hidden (change)="onExcelUpload($event)">
+    </div>
+  </div>
+
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div class="table-wrapper" *ngIf="!isLoading">
+    <table mat-table [dataSource]="rows" class="mapeamento-table">
+
+      <!-- NomeCampo -->
+      <ng-container matColumnDef="nomeCampo">
+        <th mat-header-cell *matHeaderCellDef>
+          Nome do Campo <span class="required-marker">*</span>
+          <mat-icon class="header-tooltip" matTooltip="Nome do campo no SAP (ex: CardCode)">info_outline</mat-icon>
+        </th>
+        <td mat-cell *matCellDef="let row; let i = index">
+          <mat-form-field appearance="outline" class="inline-field">
+            <input matInput [(ngModel)]="row.nomeCampo" (ngModelChange)="onFieldChange(row)"
+                   placeholder="Ex: CardCode" [class.field-error]="row.errors.nomeCampo">
+            <mat-error *ngIf="row.errors.nomeCampo">{{ row.errors.nomeCampo }}</mat-error>
+          </mat-form-field>
+        </td>
+      </ng-container>
+
+      <!-- DescricaoCampo -->
+      <ng-container matColumnDef="descricaoCampo">
+        <th mat-header-cell *matHeaderCellDef>
+          Descrição
+          <mat-icon class="header-tooltip" matTooltip="Descrição opcional do campo">info_outline</mat-icon>
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <mat-form-field appearance="outline" class="inline-field">
+            <input matInput [(ngModel)]="row.descricaoCampo" placeholder="Opcional">
+          </mat-form-field>
+        </td>
+      </ng-container>
+
+      <!-- IndiceColuna -->
+      <ng-container matColumnDef="indiceColuna">
+        <th mat-header-cell *matHeaderCellDef>
+          Coluna Excel <span class="required-marker">*</span>
+          <mat-icon class="header-tooltip" matTooltip="Posição da coluna no Excel (base 1)">info_outline</mat-icon>
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <mat-form-field appearance="outline" class="inline-field inline-field-sm">
+            <input matInput type="number" min="1" [(ngModel)]="row.indiceColuna"
+                   (ngModelChange)="onFieldChange(row)" placeholder="1"
+                   [class.field-error]="row.errors.indiceColuna">
+            <mat-error *ngIf="row.errors.indiceColuna">{{ row.errors.indiceColuna }}</mat-error>
+          </mat-form-field>
+        </td>
+      </ng-container>
+
+      <!-- TipoCampo -->
+      <ng-container matColumnDef="tipoCampo">
+        <th mat-header-cell *matHeaderCellDef>
+          Tipo <span class="required-marker">*</span>
+          <mat-icon class="header-tooltip" matTooltip="Tipo de dado do campo">info_outline</mat-icon>
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <mat-form-field appearance="outline" class="inline-field">
+            <mat-select [(ngModel)]="row.tipoCampo" (ngModelChange)="onFieldChange(row)"
+                        [class.field-error]="row.errors.tipoCampo" placeholder="Selecione">
+              <mat-option *ngFor="let opt of tipoCampoOptions" [value]="opt.value">
+                {{ opt.label }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="row.errors.tipoCampo">{{ row.errors.tipoCampo }}</mat-error>
+          </mat-form-field>
+        </td>
+      </ng-container>
+
+      <!-- Formato -->
+      <ng-container matColumnDef="formato">
+        <th mat-header-cell *matHeaderCellDef>
+          Formato
+          <mat-icon class="header-tooltip" matTooltip="Formato de data (apenas para DateTime)">info_outline</mat-icon>
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <mat-form-field appearance="outline" class="inline-field">
+            <input matInput [(ngModel)]="row.formato" (ngModelChange)="onFieldChange(row)"
+                   [disabled]="!isFormatoEnabled(row)"
+                   placeholder="yyyy-MM-dd"
+                   [class.field-error]="row.errors.formato">
+            <mat-error *ngIf="row.errors.formato">{{ row.errors.formato }}</mat-error>
+          </mat-form-field>
+        </td>
+      </ng-container>
+
+      <!-- Preview -->
+      <ng-container matColumnDef="preview">
+        <th mat-header-cell *matHeaderCellDef>
+          Preview
+          <mat-icon class="header-tooltip" matTooltip="Valor da primeira linha do Excel carregado">info_outline</mat-icon>
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <span class="preview-value" *ngIf="row.previewValue">{{ row.previewValue }}</span>
+          <span class="preview-empty" *ngIf="!row.previewValue && excelPreviewData.length > 0">—</span>
+        </td>
+      </ng-container>
+
+      <!-- Ações -->
+      <ng-container matColumnDef="acoes">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let row; let i = index">
+          <button mat-icon-button color="warn" (click)="removerCampo(i)"
+                  matTooltip="Remover campo">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+          [class.row-error]="row.errors.nomeCampo || row.errors.indiceColuna || row.errors.tipoCampo || row.errors.formato"
+          [class.row-new]="row.isNew"></tr>
+    </table>
+
+    <div class="empty-state" *ngIf="rows.length === 0">
+      <mat-icon>table_chart</mat-icon>
+      <p>Nenhum campo mapeado. Clique em "Adicionar Campo" para começar.</p>
+    </div>
+  </div>
+
+  <div class="action-bar" *ngIf="!isLoading">
+    <button mat-raised-button color="primary" (click)="adicionarCampo()">
+      <mat-icon>add</mat-icon>
+      Adicionar Campo
+    </button>
+
+    <div class="action-bar-right">
+      <button mat-stroked-button (click)="cancelar()" [disabled]="!hasChanges || isSaving">
+        Cancelar Alterações
+      </button>
+      <button mat-raised-button color="accent" (click)="salvar()"
+              [disabled]="isSaving || !hasChanges">
+        <mat-icon *ngIf="isSaving">
+          <mat-spinner diameter="18"></mat-spinner>
+        </mat-icon>
+        Salvar Tudo
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+.mapeamento-list-container {
+  padding: 24px;
+  text-align: center;
+}
+
+  .mapeamento-list-container h2 {
+    margin-bottom: 16px;
+  }
+
+  .mapeamento-list-container p {
+    margin-bottom: 24px;
+    color: #757575;
+  }
