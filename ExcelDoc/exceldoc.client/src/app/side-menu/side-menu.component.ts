@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AUTH_ROLES, AuthService } from '../auth/auth.service';
+import { AUTH_ROLES, AuthService } from '../services/auth.service';
 
 interface MenuItem {
   label: string;
@@ -17,8 +17,8 @@ interface MenuItem {
 export class SideMenuComponent {
   readonly menuItems: MenuItem[] = [
     {
-      label: 'Configurações das empresas',
-      description: 'Gerencie os dados de integração liberados para o seu perfil.',
+      label: 'Empresas',
+      description: '',
       icon: 'domain',
       route: '/configuracoes-empresa',
       roles: [AUTH_ROLES.administrator, AUTH_ROLES.user]

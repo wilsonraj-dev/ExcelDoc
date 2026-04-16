@@ -40,28 +40,56 @@
 }
 
 .side-menu__nav {
-  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.5rem;
   border-radius: 18px;
   background: rgba(15, 23, 42, 0.16);
 }
 
-:host ::ng-deep .side-menu__nav .mat-mdc-list-item {
+:host ::ng-deep .side-menu__link.mat-mdc-list-item {
+  width: 100%;
   min-height: 72px;
-  margin: 0.35rem 0;
   border-radius: 14px;
-  color: #e2e8f0;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  color: #ffffff;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  border: 1px solid transparent;
 }
 
-:host ::ng-deep .side-menu__nav .mat-mdc-list-item:hover,
-:host ::ng-deep .side-menu__nav .mat-mdc-list-item.is-active {
+:host ::ng-deep .side-menu__link .mdc-list-item__content {
+  align-self: center;
+}
+
+:host ::ng-deep .side-menu__link .mdc-list-item__primary-text,
+:host ::ng-deep .side-menu__link .mdc-list-item__secondary-text,
+:host ::ng-deep .side-menu__link [matListItemTitle],
+:host ::ng-deep .side-menu__link [matListItemLine] {
+  color: #ffffff;
+}
+
+:host ::ng-deep .side-menu__link:hover,
+:host ::ng-deep .side-menu__link.is-active {
   background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.08);
   color: #ffffff;
   transform: translateX(2px);
 }
 
+:host ::ng-deep .side-menu__link.is-active {
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.22);
+}
+
 :host ::ng-deep .side-menu__nav .mat-icon {
   color: inherit;
+}
+
+:host ::ng-deep .side-menu__icon {
+  color: #ffffff;
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
 }
 
 @media (max-width: 960px) {

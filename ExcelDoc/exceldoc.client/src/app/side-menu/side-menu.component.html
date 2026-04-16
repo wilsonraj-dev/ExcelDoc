@@ -6,12 +6,13 @@
   </div>
 
   <mat-nav-list class="side-menu__nav" aria-label="Menu lateral">
-    <a
-      mat-list-item
-      *ngFor="let item of availableMenuItems"
-      [routerLink]="item.route"
-      routerLinkActive="is-active">
-      <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+    <a class="side-menu__link"
+       mat-list-item
+       *ngFor="let item of availableMenuItems"
+       [routerLink]="item.route"
+       routerLinkActive="is-active"
+       [routerLinkActiveOptions]="{ exact: true }">
+      <mat-icon class="side-menu__icon" matListItemIcon>{{ item.icon }}</mat-icon>
       <span matListItemTitle>{{ item.label }}</span>
       <span matListItemLine>{{ item.description }}</span>
     </a>

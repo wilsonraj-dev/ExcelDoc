@@ -1,0 +1,42 @@
+<div class="create-company-page">
+  <div class="create-company-header">
+    <div>
+      <span class="create-company-header__eyebrow">Acesso administrador</span>
+      <h2>Criar empresa</h2>
+      <p>Cadastre novas empresas e siga para a tela de configuração logo após a criação.</p>
+    </div>
+  </div>
+
+  <p class="feedback feedback--error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p class="feedback feedback--success" *ngIf="successMessage">{{ successMessage }}</p>
+
+  <mat-card class="create-company-card" appearance="outlined">
+    <mat-card-content>
+      <form class="create-company-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="create-company-form__intro">
+          <div class="create-company-form__icon">
+            <mat-icon>add_business</mat-icon>
+          </div>
+
+          <div>
+            <h3>Nova empresa</h3>
+            <p>Informe o nome da empresa para registrá-la na plataforma.</p>
+          </div>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Nome da empresa</mat-label>
+          <input matInput formControlName="nomeEmpresa" maxlength="150" placeholder="Ex.: ExcelDoc Matriz" />
+          <mat-hint align="end">{{ nomeEmpresaControl.value.length }}/150</mat-hint>
+          <mat-error *ngIf="isInvalid()">Informe o nome da empresa.</mat-error>
+        </mat-form-field>
+
+        <div class="create-company-form__actions">
+          <button type="submit" mat-flat-button color="primary" [disabled]="isBusy">
+            {{ saving ? 'Salvando...' : 'Criar empresa' }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

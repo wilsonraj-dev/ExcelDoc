@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -19,6 +20,7 @@ import { CreateUserComponent } from './auth/create-user/create-user.component';
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { LoginComponent } from './auth/login/login.component';
 import { CompanySettingsComponent } from './company-settings/company-settings.component';
+import { CreateCompanyComponent } from './create-company/create-company.component';
 import { SideMenuComponent } from './side-menu/side-menu.component';
 
 @NgModule({
@@ -28,6 +30,7 @@ import { SideMenuComponent } from './side-menu/side-menu.component';
     CreateUserComponent,
     ForgotPasswordComponent,
     CompanySettingsComponent,
+    CreateCompanyComponent,
     SideMenuComponent
   ],
   imports: [
@@ -42,6 +45,7 @@ import { SideMenuComponent } from './side-menu/side-menu.component';
     MatIconModule,
     MatInputModule,
     MatListModule,
+    MatPaginatorModule,
     MatProgressSpinnerModule,
     MatTableModule,
     MatToolbarModule,

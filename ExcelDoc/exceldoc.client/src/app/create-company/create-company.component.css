@@ -1,0 +1,77 @@
+:host {
+  display: block
+}
+
+.create-company-page {
+  display: grid;
+  gap: 1.5rem
+}
+
+.create-company-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap
+}
+
+  .create-company-header h2 {
+    margin: .35rem 0 0;
+    font-size: 2rem
+  }
+
+  .create-company-header p, .create-company-form__intro p {
+    margin: .5rem 0 0;
+    color: #64748b
+  }
+
+.create-company-header__eyebrow {
+  display: inline-flex;
+  padding: .35rem .75rem;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: .78rem;
+  letter-spacing: .08em;
+  text-transform: uppercase
+}
+
+.create-company-card {
+  border-radius: 24px
+}
+
+.create-company-form {
+  display: grid;
+  gap: 1.5rem
+}
+
+.create-company-form__intro {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: center
+}
+
+  .create-company-form__intro h3 {
+    margin: 0
+  }
+
+.create-company-form__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: #2563eb;
+  color: #fff
+}
+
+.create-company-form__actions {
+  display: flex;
+  justify-content: flex-end
+}
+
+@media (max-width:720px) {
+  .create-company-form__actions button {
+    width: 100%
+  }
+}
