@@ -5,7 +5,7 @@
         <mat-icon>arrow_back</mat-icon>
       </button>
       <h2>Mapeamento de Campos</h2>
-      <span class="colecao-badge">Coleção #{{ colecaoId }}</span>
+      <span class="colecao-badge">{{ colecaoNome || 'Coleção #' + colecaoId }}</span>
     </div>
     <div class="header-actions">
       <button mat-stroked-button (click)="fileInput.click()" matTooltip="Carregar Excel para preview dos valores">

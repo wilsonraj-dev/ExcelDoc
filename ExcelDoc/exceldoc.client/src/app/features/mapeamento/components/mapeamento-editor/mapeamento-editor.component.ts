@@ -6,6 +6,7 @@ import { finalize, forkJoin } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { ColecaoService } from '../../../colecoes/services/colecao.service';
 import {
   MapeamentoCampo,
   MapeamentoCampoPayload,
@@ -28,6 +29,7 @@ export class MapeamentoEditorComponent implements OnInit {
   readonly tipoCampoOptions = TIPO_CAMPO_OPTIONS;
 
   colecaoId!: number;
+  colecaoNome = '';
   rows: MapeamentoCampoRow[] = [];
   originalRows: MapeamentoCampoRow[] = [];
   isLoading = false;
@@ -41,6 +43,7 @@ export class MapeamentoEditorComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly authService: AuthService,
+    private readonly colecaoService: ColecaoService,
     private readonly mapeamentoService: MapeamentoService,
     private readonly notificationService: NotificationService
   ) {
@@ -56,7 +59,17 @@ export class MapeamentoEditorComponent implements OnInit {
       return;
     }
 
+    this.loadColecao();
     this.loadMapeamentos();
+  }
+
+  loadColecao(): void {
+    this.colecaoService.getById(this.colecaoId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (colecao) => this.colecaoNome = colecao.nomeColecao,
+        error: () => this.colecaoNome = `Coleção #${this.colecaoId}`
+      });
   }
 
   get hasChanges(): boolean {

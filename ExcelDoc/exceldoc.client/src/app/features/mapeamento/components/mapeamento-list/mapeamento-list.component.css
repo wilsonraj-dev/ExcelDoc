@@ -1,13 +1,43 @@
 .mapeamento-list-container {
   padding: 24px;
-  text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
   .mapeamento-list-container h2 {
-    margin-bottom: 16px;
+    margin-bottom: 8px;
   }
 
-  .mapeamento-list-container p {
+  .mapeamento-list-container > p {
     margin-bottom: 24px;
     color: #757575;
+  }
+
+.colecoes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.colecao-card {
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+  .colecao-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+.empty-state {
+  text-align: center;
+  padding: 48px 16px;
+  color: #9e9e9e;
+}
+
+  .empty-state mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
   }

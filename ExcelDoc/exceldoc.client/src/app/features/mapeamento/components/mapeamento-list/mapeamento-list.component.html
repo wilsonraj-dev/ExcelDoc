@@ -1,8 +1,31 @@
 <div class="mapeamento-list-container">
   <h2>Mapeamento de Campos</h2>
-  <p>Selecione uma coleção na tela de Coleções para editar seus mapeamentos.</p>
-  <button mat-raised-button color="primary" routerLink="/colecoes">
-    <mat-icon>list</mat-icon>
-    Ir para Coleções
-  </button>
+  <p>Selecione uma coleção para gerenciar seus mapeamentos de campos.</p>
+
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div class="colecoes-grid" *ngIf="!isLoading">
+    <mat-card *ngFor="let colecao of colecoes" class="colecao-card" (click)="abrirMapeamento(colecao)">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>folder</mat-icon>
+        <mat-card-title>{{ colecao.nomeColecao }}</mat-card-title>
+        <mat-card-subtitle>ID: {{ colecao.id }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-actions>
+        <button mat-button color="primary">
+          <mat-icon>settings</mat-icon>
+          Configurar Campos
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && colecoes.length === 0">
+    <mat-icon>inbox</mat-icon>
+    <p>Nenhuma coleção encontrada. Crie uma coleção primeiro.</p>
+    <button mat-raised-button color="primary" routerLink="/colecoes/nova">
+      <mat-icon>add</mat-icon>
+      Nova Coleção
+    </button>
+  </div>
 </div>

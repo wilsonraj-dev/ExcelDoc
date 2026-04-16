@@ -12,9 +12,7 @@ export class MapeamentoService {
   constructor(private readonly httpService: HttpService) {}
 
   getByColecao(colecaoId: number): Observable<MapeamentoCampo[]> {
-    return this.httpService.get<MapeamentoCampo[]>(this.apiUrl, {
-      params: { colecaoId }
-    });
+    return this.httpService.get<MapeamentoCampo[]>(`${this.apiUrl}/colecao/${colecaoId}`);
   }
 
   create(mapeamento: MapeamentoCampoPayload): Observable<MapeamentoCampo> {
