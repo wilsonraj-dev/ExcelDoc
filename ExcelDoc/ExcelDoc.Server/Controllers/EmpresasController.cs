@@ -33,6 +33,7 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = AuthRoles.Administrador)]
         public async Task<IActionResult> Post([FromBody] EmpresaRequestDto request, CancellationToken cancellationToken)
         {
             try

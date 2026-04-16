@@ -4,8 +4,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
-import { AuthService, LoginResponse } from '../auth/auth.service';
-import { CreateCompanyService, EmpresaResponse } from './create-company.service';
+import { AuthService, LoginResponse } from '../services/auth.service';
+import { CreateCompanyService, EmpresaResponse } from '../services/create-company.service';
 
 @Component({
   selector: 'app-create-company',

@@ -6,8 +6,8 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
-import { AuthService, LoginResponse } from '../auth/auth.service';
-import { CompanySettingsService, ConfiguracaoRequest, ConfiguracaoResponse, EmpresaResponse } from './company-settings.service';
+import { AuthService, LoginResponse } from '../services/auth.service';
+import { CompanySettingsService, ConfiguracaoRequest, ConfiguracaoResponse, EmpresaResponse } from '../services/company-settings.service';
 
 interface CompanySettingsFormValue {
   linkServiceLayer: string;
