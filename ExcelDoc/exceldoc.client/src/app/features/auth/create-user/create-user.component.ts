@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { AuthService, RegisterResponse } from '../../services/auth.service';
+import { AuthService, RegisterResponse } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-create-user',

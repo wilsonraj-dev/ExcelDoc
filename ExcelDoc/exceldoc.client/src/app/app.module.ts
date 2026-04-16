@@ -15,13 +15,13 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { AuthInterceptor } from './auth/auth.interceptor';
-import { CreateUserComponent } from './auth/create-user/create-user.component';
-import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
-import { LoginComponent } from './auth/login/login.component';
-import { CompanySettingsComponent } from './company-settings/company-settings.component';
-import { CreateCompanyComponent } from './create-company/create-company.component';
-import { SideMenuComponent } from './side-menu/side-menu.component';
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { CreateUserComponent } from './features/auth/create-user/create-user.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
+import { LoginComponent } from './features/auth/login/login.component';
+import { CompanySettingsComponent } from './features/company-settings/company-settings.component';
+import { CreateCompanyComponent } from './features/create-company/create-company.component';
+import { SideMenuComponent } from './layout/side-menu/side-menu.component';
 
 @NgModule({
   declarations: [

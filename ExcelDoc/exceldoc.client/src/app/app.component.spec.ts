@@ -7,7 +7,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
-import { SideMenuComponent } from './side-menu/side-menu.component';
+import { SideMenuComponent } from './layout/side-menu/side-menu.component';
 
 describe('AppComponent', () => {
   let component: AppComponent;

@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AuthService, MessageResponse } from '../../services/auth.service';
+import { AuthService, MessageResponse } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-forgot-password',

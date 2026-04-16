@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AUTH_ROLES, AuthService } from '../services/auth.service';
+import { AUTH_ROLES, AuthService } from '../../core/services/auth.service';
 
 interface MenuItem {
   label: string;

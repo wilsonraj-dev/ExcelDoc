@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthGuard } from './auth/auth.guard';
-import { AUTH_ROLES } from './services/auth.service';
-import { CreateUserComponent } from './auth/create-user/create-user.component';
-import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
-import { LoginComponent } from './auth/login/login.component';
-import { CompanySettingsComponent } from './company-settings/company-settings.component';
-import { CreateCompanyComponent } from './create-company/create-company.component';
+import { AuthGuard } from './core/guards/auth.guard';
+import { AUTH_ROLES } from './core/services/auth.service';
+import { CreateUserComponent } from './features/auth/create-user/create-user.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
+import { LoginComponent } from './features/auth/login/login.component';
+import { CompanySettingsComponent } from './features/company-settings/company-settings.component';
+import { CreateCompanyComponent } from './features/create-company/create-company.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
