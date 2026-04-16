@@ -9,6 +9,5 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\app\core\models\" />
-    <Folder Include="src\app\features\documentos\components\documentos-home\" />
   </ItemGroup>
 </Project>

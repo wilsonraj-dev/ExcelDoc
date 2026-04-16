@@ -8,16 +8,6 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { DocumentoPayload } from '../../models/documento.model';
 import { DocumentoService } from '../../services/documento.service';
 
-function endpointValidator(control: AbstractControl<string | null>): ValidationErrors | null {
-  const value = control.value?.trim() ?? '';
-
-  if (!value) {
-    return null;
-  }
-
-  return value.startsWith('/') ? null : { endpointPrefix: true };
-}
-
 @Component({
   selector: 'app-documento-form',
   templateUrl: './documento-form.component.html',
@@ -26,7 +16,7 @@ function endpointValidator(control: AbstractControl<string | null>): ValidationE
 export class DocumentoFormComponent implements OnInit {
   readonly form = new FormGroup({
     nomeDocumento: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    endpoint: new FormControl('', { nonNullable: true, validators: [Validators.required, endpointValidator] })
+    endpoint: new FormControl('', { nonNullable: true, validators: [Validators.required] })
   });
 
   apiError = '';
@@ -89,10 +79,6 @@ export class DocumentoFormComponent implements OnInit {
       return controlName === 'nomeDocumento'
         ? 'Informe o nome do documento.'
         : 'Informe o endpoint do documento.';
-    }
-
-    if (control.hasError('endpointPrefix')) {
-      return 'O endpoint deve começar com "/".';
     }
 
     return 'Campo inválido.';

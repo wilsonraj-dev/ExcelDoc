@@ -128,11 +128,6 @@ namespace ExcelDoc.Server.Services
             {
                 throw new InvalidOperationException("Endpoint do documento é obrigatório.");
             }
-
-            if (!endpoint.StartsWith('/'))
-            {
-                throw new InvalidOperationException("Endpoint do documento deve começar com '/'.");
-            }
         }
 
         private static DocumentoResponseDto Map(Documento documento)

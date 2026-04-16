@@ -34,20 +34,24 @@
           <ng-container matColumnDef="acoes">
             <th mat-header-cell *matHeaderCellDef>Ações</th>
             <td mat-cell *matCellDef="let documento" class="documento-page__actions-cell">
-              <button type="button" mat-stroked-button color="primary" (click)="editar(documento)">
-                <mat-icon>edit</mat-icon>
-                Editar
-              </button>
+              <div class="documento-page__actions">
+                <button type="button"
+                        mat-stroked-button
+                        color="primary"
+                        (click)="editar(documento)">
+                  <mat-icon>edit</mat-icon>
+                  Editar
+                </button>
 
-              <button
-                type="button"
-                mat-stroked-button
-                color="warn"
-                [disabled]="deletingDocumentoId === documento.id"
-                (click)="excluir(documento)">
-                <mat-icon>delete</mat-icon>
-                {{ deletingDocumentoId === documento.id ? 'Excluindo...' : 'Excluir' }}
-              </button>
+                <button type="button"
+                        mat-stroked-button
+                        color="warn"
+                        [disabled]="deletingDocumentoId === documento.id"
+                        (click)="excluir(documento)">
+                  <mat-icon>delete</mat-icon>
+                  {{ deletingDocumentoId === documento.id ? 'Excluindo...' : 'Excluir' }}
+                </button>
+              </div>
             </td>
           </ng-container>
 

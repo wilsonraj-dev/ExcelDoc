@@ -31,10 +31,17 @@
   gap: 1rem;
 }
 
-.documento-page__actions-cell {
+.documento-page__actions {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+.documento-page__actions-cell {
+  align-items: center;
+  flex-wrap: wrap;
+  vertical-align: middle;
 }
 
 .documento-page__empty-state {
