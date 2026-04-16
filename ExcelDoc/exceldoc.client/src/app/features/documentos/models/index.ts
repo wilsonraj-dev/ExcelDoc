@@ -1,4 +1,1 @@
-export interface DocumentoItem {
-  id: string;
-  nome: string;
-}
+export * from './documento.model';

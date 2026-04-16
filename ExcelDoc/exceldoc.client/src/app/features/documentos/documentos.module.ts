@@ -1,10 +1,11 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../../shared/shared.module';
-import { DocumentosHomeComponent } from './components/documentos-home/documentos-home.component';
+import { DocumentoFormComponent } from './components/documento-form/documento-form.component';
+import { DocumentoListComponent } from './components/documento-list/documento-list.component';
 import { DocumentosRoutingModule } from './documentos-routing.module';
 
 @NgModule({
-  declarations: [DocumentosHomeComponent],
+  declarations: [DocumentoListComponent, DocumentoFormComponent],
   imports: [SharedModule, DocumentosRoutingModule]
 })
-export class DocumentosModule {}
+export class DocumentosModule { }

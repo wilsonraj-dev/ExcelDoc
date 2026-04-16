@@ -1,0 +1,70 @@
+<mat-card class="documento-page" appearance="outlined">
+  <mat-card-header class="documento-page__header">
+    <div>
+      <mat-card-title>Cadastro de documentos</mat-card-title>
+      <mat-card-subtitle>Gerencie os documentos disponíveis para processamento.</mat-card-subtitle>
+    </div>
+
+    <button type="button" mat-flat-button color="primary" (click)="novoDocumento()">
+      <mat-icon>add</mat-icon>
+      Novo Documento
+    </button>
+  </mat-card-header>
+
+  <mat-card-content class="documento-page__content">
+    <p class="documento-page__error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+    <div class="documento-page__loading" *ngIf="isLoading">
+      <app-loading-spinner message="Carregando documentos..."></app-loading-spinner>
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+      <div class="documento-page__table" *ngIf="hasDocumentos; else emptyState">
+        <table mat-table [dataSource]="dataSource">
+          <ng-container matColumnDef="nomeDocumento">
+            <th mat-header-cell *matHeaderCellDef>Nome do Documento</th>
+            <td mat-cell *matCellDef="let documento">{{ documento.nomeDocumento }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="endpoint">
+            <th mat-header-cell *matHeaderCellDef>Endpoint</th>
+            <td mat-cell *matCellDef="let documento">{{ documento.endpoint }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="acoes">
+            <th mat-header-cell *matHeaderCellDef>Ações</th>
+            <td mat-cell *matCellDef="let documento" class="documento-page__actions-cell">
+              <button type="button" mat-stroked-button color="primary" (click)="editar(documento)">
+                <mat-icon>edit</mat-icon>
+                Editar
+              </button>
+
+              <button
+                type="button"
+                mat-stroked-button
+                color="warn"
+                [disabled]="deletingDocumentoId === documento.id"
+                (click)="excluir(documento)">
+                <mat-icon>delete</mat-icon>
+                {{ deletingDocumentoId === documento.id ? 'Excluindo...' : 'Excluir' }}
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+
+        <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons></mat-paginator>
+      </div>
+    </ng-container>
+
+    <ng-template #emptyState>
+      <section class="documento-page__empty-state">
+        <mat-icon>description</mat-icon>
+        <h3>Nenhum documento cadastrado</h3>
+        <p>Cadastre o primeiro documento para disponibilizar novos endpoints no sistema.</p>
+      </section>
+    </ng-template>
+  </mat-card-content>
+</mat-card>

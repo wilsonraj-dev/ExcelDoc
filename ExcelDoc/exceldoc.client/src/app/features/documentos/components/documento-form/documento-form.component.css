@@ -1,0 +1,51 @@
+:host {
+  display: block;
+}
+
+.documento-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.documento-form__content {
+  display: grid;
+}
+
+.documento-form__fields {
+  display: grid;
+  gap: 1rem;
+}
+
+.documento-form__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.documento-form__loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.documento-form__error {
+  background: rgba(239, 68, 68, 0.12);
+  border-radius: 0.75rem;
+  color: #b91c1c;
+  margin: 0;
+  padding: 0.75rem 1rem;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .documento-form__actions {
+    flex-direction: column-reverse;
+  }
+
+    .documento-form__actions button {
+      width: 100%;
+    }
+}
