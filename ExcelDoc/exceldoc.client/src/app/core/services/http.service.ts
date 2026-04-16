@@ -1,6 +1,12 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+
+type HttpQueryParamValue = string | number | boolean | ReadonlyArray<string | number | boolean>;
+
+export interface HttpRequestOptions {
+  params?: HttpParams | Record<string, HttpQueryParamValue>;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -8,8 +14,8 @@ import { Observable } from 'rxjs';
 export class HttpService {
   constructor(private readonly httpClient: HttpClient) { }
 
-  get<T>(url: string): Observable<T> {
-    return this.httpClient.get<T>(url);
+  get<T>(url: string, options?: HttpRequestOptions): Observable<T> {
+    return this.httpClient.get<T>(url, options);
   }
 
   post<TResponse, TRequest>(url: string, body: TRequest): Observable<TResponse> {
