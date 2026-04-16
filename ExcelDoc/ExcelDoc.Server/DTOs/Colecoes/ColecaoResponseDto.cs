@@ -1,4 +1,5 @@
 using ExcelDoc.Server.Models;
+using ExcelDoc.Server.DTOs.Documentos;
 
 namespace ExcelDoc.Server.DTOs.Colecoes
 {
@@ -13,6 +14,10 @@ namespace ExcelDoc.Server.DTOs.Colecoes
         public int? EmpresaId { get; set; }
 
         public bool PadraoSistema => !EmpresaId.HasValue;
+
+        public IReadOnlyCollection<int> DocumentoIds { get; set; } = Array.Empty<int>();
+
+        public IReadOnlyCollection<DocumentoResponseDto> Documentos { get; set; } = Array.Empty<DocumentoResponseDto>();
 
         public IReadOnlyCollection<MapeamentoCampoResponseDto> Campos { get; set; } = Array.Empty<MapeamentoCampoResponseDto>();
     }

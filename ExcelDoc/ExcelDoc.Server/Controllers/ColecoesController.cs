@@ -19,11 +19,39 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] int empresaId, CancellationToken cancellationToken)
+        public async Task<IActionResult> Get([FromQuery] int? empresaId, CancellationToken cancellationToken)
         {
             try
             {
                 var result = await _colecaoService.GetByEmpresaIdAsync(empresaId, cancellationToken);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ToActionResult(ex);
+            }
+        }
+
+        [HttpGet("{colecaoId:int}")]
+        public async Task<IActionResult> GetById(int colecaoId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await _colecaoService.GetByIdAsync(colecaoId, cancellationToken);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ToActionResult(ex);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] ColecaoRequestDto request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await _colecaoService.CriarAsync(request, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -39,6 +67,34 @@ namespace ExcelDoc.Server.Controllers
             {
                 var result = await _colecaoService.ClonePadraoAsync(request, cancellationToken);
                 return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ToActionResult(ex);
+            }
+        }
+
+        [HttpPut("{colecaoId:int}")]
+        public async Task<IActionResult> Put(int colecaoId, [FromBody] ColecaoRequestDto request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await _colecaoService.AtualizarAsync(colecaoId, request, cancellationToken);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ToActionResult(ex);
+            }
+        }
+
+        [HttpDelete("{colecaoId:int}")]
+        public async Task<IActionResult> Delete(int colecaoId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _colecaoService.ExcluirAsync(colecaoId, cancellationToken);
+                return NoContent();
             }
             catch (Exception ex)
             {
