@@ -1,10 +1,18 @@
 export enum TipoCampo {
-  String = 'String',
-  Int = 'Int',
-  Double = 'Double',
-  DateTime = 'DateTime',
-  Boolean = 'Boolean'
+  String = 1,
+  Int = 2,
+  Double = 3,
+  DateTime = 4,
+  Boolean = 5
 }
+
+export const TIPO_CAMPO_LABELS: Record<TipoCampo, string> = {
+  [TipoCampo.String]: 'String',
+  [TipoCampo.Int]: 'Int',
+  [TipoCampo.Double]: 'Double',
+  [TipoCampo.DateTime]: 'DateTime',
+  [TipoCampo.Boolean]: 'Boolean'
+};
 
 export const TIPO_CAMPO_OPTIONS: readonly { label: string; value: TipoCampo }[] = [
   { label: 'String', value: TipoCampo.String },
@@ -28,7 +36,7 @@ export interface MapeamentoCampoPayload {
   nomeCampo: string;
   descricaoCampo: string | null;
   indiceColuna: number;
-  tipoCampo: string;
+  tipoCampo: number;
   formato: string | null;
   fk_IdColecao: number;
 }

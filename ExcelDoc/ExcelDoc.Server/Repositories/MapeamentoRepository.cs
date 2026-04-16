@@ -30,11 +30,12 @@ namespace ExcelDoc.Server.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
-        public Task<bool> ExistsIndiceNaColecaoAsync(int colecaoId, int indiceColuna, int? ignoreId = null, CancellationToken cancellationToken = default)
+        public Task<bool> ExistsIndiceNaColecaoAsync(int colecaoId, int indiceColuna, string nomeCampo, int? ignoreId = null, CancellationToken cancellationToken = default)
         {
             return _context.MapeamentoCampos.AnyAsync(
                 x => x.FK_IdColecao == colecaoId
                     && x.IndiceColuna == indiceColuna
+                    && x.NomeCampo != nomeCampo
                     && (!ignoreId.HasValue || x.Id != ignoreId.Value),
                 cancellationToken);
         }

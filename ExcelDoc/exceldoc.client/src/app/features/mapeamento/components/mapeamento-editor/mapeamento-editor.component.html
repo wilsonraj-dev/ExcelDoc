@@ -58,7 +58,7 @@
         <td mat-cell *matCellDef="let row">
           <mat-form-field appearance="outline" class="inline-field inline-field-sm">
             <input matInput type="number" min="1" [(ngModel)]="row.indiceColuna"
-                   (ngModelChange)="onFieldChange(row)" placeholder="1"
+                   (ngModelChange)="onFieldChange(row)" placeholder="Ex: 1"
                    [class.field-error]="row.errors.indiceColuna">
             <mat-error *ngIf="row.errors.indiceColuna">{{ row.errors.indiceColuna }}</mat-error>
           </mat-form-field>
@@ -94,7 +94,7 @@
           <mat-form-field appearance="outline" class="inline-field">
             <input matInput [(ngModel)]="row.formato" (ngModelChange)="onFieldChange(row)"
                    [disabled]="!isFormatoEnabled(row)"
-                   placeholder="yyyy-MM-dd"
+                   placeholder="Ex: yyyy-MM-dd"
                    [class.field-error]="row.errors.formato">
             <mat-error *ngIf="row.errors.formato">{{ row.errors.formato }}</mat-error>
           </mat-form-field>

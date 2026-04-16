@@ -172,7 +172,15 @@ export class MapeamentoEditorComponent implements OnInit {
     this.validateAll();
 
     if (this.hasErrors) {
-      this.notificationService.showError('Corrija os erros antes de salvar.');
+      const messages: string[] = [];
+      for (const row of this.rows) {
+        const label = row.nomeCampo?.trim() || `Linha ${this.rows.indexOf(row) + 1}`;
+        if (row.errors.nomeCampo) messages.push(`${label}: ${row.errors.nomeCampo}`);
+        if (row.errors.indiceColuna) messages.push(`${label}: ${row.errors.indiceColuna}`);
+        if (row.errors.tipoCampo) messages.push(`${label}: ${row.errors.tipoCampo}`);
+        if (row.errors.formato) messages.push(`${label}: ${row.errors.formato}`);
+      }
+      this.notificationService.showError(messages.length > 0 ? messages.join(' | ') : 'Corrija os erros antes de salvar.');
       return;
     }
 
@@ -297,7 +305,7 @@ export class MapeamentoEditorComponent implements OnInit {
       nomeCampo: row.nomeCampo.trim(),
       descricaoCampo: row.descricaoCampo?.trim() || null,
       indiceColuna: row.indiceColuna!,
-      tipoCampo: row.tipoCampo as string,
+      tipoCampo: row.tipoCampo as number,
       formato: row.tipoCampo === TipoCampo.DateTime ? (row.formato?.trim() || null) : null,
       fk_IdColecao: this.colecaoId
     };

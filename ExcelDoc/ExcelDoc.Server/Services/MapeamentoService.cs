@@ -122,7 +122,7 @@ namespace ExcelDoc.Server.Services
                 throw new InvalidOperationException("Formato é obrigatório quando o tipo do campo é DateTime.");
             }
 
-            if (await _mapeamentoRepository.ExistsIndiceNaColecaoAsync(request.FK_IdColecao, request.IndiceColuna, ignoreId, cancellationToken))
+            if (await _mapeamentoRepository.ExistsIndiceNaColecaoAsync(request.FK_IdColecao, request.IndiceColuna, request.NomeCampo, ignoreId, cancellationToken))
             {
                 throw new InvalidOperationException($"Já existe um campo com o índice de coluna {request.IndiceColuna} nesta coleção.");
             }
