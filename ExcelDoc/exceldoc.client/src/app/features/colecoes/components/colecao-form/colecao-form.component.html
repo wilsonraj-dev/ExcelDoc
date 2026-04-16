@@ -1,0 +1,76 @@
+<mat-card class="colecao-form" appearance="outlined">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+    <mat-card-subtitle>{{ pageSubtitle }}</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content class="colecao-form__content">
+    <div class="colecao-form__loading" *ngIf="isLoading">
+      <app-loading-spinner message="Carregando coleção..."></app-loading-spinner>
+    </div>
+
+    <form class="colecao-form__fields" [formGroup]="form" (ngSubmit)="submit()" *ngIf="!isLoading">
+      <p class="colecao-form__error" *ngIf="apiError">{{ apiError }}</p>
+      <p class="colecao-form__error" *ngIf="documentoError">{{ documentoError }}</p>
+      <p class="colecao-form__info" *ngIf="permissionMessage">{{ permissionMessage }}</p>
+      <p class="colecao-form__warning" *ngIf="hasCompanyScopeUnavailable">
+        O usuário atual não possui empresa vinculada para salvar uma coleção customizada.
+      </p>
+
+      <div class="colecao-form__grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Nome da coleção</mat-label>
+          <input matInput formControlName="nomeColecao" placeholder="Ex.: Itens padrão da nota fiscal" />
+          <mat-error *ngIf="isInvalid('nomeColecao')">{{ getErrorMessage('nomeColecao') }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo da coleção</mat-label>
+          <mat-select formControlName="tipoColecao">
+            <mat-option *ngFor="let option of tipoColecaoOptions" [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="isInvalid('tipoColecao')">{{ getErrorMessage('tipoColecao') }}</mat-error>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Documentos vinculados</mat-label>
+        <mat-select formControlName="documentoIds" multiple>
+          <mat-select-trigger>{{ selectedDocumentosLabel }}</mat-select-trigger>
+          <mat-option *ngFor="let documento of documentos" [value]="documento.id">
+            {{ documento.nomeDocumento }}
+          </mat-option>
+        </mat-select>
+        <mat-hint>{{ documentosHint }}</mat-hint>
+      </mat-form-field>
+
+      <section class="colecao-form__scope">
+        <div>
+          <h3>Escopo da coleção</h3>
+          <p>{{ escopoBadgeDescription }}</p>
+        </div>
+
+        <mat-chip-set>
+          <mat-chip class="colecao-form__badge" [class.colecao-form__badge--padrao]="isColecaoPadraoSelecionada">
+            {{ escopoBadgeLabel }}
+          </mat-chip>
+        </mat-chip-set>
+      </section>
+
+      <mat-checkbox *ngIf="isAdministrator" formControlName="criarComoPadrao">
+        Criar como coleção padrão
+      </mat-checkbox>
+
+      <div class="colecao-form__actions">
+        <button type="button" mat-stroked-button (click)="cancel()" [disabled]="isSaving">
+          Cancelar
+        </button>
+        <button type="submit" mat-flat-button color="primary" [disabled]="!canSubmit">
+          {{ submitLabel }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

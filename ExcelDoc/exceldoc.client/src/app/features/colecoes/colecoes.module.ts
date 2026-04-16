@@ -1,10 +1,11 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../../shared/shared.module';
-import { ColecoesHomeComponent } from './components/colecoes-home/colecoes-home.component';
+import { ColecaoFormComponent } from './components/colecao-form/colecao-form.component';
+import { ColecaoListComponent } from './components/colecao-list/colecao-list.component';
 import { ColecoesRoutingModule } from './colecoes-routing.module';
 
 @NgModule({
-  declarations: [ColecoesHomeComponent],
+  declarations: [ColecaoListComponent, ColecaoFormComponent],
   imports: [SharedModule, ColecoesRoutingModule]
 })
 export class ColecoesModule {}

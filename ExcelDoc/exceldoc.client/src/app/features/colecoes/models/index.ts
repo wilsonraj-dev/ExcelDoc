@@ -1,4 +1,1 @@
-export interface ColecaoItem {
-  id: string;
-  nome: string;
-}
+export * from './colecao.model';
