@@ -7,6 +7,7 @@ interface MenuItem {
   icon: string;
   route: string;
   roles: string[];
+  exact?: boolean;
 }
 
 @Component({
@@ -17,10 +18,49 @@ interface MenuItem {
 export class SideMenuComponent {
   readonly menuItems: MenuItem[] = [
     {
+      label: 'Dashboard',
+      description: 'Visão geral inicial da plataforma.',
+      icon: 'dashboard',
+      route: '/dashboard',
+      roles: [AUTH_ROLES.administrator, AUTH_ROLES.user],
+      exact: true
+    },
+    {
       label: 'Empresas',
-      description: '',
+      description: 'Gerencie cadastros e configurações.',
       icon: 'domain',
-      route: '/configuracoes-empresa',
+      route: '/empresa',
+      roles: [AUTH_ROLES.administrator, AUTH_ROLES.user]
+    },
+    {
+      label: 'Documentos',
+      description: 'Centralize o fluxo documental.',
+      icon: 'description',
+      route: '/documentos',
+      roles: [AUTH_ROLES.administrator, AUTH_ROLES.user],
+      exact: true
+    },
+    {
+      label: 'Coleções',
+      description: 'Organize conjuntos reutilizáveis.',
+      icon: 'folder_copy',
+      route: '/colecoes',
+      roles: [AUTH_ROLES.administrator, AUTH_ROLES.user],
+      exact: true
+    },
+    {
+      label: 'Mapeamento',
+      description: 'Defina regras e relacionamentos.',
+      icon: 'map',
+      route: '/mapeamento',
+      roles: [AUTH_ROLES.administrator, AUTH_ROLES.user],
+      exact: true
+    },
+    {
+      label: 'Processamento',
+      description: 'Acompanhe execuções e etapas.',
+      icon: 'settings_slow_motion',
+      route: '/processamento',
       roles: [AUTH_ROLES.administrator, AUTH_ROLES.user]
     }
   ];

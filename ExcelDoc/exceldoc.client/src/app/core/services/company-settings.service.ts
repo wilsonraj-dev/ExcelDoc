@@ -1,25 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { ConfiguracaoRequest, ConfiguracaoResponse, EmpresaResponse } from '../../features/empresa/models/empresa.models';
 
-export interface EmpresaResponse {
-  id: number;
-  nomeEmpresa: string;
-}
-
-export interface ConfiguracaoRequest {
-  empresaId: number;
-  linkServiceLayer: string;
-  database: string;
-  usuarioBanco: string;
-  senhaBanco: string;
-  usuarioSAP: string;
-  senhaSAP: string;
-}
-
-export interface ConfiguracaoResponse extends ConfiguracaoRequest {
-  id: number;
-}
+export { type ConfiguracaoRequest, type ConfiguracaoResponse, type EmpresaResponse } from '../../features/empresa/models/empresa.models';
 
 @Injectable({
   providedIn: 'root'

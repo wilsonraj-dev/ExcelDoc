@@ -62,6 +62,26 @@ input {
   color: #075985;
 }
 
+.error-snackbar,
+.info-snackbar,
+.success-snackbar {
+  --mdc-snackbar-container-color: #0f172a;
+  --mat-snack-bar-button-color: #ffffff;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+.error-snackbar {
+  --mdc-snackbar-container-color: #991b1b;
+}
+
+.info-snackbar {
+  --mdc-snackbar-container-color: #075985;
+}
+
+.success-snackbar {
+  --mdc-snackbar-container-color: #166534;
+}
+
 .company-list__item.mat-mdc-list-item {
   min-height: 72px;
   margin-top: 0.35rem;

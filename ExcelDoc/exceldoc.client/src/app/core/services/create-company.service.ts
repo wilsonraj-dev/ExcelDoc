@@ -1,15 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { EmpresaRequest, EmpresaResponse } from '../../features/empresa/models/empresa.models';
 
-export interface EmpresaRequest {
-  nomeEmpresa: string;
-}
-
-export interface EmpresaResponse {
-  id: number;
-  nomeEmpresa: string;
-}
+export { type EmpresaRequest, type EmpresaResponse } from '../../features/empresa/models/empresa.models';
 
 @Injectable({
   providedIn: 'root'

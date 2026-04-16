@@ -1,52 +1,27 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
+import {
+  AUTH_ROLES,
+  ForgotPasswordRequest,
+  LoginRequest,
+  LoginResponse,
+  MessageResponse,
+  RegisterRequest,
+  RegisterResponse,
+  ResetPasswordRequest
+} from '../../features/auth/models/auth.models';
 
-export const AUTH_ROLES = {
-  administrator: 'Administrador',
-  user: 'Usuario'
-} as const;
-
-export interface LoginRequest {
-  login: string;
-  senha: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  expiresAtUtc: string;
-  usuarioId: number;
-  nomeUsuario: string;
-  tipoUsuario: string;
-  nomeEmpresa?: string | null;
-  empresaId?: number | null;
-}
-
-export interface RegisterRequest {
-  nomeUsuario: string;
-  email: string;
-  senha: string;
-}
-
-export interface RegisterResponse {
-  usuarioId: number;
-  nomeUsuario: string;
-  email: string;
-}
-
-export interface ForgotPasswordRequest {
-  email: string;
-}
-
-export interface ResetPasswordRequest {
-  email: string;
-  codigo: string;
-  novaSenha: string;
-}
-
-export interface MessageResponse {
-  message: string;
-}
+export {
+  AUTH_ROLES,
+  type ForgotPasswordRequest,
+  type LoginRequest,
+  type LoginResponse,
+  type MessageResponse,
+  type RegisterRequest,
+  type RegisterResponse,
+  type ResetPasswordRequest
+} from '../../features/auth/models/auth.models';
 
 @Injectable({
   providedIn: 'root'
@@ -121,7 +96,7 @@ export class AuthService {
 
   getDefaultRoute(session: LoginResponse | null = this.getSession()): string {
     if (this.hasRequiredRoles([AUTH_ROLES.administrator, AUTH_ROLES.user], session)) {
-      return '/configuracoes-empresa';
+      return '/dashboard';
     }
 
     return '/login';

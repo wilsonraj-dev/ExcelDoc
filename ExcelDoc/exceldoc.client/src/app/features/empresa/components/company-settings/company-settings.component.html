@@ -1,0 +1,142 @@
+<div class="settings-page">
+  <div class="settings-header">
+    <div>
+      <h2>{{ pageTitle }}</h2>
+      <p *ngIf="selectedEmpresa; else defaultDescription">
+        Crie ou atualize os dados de integração da empresa selecionada.
+      </p>
+      <ng-template #defaultDescription>
+        <p *ngIf="isAdministrator; else commonUserDescription">
+          Visualize as empresas cadastradas e abra a configuração desejada.
+        </p>
+        <ng-template #commonUserDescription>
+          Gerencie a configuração da empresa vinculada ao seu usuário.
+        </ng-template>
+      </ng-template>
+    </div>
+
+    <div class="settings-header__actions" *ngIf="isAdministrator">
+      <button type="button"
+              mat-flat-button
+              color="primary"
+              routerLink="/empresa/criar">
+        Cadastrar empresa
+      </button>
+
+      <button *ngIf="selectedEmpresa"
+              type="button"
+              mat-stroked-button
+              color="primary"
+              (click)="voltarParaEmpresas()">
+        Voltar para empresas
+      </button>
+    </div>
+  </div>
+
+  <p class="feedback feedback--error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p class="feedback feedback--info" *ngIf="infoMessage">{{ infoMessage }}</p>
+  <p class="feedback feedback--success" *ngIf="successMessage">{{ successMessage }}</p>
+
+  <div class="loading-state" *ngIf="loadingEmpresas && !empresas.length">
+    <mat-spinner diameter="36"></mat-spinner>
+    <span>Carregando empresas...</span>
+  </div>
+
+  <mat-card *ngIf="isAdministrator && !selectedEmpresa" class="settings-card">
+    <mat-card-content>
+      <div class="table-wrapper" *ngIf="empresas.length; else noCompaniesTemplate">
+        <table mat-table [dataSource]="empresasDataSource" class="settings-table">
+          <ng-container matColumnDef="nomeEmpresa">
+            <th mat-header-cell *matHeaderCellDef>Empresa</th>
+            <td mat-cell *matCellDef="let empresa">{{ empresa.nomeEmpresa }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="acoes">
+            <th mat-header-cell *matHeaderCellDef>Ações</th>
+            <td mat-cell *matCellDef="let empresa">
+              <button type="button"
+                      mat-flat-button
+                      color="primary"
+                      (click)="visualizarConfiguracao(empresa)">
+                Visualizar configuração
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+
+        <mat-paginator [pageSize]="pageSizeOptions[0]"
+                       [pageSizeOptions]="pageSizeOptions"
+                       showFirstLastButtons
+                       aria-label="Paginação da lista de empresas">
+        </mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <ng-template #noCompaniesTemplate>
+    <p class="empty-state">Nenhuma empresa disponível para configuração.</p>
+  </ng-template>
+
+  <mat-card *ngIf="canShowForm" class="settings-card">
+    <mat-card-content>
+      <div class="loading-state loading-state--inline" *ngIf="loadingConfiguration">
+        <mat-spinner diameter="32"></mat-spinner>
+        <span>Carregando configuração...</span>
+      </div>
+
+      <form class="settings-form" [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingConfiguration">
+        <div class="settings-form__company">
+          <span class="settings-form__label">Empresa</span>
+          <strong>{{ selectedEmpresa?.nomeEmpresa }}</strong>
+        </div>
+
+        <div class="settings-form__grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Link Service Layer</mat-label>
+            <input matInput formControlName="linkServiceLayer" maxlength="500" />
+            <mat-error *ngIf="isInvalid('linkServiceLayer')">Informe o link do Service Layer.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Database</mat-label>
+            <input matInput formControlName="database" maxlength="150" />
+            <mat-error *ngIf="isInvalid('database')">Informe o database.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Usuário do banco</mat-label>
+            <input matInput formControlName="usuarioBanco" maxlength="500" />
+            <mat-error *ngIf="isInvalid('usuarioBanco')">Informe o usuário do banco.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Senha do banco</mat-label>
+            <input matInput type="password" formControlName="senhaBanco" maxlength="500" />
+            <mat-error *ngIf="isInvalid('senhaBanco')">Informe a senha do banco.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Usuário SAP</mat-label>
+            <input matInput formControlName="usuarioSAP" maxlength="500" />
+            <mat-error *ngIf="isInvalid('usuarioSAP')">Informe o usuário SAP.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Senha SAP</mat-label>
+            <input matInput type="password" formControlName="senhaSAP" maxlength="500" />
+            <mat-error *ngIf="isInvalid('senhaSAP')">Informe a senha SAP.</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="settings-form__actions">
+          <button type="submit" mat-flat-button color="primary" [disabled]="isBusy">
+            {{ submitLabel }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
