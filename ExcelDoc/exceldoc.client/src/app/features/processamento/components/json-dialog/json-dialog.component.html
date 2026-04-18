@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>JSON — Linha {{ data.linhaExcel }}</h2>
+
+<mat-dialog-content>
+  <h4>JSON Enviado</h4>
+  <pre class="json-block">{{ formattedEnviado }}</pre>
+
+  <h4>JSON Retorno</h4>
+  <pre class="json-block">{{ formattedRetorno }}</pre>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Fechar</button>
+</mat-dialog-actions>

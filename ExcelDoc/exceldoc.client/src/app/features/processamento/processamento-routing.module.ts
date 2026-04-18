@@ -1,9 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ProcessamentoHomeComponent } from './components/processamento-home/processamento-home.component';
+import { ProcessamentoDetalheComponent } from './components/processamento-detalhe/processamento-detalhe.component';
+import { ProcessamentoListComponent } from './components/processamento-list/processamento-list.component';
+import { ProcessamentoUploadComponent } from './components/processamento-upload/processamento-upload.component';
 
 const routes: Routes = [
-  { path: '', component: ProcessamentoHomeComponent }
+  { path: '', component: ProcessamentoListComponent },
+  { path: 'upload', component: ProcessamentoUploadComponent },
+  { path: ':id', component: ProcessamentoDetalheComponent }
 ];
 
 @NgModule({

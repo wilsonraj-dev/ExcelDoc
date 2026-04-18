@@ -1,4 +1,1 @@
-export interface ProcessamentoItem {
-  id: string;
-  status: string;
-}
+export * from './processamento.model';

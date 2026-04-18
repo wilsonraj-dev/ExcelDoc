@@ -1,0 +1,37 @@
+<section class="feature-page">
+  <h2>Importar Planilha</h2>
+
+  <mat-card>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="processar()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Documento</mat-label>
+          <mat-select formControlName="documentoId">
+            <mat-option *ngFor="let doc of documentos" [value]="doc.id">
+              {{ doc.nomeDocumento }}
+            </mat-option>
+          </mat-select>
+          <mat-error>Selecione um documento.</mat-error>
+        </mat-form-field>
+
+        <div class="file-upload-area">
+          <button type="button" mat-stroked-button (click)="fileInput.click()">
+            <mat-icon>upload_file</mat-icon>
+            Selecionar arquivo .xlsx
+          </button>
+          <input #fileInput type="file" accept=".xlsx" hidden (change)="onFileSelected($event)" />
+          <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+          <span class="file-name file-name--empty" *ngIf="!selectedFile">Nenhum arquivo selecionado</span>
+        </div>
+
+        <div class="actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="!isFormValid || isLoading">
+            <mat-icon>play_arrow</mat-icon>
+            Processar
+          </button>
+          <mat-spinner *ngIf="isLoading" diameter="24"></mat-spinner>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</section>

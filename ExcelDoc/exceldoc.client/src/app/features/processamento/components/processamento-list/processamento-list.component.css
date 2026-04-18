@@ -1,0 +1,56 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-field {
+  width: 180px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status-sucesso {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-erro {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.status-processando {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.inline-spinner {
+  display: inline-block;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}

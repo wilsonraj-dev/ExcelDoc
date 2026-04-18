@@ -1,0 +1,26 @@
+.full-width {
+  width: 100%;
+}
+
+.file-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #333;
+}
+
+.file-name--empty {
+  color: #999;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}

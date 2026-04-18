@@ -1,0 +1,84 @@
+<section class="feature-page">
+  <div class="page-header">
+    <h2>Processamentos</h2>
+    <div class="header-actions">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Filtrar por status</mat-label>
+        <mat-select (selectionChange)="applyStatusFilter($event.value)" [value]="statusFilter">
+          <mat-option value="">Todos</mat-option>
+          <mat-option value="Processando">Processando</mat-option>
+          <mat-option value="Sucesso">Sucesso</mat-option>
+          <mat-option value="Erro">Erro</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="novoProcessamento()">
+        <mat-icon>upload_file</mat-icon>
+        Nova Importação
+      </button>
+    </div>
+  </div>
+
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <mat-card *ngIf="!isLoading">
+    <mat-card-content>
+      <p *ngIf="!hasData">Nenhum processamento encontrado.</p>
+
+      <table mat-table [dataSource]="dataSource" *ngIf="hasData" class="full-width">
+        <ng-container matColumnDef="nomeArquivo">
+          <th mat-header-cell *matHeaderCellDef>Arquivo</th>
+          <td mat-cell *matCellDef="let row">{{ row.nomeArquivo }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="dataExecucao">
+          <th mat-header-cell *matHeaderCellDef>Data</th>
+          <td mat-cell *matCellDef="let row">{{ row.dataExecucao | date:'dd/MM/yyyy HH:mm' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-badge" [ngClass]="getStatusClass(row.status)">
+              <mat-spinner *ngIf="row.status === 'Processando'" diameter="14" class="inline-spinner"></mat-spinner>
+              {{ row.status }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalRegistros">
+          <th mat-header-cell *matHeaderCellDef>Total</th>
+          <td mat-cell *matCellDef="let row">{{ row.totalRegistros }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalSucesso">
+          <th mat-header-cell *matHeaderCellDef>Sucesso</th>
+          <td mat-cell *matCellDef="let row">{{ row.totalSucesso }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalErro">
+          <th mat-header-cell *matHeaderCellDef>Erros</th>
+          <td mat-cell *matCellDef="let row">{{ row.totalErro }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="acoes">
+          <th mat-header-cell *matHeaderCellDef>Ações</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="action-buttons">
+              <button mat-icon-button color="primary" matTooltip="Ver detalhes" (click)="verDetalhes(row)">
+                <mat-icon>visibility</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator *ngIf="hasData"
+        [pageSizeOptions]="pageSizeOptions"
+        showFirstLastButtons>
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
+</section>
