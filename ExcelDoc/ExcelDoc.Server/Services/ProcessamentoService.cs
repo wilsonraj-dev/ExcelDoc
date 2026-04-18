@@ -96,10 +96,10 @@ namespace ExcelDoc.Server.Services
                 HashArquivo = hash
             };
 
-            entity.Documento = documento;
-
             await _processamentoRepository.AddAsync(entity, cancellationToken);
             await _processamentoRepository.SaveChangesAsync(cancellationToken);
+
+            entity.Documento = documento;
 
             await _backgroundTaskQueue.EnqueueAsync(new ProcessamentoQueueItem
             {
