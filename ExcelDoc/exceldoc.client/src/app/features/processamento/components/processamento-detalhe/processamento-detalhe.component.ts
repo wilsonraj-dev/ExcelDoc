@@ -18,6 +18,22 @@ import { JsonDialogComponent, JsonDialogData } from '../json-dialog/json-dialog.
   styleUrl: './processamento-detalhe.component.css'
 })
 export class ProcessamentoDetalheComponent implements OnInit {
+  private static readonly processamentoStatusMap: Record<string, string> = {
+    '1': 'Processando',
+    '2': 'Sucesso',
+    '3': 'Erro',
+    Processando: 'Processando',
+    Sucesso: 'Sucesso',
+    Erro: 'Erro'
+  };
+
+  private static readonly itemStatusMap: Record<string, string> = {
+    '1': 'Sucesso',
+    '2': 'Erro',
+    Sucesso: 'Sucesso',
+    Erro: 'Erro'
+  };
+
   processamento: Processamento | null = null;
   readonly itensColumns: string[] = ['linhaExcel', 'status', 'mensagemErro', 'acoes'];
   readonly itensDataSource = new MatTableDataSource<ProcessamentoItem>([]);
@@ -44,7 +60,7 @@ export class ProcessamentoDetalheComponent implements OnInit {
     private readonly dialog: MatDialog,
     private readonly processamentoService: ProcessamentoService,
     private readonly notificationService: NotificationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.processamentoId = Number(this.route.snapshot.paramMap.get('id'));
@@ -54,7 +70,7 @@ export class ProcessamentoDetalheComponent implements OnInit {
   }
 
   get isProcessando(): boolean {
-    return this.processamento?.status === 'Processando';
+    return this.getProcessamentoStatusLabel(this.processamento?.status) === 'Processando';
   }
 
   get progressoPercentual(): number {
@@ -85,7 +101,7 @@ export class ProcessamentoDetalheComponent implements OnInit {
   }
 
   baixarErros(): void {
-    const erros = this.itensDataSource.data.filter((i) => i.status === 'Erro');
+    const erros = this.itensDataSource.data.filter((i) => this.getItemStatusLabel(i.status) === 'Erro');
     if (erros.length === 0) {
       this.notificationService.showInfo('Nenhum registro com erro.');
       return;
@@ -100,8 +116,32 @@ export class ProcessamentoDetalheComponent implements OnInit {
     URL.revokeObjectURL(url);
   }
 
-  getItemStatusClass(status: string): string {
-    return status === 'Erro' ? 'status-erro' : 'status-sucesso';
+  getProcessamentoStatusLabel(status: string | number | undefined): string {
+    if (status === undefined || status === null) {
+      return '—';
+    }
+
+    return ProcessamentoDetalheComponent.processamentoStatusMap[String(status)] ?? String(status);
+  }
+
+  getProcessamentoStatusClass(status: string | number | undefined): string {
+    return this.getProcessamentoStatusLabel(status) === 'Erro'
+      ? 'status-erro'
+      : this.getProcessamentoStatusLabel(status) === 'Sucesso'
+        ? 'status-sucesso'
+        : 'status-processando';
+  }
+
+  getItemStatusLabel(status: string | number | undefined): string {
+    if (status === undefined || status === null) {
+      return '—';
+    }
+
+    return ProcessamentoDetalheComponent.itemStatusMap[String(status)] ?? String(status);
+  }
+
+  getItemStatusClass(status: string | number): string {
+    return this.getItemStatusLabel(status) === 'Erro' ? 'status-erro' : 'status-sucesso';
   }
 
   private loadProcessamento(): void {
@@ -144,7 +184,7 @@ export class ProcessamentoDetalheComponent implements OnInit {
     ).subscribe({
       next: (data) => {
         this.processamento = data;
-        if (data.status !== 'Processando') {
+        if (this.getProcessamentoStatusLabel(data.status) !== 'Processando') {
           this.stopPolling$.next();
           this.loadItens();
         }

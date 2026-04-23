@@ -19,7 +19,7 @@ export class SideMenuComponent {
   readonly menuItems: MenuItem[] = [
     {
       label: 'Dashboard',
-      description: 'Visão geral inicial da plataforma.',
+      description: 'Visão geral inicial',
       icon: 'dashboard',
       route: '/dashboard',
       roles: [AUTH_ROLES.administrator, AUTH_ROLES.user],
