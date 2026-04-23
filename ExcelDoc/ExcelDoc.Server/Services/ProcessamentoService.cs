@@ -7,13 +7,14 @@ using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Options;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace ExcelDoc.Server.Services
 {
     public class ProcessamentoService : IProcessamentoService
     {
+        private const string RequestPayloadKey = "RequestPayload";
+        private const string ResponseBodyKey = "ResponseBody";
         private readonly IBackgroundTaskQueue _backgroundTaskQueue;
         private readonly IDocumentoRepository _documentoRepository;
         private readonly IArquivoStorageService _arquivoStorageService;
@@ -167,10 +168,12 @@ namespace ExcelDoc.Server.Services
             };
         }
 
-        public async Task MarcarErroFinalAsync(int processamentoId, string erroDetalhado, CancellationToken cancellationToken = default)
+        public async Task MarcarErroFinalAsync(int processamentoId, Exception exception, CancellationToken cancellationToken = default)
         {
             var processamento = await _processamentoRepository.GetForExecutionAsync(processamentoId, cancellationToken)
                 ?? throw new KeyNotFoundException("Processamento não encontrado.");
+
+            var erroDetalhado = exception.ToString();
 
             processamento.Status = StatusProcessamento.Erro;
             processamento.TotalErro = Math.Max(1, processamento.TotalErro);
@@ -179,13 +182,18 @@ namespace ExcelDoc.Server.Services
             {
                 FK_IdProcessamento = processamento.Id,
                 LinhaExcel = 0,
-                JsonEnviado = JsonSerializer.Serialize(new { processamento.Id }),
-                JsonRetorno = null,
+                JsonEnviado = GetExceptionData(exception, RequestPayloadKey) ?? JsonSerializer.Serialize(new { processamento.Id }),
+                JsonRetorno = GetExceptionData(exception, ResponseBodyKey) ?? exception.Message,
                 Erro = erroDetalhado.Length > 4000 ? erroDetalhado[..4000] : erroDetalhado,
                 Status = StatusProcessamentoItem.Erro
             }, cancellationToken);
 
             await _processamentoRepository.SaveChangesAsync(cancellationToken);
+        }
+
+        private static string? GetExceptionData(Exception exception, string key)
+        {
+            return exception.Data.Contains(key) ? exception.Data[key]?.ToString() : null;
         }
 
         private static ProcessamentoResponseDto Map(Processamento processamento)

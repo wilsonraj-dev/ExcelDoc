@@ -12,7 +12,8 @@ namespace ExcelDoc.Server.Services
 {
     public class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
     {
-        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+        private const string RequestPayloadKey = "RequestPayload";
+        private const string ResponseBodyKey = "ResponseBody";
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<SapServiceLayerClient> _logger;
         private readonly TokenBucketRateLimiter _rateLimiter;
@@ -39,14 +40,10 @@ namespace ExcelDoc.Server.Services
 
         public async Task<SapSession> LoginAsync(Configuracao configuracao, CancellationToken cancellationToken = default)
         {
-            using var lease = await _rateLimiter.AcquireAsync(1, cancellationToken);
-            if (!lease.IsAcquired)
-            {
-                throw new InvalidOperationException("Não foi possível obter permissão para login no SAP.");
-            }
-
             using var client = _httpClientFactory.CreateClient("sap-service-layer");
             client.BaseAddress = NormalizeBaseAddress(configuracao.LinkServiceLayer);
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var request = new
             {
@@ -55,18 +52,36 @@ namespace ExcelDoc.Server.Services
                 Password = configuracao.SenhaSAP
             };
 
-            var response = await client.PostAsync("Login", new StringContent(JsonSerializer.Serialize(request, JsonOptions), Encoding.UTF8, "application/json"), cancellationToken);
+            var requestJson = JsonSerializer.Serialize(request);
+            var requestLogJson = JsonSerializer.Serialize(new
+            {
+                request.CompanyDB,
+                request.UserName,
+                Password = "***"
+            });
+
+            var response = await client.PostAsync("Login", new StringContent(requestJson, Encoding.UTF8, "application/json"), cancellationToken);
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("Falha no login do SAP. StatusCode={StatusCode} Body={Body}", response.StatusCode, responseContent);
-                throw new HttpRequestException($"Falha ao autenticar no SAP Service Layer: {responseContent}");
+                throw CreateHttpRequestException($"Falha ao autenticar no SAP Service Layer: {responseContent}", requestLogJson, responseContent);
             }
+
+            using var document = JsonDocument.Parse(responseContent);
+            var sessionId = document.RootElement.TryGetProperty("SessionId", out var sessionIdProperty)
+                ? sessionIdProperty.GetString()
+                : null;
 
             var cookieHeader = string.Join("; ", response.Headers.TryGetValues("Set-Cookie", out var cookies)
                 ? cookies.Select(x => x.Split(';', StringSplitOptions.RemoveEmptyEntries)[0])
                 : Array.Empty<string>());
+
+            if (string.IsNullOrWhiteSpace(cookieHeader) && !string.IsNullOrWhiteSpace(sessionId))
+            {
+                cookieHeader = $"B1SESSION={sessionId}";
+            }
 
             if (string.IsNullOrWhiteSpace(cookieHeader))
             {
@@ -96,15 +111,30 @@ namespace ExcelDoc.Server.Services
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("Erro no envio ao SAP. Endpoint={Endpoint} StatusCode={StatusCode} Body={Body}", endpoint, response.StatusCode, body);
-                throw new HttpRequestException($"Erro no SAP Service Layer: {body}");
+                throw CreateHttpRequestException($"Erro no SAP Service Layer: {body}", payload, body);
             }
 
             return body;
         }
 
+        private static HttpRequestException CreateHttpRequestException(string message, string requestPayload, string responseBody)
+        {
+            var exception = new HttpRequestException(message);
+            exception.Data[RequestPayloadKey] = requestPayload;
+            exception.Data[ResponseBodyKey] = responseBody;
+            return exception;
+        }
+
         private static Uri NormalizeBaseAddress(string linkServiceLayer)
         {
-            var normalized = linkServiceLayer.EndsWith('/') ? linkServiceLayer : $"{linkServiceLayer}/";
+            var normalized = linkServiceLayer.TrimEnd('/');
+
+            if (!normalized.Contains("/b1s/", StringComparison.OrdinalIgnoreCase))
+            {
+                normalized = $"{normalized}/b1s/v1";
+            }
+
+            normalized = $"{normalized}/";
             return new Uri(normalized, UriKind.Absolute);
         }
 

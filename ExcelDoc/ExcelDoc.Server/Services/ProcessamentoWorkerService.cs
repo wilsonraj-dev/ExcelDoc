@@ -7,6 +7,8 @@ namespace ExcelDoc.Server.Services
 {
     public class ProcessamentoWorkerService : IProcessamentoWorkerService
     {
+        private const string RequestPayloadKey = "RequestPayload";
+        private const string ResponseBodyKey = "ResponseBody";
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
         private readonly IConfiguracaoRepository _configuracaoRepository;
         private readonly IEncryptionService _encryptionService;
@@ -45,7 +47,7 @@ namespace ExcelDoc.Server.Services
             var sapConfig = DecryptConfiguration(configuracao);
             var sapSession = await _sapServiceLayerClient.LoginAsync(sapConfig, cancellationToken);
             var rows = await _excelReaderService.ReadRowsAsync(item.FilePath, cancellationToken);
-            var dataRows = rows.Skip(1).ToList();
+            var dataRows = rows.Skip(2).ToList();
 
             processamento.TotalRegistros = dataRows.Count;
             processamento.TotalErro = 0;
@@ -80,7 +82,10 @@ namespace ExcelDoc.Server.Services
                 {
                     var errorText = ex.ToString();
                     itemLog.Erro = errorText.Length > 4000 ? errorText[..4000] : errorText;
-                    itemLog.JsonEnviado = itemLog.JsonEnviado == string.Empty ? JsonSerializer.Serialize(new { Row = row.RowNumber }, JsonOptions) : itemLog.JsonEnviado;
+                    itemLog.JsonEnviado = itemLog.JsonEnviado == string.Empty
+                        ? GetExceptionData(ex, RequestPayloadKey) ?? JsonSerializer.Serialize(new { Row = row.RowNumber }, JsonOptions)
+                        : itemLog.JsonEnviado;
+                    itemLog.JsonRetorno ??= GetExceptionData(ex, ResponseBodyKey) ?? ex.Message;
                     processamento.TotalErro++;
 
                     _logger.LogError(ex, "Erro ao processar linha {LinhaExcel} do processamento {ProcessamentoId}", row.RowNumber, processamento.Id);
@@ -94,6 +99,11 @@ namespace ExcelDoc.Server.Services
             await _processamentoRepository.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Processamento {ProcessamentoId} finalizado. Sucesso={TotalSucesso} Erro={TotalErro}", processamento.Id, processamento.TotalSucesso, processamento.TotalErro);
+        }
+
+        private static string? GetExceptionData(Exception exception, string key)
+        {
+            return exception.Data.Contains(key) ? exception.Data[key]?.ToString() : null;
         }
 
         private Configuracao DecryptConfiguration(Configuracao configuracao)
