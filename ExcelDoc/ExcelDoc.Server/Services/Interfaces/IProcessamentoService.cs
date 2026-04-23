@@ -13,6 +13,6 @@ namespace ExcelDoc.Server.Services.Interfaces
 
         Task<PagedResultDto<ProcessamentoItemResponseDto>> GetItemsPagedAsync(int processamentoId, ProcessamentoItensQueryDto query, CancellationToken cancellationToken = default);
 
-        Task MarcarErroFinalAsync(int processamentoId, string erroDetalhado, CancellationToken cancellationToken = default);
+        Task MarcarErroFinalAsync(int processamentoId, Exception exception, CancellationToken cancellationToken = default);
     }
 }

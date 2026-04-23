@@ -56,7 +56,7 @@ namespace ExcelDoc.Server.Background
 
                     using var scope = _serviceScopeFactory.CreateScope();
                     var processamentoService = scope.ServiceProvider.GetRequiredService<IProcessamentoService>();
-                    await processamentoService.MarcarErroFinalAsync(item.ProcessamentoId, ex.ToString(), stoppingToken);
+                    await processamentoService.MarcarErroFinalAsync(item.ProcessamentoId, ex, stoppingToken);
                 }
             }
         }
