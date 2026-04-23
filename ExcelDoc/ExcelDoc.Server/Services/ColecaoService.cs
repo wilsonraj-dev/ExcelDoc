@@ -128,82 +128,6 @@ namespace ExcelDoc.Server.Services
             }
         }
 
-        public async Task<ColecaoResponseDto> ClonePadraoAsync(CloneColecaoRequestDto request, CancellationToken cancellationToken = default)
-        {
-            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
-
-            var colecaoPadrao = await _colecaoRepository.GetByIdWithMappingsAsync(request.ColecaoPadraoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Coleção padrão não encontrada.");
-
-            if (colecaoPadrao.FK_IdEmpresa.HasValue)
-            {
-                throw new InvalidOperationException("Somente coleções padrão do sistema podem ser clonadas.");
-            }
-
-            var novaColecao = new Colecao
-            {
-                NomeColecao = request.NomeColecao.Trim(),
-                TipoColecao = colecaoPadrao.TipoColecao,
-                FK_IdEmpresa = request.EmpresaId,
-                Mapeamentos = colecaoPadrao.Mapeamentos.Select(x => new Mapeamento
-                {
-                    Nome = x.Nome,
-                    FK_IdEmpresa = request.EmpresaId,
-                    IsPadrao = x.IsPadrao,
-                    DataCriacao = DateTime.UtcNow,
-                    Campos = x.Campos.Select(campo => new MapeamentoCampo
-                    {
-                        IndiceColuna = campo.IndiceColuna,
-                        NomeCampo = campo.NomeCampo,
-                        DescricaoCampo = campo.DescricaoCampo,
-                        TipoCampo = campo.TipoCampo,
-                        Formato = campo.Formato
-                    }).ToList()
-                }).ToList()
-            };
-
-            await _colecaoRepository.AddAsync(novaColecao, cancellationToken);
-            await _colecaoRepository.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Coleção padrão {ColecaoPadraoId} clonada para empresa {EmpresaId} pelo usuário {UsuarioId}", request.ColecaoPadraoId, request.EmpresaId, usuario.Id);
-
-            return Map(novaColecao);
-        }
-
-        public async Task<ColecaoResponseDto> AtualizarMapeamentosAsync(int colecaoId, AtualizarMapeamentosRequestDto request, CancellationToken cancellationToken = default)
-        {
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
-
-            var colecao = await _colecaoRepository.GetByIdWithMappingsAsync(colecaoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Coleção não encontrada.");
-
-            if (colecao.FK_IdEmpresa != request.EmpresaId)
-            {
-                throw new InvalidOperationException("Apenas coleções customizadas da empresa podem ser alteradas.");
-            }
-
-            var mapeamentoPadrao = ObterOuCriarMapeamentoPadrao(colecao);
-            mapeamentoPadrao.Campos.Clear();
-
-            foreach (var campo in request.Campos.OrderBy(x => x.IndiceColuna))
-            {
-                mapeamentoPadrao.Campos.Add(new MapeamentoCampo
-                {
-                    IndiceColuna = campo.IndiceColuna,
-                    NomeCampo = campo.NomeCampo.Trim(),
-                    DescricaoCampo = campo.DescricaoCampo.Trim(),
-                    TipoCampo = campo.TipoCampo,
-                    Formato = campo.Formato?.Trim()
-                });
-            }
-
-            await _colecaoRepository.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Mapeamentos da coleção {ColecaoId} atualizados para empresa {EmpresaId}", colecaoId, request.EmpresaId);
-
-            return Map(colecao);
-        }
-
         private async Task ValidarColecaoAsync(string nomeColecao, TipoColecao tipoColecao, int? empresaId, int? ignoreId, IReadOnlyCollection<int> documentoIds, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(nomeColecao))
@@ -361,26 +285,6 @@ namespace ExcelDoc.Server.Services
                     })
                     .ToList()
             };
-        }
-
-        private static Mapeamento ObterOuCriarMapeamentoPadrao(Colecao colecao)
-        {
-            var mapeamentoPadrao = colecao.Mapeamentos.FirstOrDefault(x => x.IsPadrao);
-            if (mapeamentoPadrao is not null)
-            {
-                return mapeamentoPadrao;
-            }
-
-            mapeamentoPadrao = new Mapeamento
-            {
-                Nome = $"Mapeamento padrão - {colecao.NomeColecao}",
-                FK_IdEmpresa = colecao.FK_IdEmpresa,
-                IsPadrao = true,
-                DataCriacao = DateTime.UtcNow
-            };
-
-            colecao.Mapeamentos.Add(mapeamentoPadrao);
-            return mapeamentoPadrao;
         }
 
         private static IReadOnlyCollection<MapeamentoCampo> ObterCamposDoMapeamentoPadrao(Colecao colecao)

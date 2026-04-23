@@ -1,3 +1,4 @@
+using ExcelDoc.Server.DTOs.Colecoes;
 using ExcelDoc.Server.DTOs.Mapeamentos;
 using ExcelDoc.Server.Security;
 using ExcelDoc.Server.Services.Interfaces;
@@ -60,12 +61,40 @@ namespace ExcelDoc.Server.Controllers
             }
         }
 
+        [HttpPost("clonar-padrao")]
+        public async Task<IActionResult> ClonePadrao([FromBody] CloneColecaoRequestDto request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await _mapeamentoService.ClonePadraoAsync(request, cancellationToken);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ToActionResult(ex);
+            }
+        }
+
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] MapeamentoRequestDto request, CancellationToken cancellationToken)
         {
             try
             {
                 var result = await _mapeamentoService.AtualizarAsync(id, request, cancellationToken);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ToActionResult(ex);
+            }
+        }
+
+        [HttpPut("colecao/{colecaoId:int}")]
+        public async Task<IActionResult> PutMapeamentos(int colecaoId, [FromBody] AtualizarMapeamentosRequestDto request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await _mapeamentoService.AtualizarMapeamentosAsync(colecaoId, request, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)

@@ -1,3 +1,5 @@
+using ExcelDoc.Server.DTOs.Colecoes;
+using ExcelDoc.Server.DTOs.Documentos;
 using ExcelDoc.Server.DTOs.Mapeamentos;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
@@ -9,6 +11,7 @@ namespace ExcelDoc.Server.Services
     {
         private readonly IMapeamentoRepository _mapeamentoRepository;
         private readonly IUsuarioAcessoService _usuarioAcessoService;
+        private readonly ILogger<MapeamentoService> _logger;
 
         public MapeamentoService(
             IMapeamentoRepository mapeamentoRepository,
@@ -17,6 +20,7 @@ namespace ExcelDoc.Server.Services
         {
             _mapeamentoRepository = mapeamentoRepository;
             _usuarioAcessoService = usuarioAcessoService;
+            _logger = logger;
         }
 
         public async Task<IReadOnlyCollection<MapeamentoResponseDto>> GetByColecaoAsync(int colecaoId, CancellationToken cancellationToken = default)
@@ -108,6 +112,82 @@ namespace ExcelDoc.Server.Services
             await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
         }
 
+        public async Task<ColecaoResponseDto> ClonePadraoAsync(CloneColecaoRequestDto request, CancellationToken cancellationToken = default)
+        {
+            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
+
+            var colecaoPadrao = await _mapeamentoRepository.GetColecaoByIdWithMappingsAsync(request.ColecaoPadraoId, cancellationToken)
+                ?? throw new KeyNotFoundException("Coleção padrão não encontrada.");
+
+            if (colecaoPadrao.FK_IdEmpresa.HasValue)
+            {
+                throw new InvalidOperationException("Somente coleções padrão do sistema podem ser clonadas.");
+            }
+
+            var novaColecao = new Colecao
+            {
+                NomeColecao = request.NomeColecao.Trim(),
+                TipoColecao = colecaoPadrao.TipoColecao,
+                FK_IdEmpresa = request.EmpresaId,
+                Mapeamentos = colecaoPadrao.Mapeamentos.Select(x => new Mapeamento
+                {
+                    Nome = x.Nome,
+                    FK_IdEmpresa = request.EmpresaId,
+                    IsPadrao = x.IsPadrao,
+                    DataCriacao = DateTime.UtcNow,
+                    Campos = x.Campos.Select(campo => new MapeamentoCampo
+                    {
+                        IndiceColuna = campo.IndiceColuna,
+                        NomeCampo = campo.NomeCampo,
+                        DescricaoCampo = campo.DescricaoCampo,
+                        TipoCampo = campo.TipoCampo,
+                        Formato = campo.Formato
+                    }).ToList()
+                }).ToList()
+            };
+
+            await _mapeamentoRepository.AddColecaoAsync(novaColecao, cancellationToken);
+            await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Coleção padrão {ColecaoPadraoId} clonada para empresa {EmpresaId} pelo usuário {UsuarioId}", request.ColecaoPadraoId, request.EmpresaId, usuario.Id);
+
+            return MapColecao(novaColecao);
+        }
+
+        public async Task<ColecaoResponseDto> AtualizarMapeamentosAsync(int colecaoId, AtualizarMapeamentosRequestDto request, CancellationToken cancellationToken = default)
+        {
+            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
+
+            var colecao = await _mapeamentoRepository.GetColecaoByIdWithMappingsAsync(colecaoId, cancellationToken)
+                ?? throw new KeyNotFoundException("Coleção não encontrada.");
+
+            if (colecao.FK_IdEmpresa != request.EmpresaId)
+            {
+                throw new InvalidOperationException("Apenas coleções customizadas da empresa podem ser alteradas.");
+            }
+
+            var mapeamentoPadrao = ObterOuCriarMapeamentoPadrao(colecao);
+            mapeamentoPadrao.Campos.Clear();
+
+            foreach (var campo in request.Campos.OrderBy(x => x.IndiceColuna))
+            {
+                mapeamentoPadrao.Campos.Add(new MapeamentoCampo
+                {
+                    IndiceColuna = campo.IndiceColuna,
+                    NomeCampo = campo.NomeCampo.Trim(),
+                    DescricaoCampo = campo.DescricaoCampo.Trim(),
+                    TipoCampo = campo.TipoCampo,
+                    Formato = campo.Formato?.Trim()
+                });
+            }
+
+            await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Mapeamentos da coleção {ColecaoId} atualizados para empresa {EmpresaId}", colecaoId, request.EmpresaId);
+
+            return MapColecao(colecao);
+        }
+
         private async Task ValidarMapeamentoAsync(MapeamentoRequestDto request, int mapeamentoId, int? ignoreId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(request.NomeCampo))
@@ -155,6 +235,26 @@ namespace ExcelDoc.Server.Services
             return mapeamentoPadrao;
         }
 
+        private static Mapeamento ObterOuCriarMapeamentoPadrao(Colecao colecao)
+        {
+            var mapeamentoPadrao = colecao.Mapeamentos.FirstOrDefault(x => x.IsPadrao);
+            if (mapeamentoPadrao is not null)
+            {
+                return mapeamentoPadrao;
+            }
+
+            mapeamentoPadrao = new Mapeamento
+            {
+                Nome = $"Mapeamento padrão - {colecao.NomeColecao}",
+                FK_IdEmpresa = colecao.FK_IdEmpresa,
+                IsPadrao = true,
+                DataCriacao = DateTime.UtcNow
+            };
+
+            colecao.Mapeamentos.Add(mapeamentoPadrao);
+            return mapeamentoPadrao;
+        }
+
         private static void EnsureCanAccessColecao(Usuario usuario, Colecao colecao)
         {
             if (usuario.TipoUsuario == TipoUsuario.Administrador)
@@ -197,6 +297,54 @@ namespace ExcelDoc.Server.Services
                 FK_IdMapeamento = mapeamento.FK_IdMapeamento,
                 NomeMapeamento = mapeamento.Mapeamento.Nome
             };
+        }
+
+        private static ColecaoResponseDto MapColecao(Colecao colecao)
+        {
+            var campos = ObterCamposDoMapeamentoPadrao(colecao);
+
+            return new ColecaoResponseDto
+            {
+                Id = colecao.Id,
+                NomeColecao = colecao.NomeColecao,
+                TipoColecao = colecao.TipoColecao,
+                EmpresaId = colecao.FK_IdEmpresa,
+                DocumentoIds = colecao.DocumentoColecoes
+                    .Select(x => x.FK_IdDocumento)
+                    .Distinct()
+                    .OrderBy(x => x)
+                    .ToList(),
+                Documentos = colecao.DocumentoColecoes
+                    .Where(x => x.Documento is not null)
+                    .Select(x => new DocumentoResponseDto
+                    {
+                        Id = x.Documento!.Id,
+                        NomeDocumento = x.Documento.NomeDocumento,
+                        Endpoint = x.Documento.Endpoint
+                    })
+                    .OrderBy(x => x.NomeDocumento)
+                    .ToList(),
+                Campos = campos
+                    .OrderBy(x => x.IndiceColuna)
+                    .Select(x => new MapeamentoCampoResponseDto
+                    {
+                        Id = x.Id,
+                        IndiceColuna = x.IndiceColuna,
+                        NomeCampo = x.NomeCampo,
+                        DescricaoCampo = x.DescricaoCampo,
+                        TipoCampo = x.TipoCampo,
+                        Formato = x.Formato
+                    })
+                    .ToList()
+            };
+        }
+
+        private static IReadOnlyCollection<MapeamentoCampo> ObterCamposDoMapeamentoPadrao(Colecao colecao)
+        {
+            var mapeamentoPadrao = colecao.Mapeamentos.FirstOrDefault(x => x.IsPadrao)
+                ?? colecao.Mapeamentos.OrderBy(x => x.Id).FirstOrDefault();
+
+            return mapeamentoPadrao is null ? Array.Empty<MapeamentoCampo>() : mapeamentoPadrao.Campos.ToList();
         }
 
     }

@@ -60,20 +60,6 @@ namespace ExcelDoc.Server.Controllers
             }
         }
 
-        [HttpPost("clonar-padrao")]
-        public async Task<IActionResult> ClonePadrao([FromBody] CloneColecaoRequestDto request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var result = await _colecaoService.ClonePadraoAsync(request, cancellationToken);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return ToActionResult(ex);
-            }
-        }
-
         [HttpPut("{colecaoId:int}")]
         public async Task<IActionResult> Put(int colecaoId, [FromBody] ColecaoRequestDto request, CancellationToken cancellationToken)
         {
@@ -95,20 +81,6 @@ namespace ExcelDoc.Server.Controllers
             {
                 await _colecaoService.ExcluirAsync(colecaoId, cancellationToken);
                 return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return ToActionResult(ex);
-            }
-        }
-
-        [HttpPut("{colecaoId:int}/mapeamentos")]
-        public async Task<IActionResult> PutMapeamentos(int colecaoId, [FromBody] AtualizarMapeamentosRequestDto request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var result = await _colecaoService.AtualizarMapeamentosAsync(colecaoId, request, cancellationToken);
-                return Ok(result);
             }
             catch (Exception ex)
             {

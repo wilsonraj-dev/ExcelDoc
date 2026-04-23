@@ -33,6 +33,16 @@ namespace ExcelDoc.Server.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
+        public Task<Colecao?> GetColecaoByIdWithMappingsAsync(int colecaoId, CancellationToken cancellationToken = default)
+        {
+            return _context.Colecoes
+                .Include(x => x.Mapeamentos)
+                    .ThenInclude(x => x.Campos)
+                .Include(x => x.DocumentoColecoes)
+                    .ThenInclude(x => x.Documento)
+                .FirstOrDefaultAsync(x => x.Id == colecaoId, cancellationToken);
+        }
+
         public Task<bool> ExistsIndiceNoMapeamentoAsync(int mapeamentoId, int indiceColuna, int? ignoreId = null, CancellationToken cancellationToken = default)
         {
             return _context.MapeamentoCampos.AnyAsync(
@@ -58,6 +68,11 @@ namespace ExcelDoc.Server.Repositories
         public async Task AddMapeamentoAsync(Mapeamento mapeamento, CancellationToken cancellationToken = default)
         {
             await _context.Mapeamentos.AddAsync(mapeamento, cancellationToken);
+        }
+
+        public async Task AddColecaoAsync(Colecao colecao, CancellationToken cancellationToken = default)
+        {
+            await _context.Colecoes.AddAsync(colecao, cancellationToken);
         }
 
         public async Task AddAsync(MapeamentoCampo mapeamento, CancellationToken cancellationToken = default)
