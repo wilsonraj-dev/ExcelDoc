@@ -40,7 +40,8 @@ namespace ExcelDoc.Server.Repositories
             return _context.Documentos
                 .Include(x => x.DocumentoColecoes)
                     .ThenInclude(x => x.Colecao)
-                        .ThenInclude(x => x.MapeamentoCampos)
+                        .ThenInclude(x => x.Mapeamentos)
+                            .ThenInclude(x => x.Campos)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 

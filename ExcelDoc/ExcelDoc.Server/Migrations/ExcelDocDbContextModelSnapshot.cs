@@ -20,446 +20,515 @@ namespace ExcelDoc.Server.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Colecao", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    b.Property<int?>("FK_IdEmpresa")
-                        .HasColumnType("int");
+                b.Property<int?>("FK_IdEmpresa")
+                    .HasColumnType("int");
 
-                    b.Property<string>("NomeColecao")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                b.Property<string>("NomeColecao")
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnType("varchar(150)");
 
-                    b.Property<string>("TipoColecao")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                b.Property<string>("TipoColecao")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("varchar(20)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("FK_IdEmpresa");
+                b.HasIndex("FK_IdEmpresa");
 
-                    b.ToTable("Colecoes", (string)null);
-                });
+                b.ToTable("Colecoes", (string)null);
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Configuracao", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    b.Property<string>("Database")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                b.Property<string>("Database")
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnType("varchar(150)");
 
-                    b.Property<int>("FK_IdEmpresa")
-                        .HasColumnType("int");
+                b.Property<int>("FK_IdEmpresa")
+                    .HasColumnType("int");
 
-                    b.Property<string>("LinkServiceLayer")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                b.Property<string>("LinkServiceLayer")
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnType("varchar(500)");
 
-                    b.Property<string>("SenhaBanco")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                b.Property<string>("SenhaBanco")
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnType("varchar(500)");
 
-                    b.Property<string>("SenhaSAP")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                b.Property<string>("SenhaSAP")
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnType("varchar(500)");
 
-                    b.Property<string>("UsuarioBanco")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                b.Property<string>("UsuarioBanco")
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnType("varchar(500)");
 
-                    b.Property<string>("UsuarioSAP")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                b.Property<string>("UsuarioSAP")
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnType("varchar(500)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("FK_IdEmpresa")
-                        .IsUnique();
+                b.HasIndex("FK_IdEmpresa")
+                    .IsUnique();
 
-                    b.ToTable("Configuracoes", (string)null);
-                });
+                b.ToTable("Configuracoes", (string)null);
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Documento", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    b.Property<string>("Endpoint")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("varchar(300)");
+                b.Property<string>("Endpoint")
+                    .IsRequired()
+                    .HasMaxLength(300)
+                    .HasColumnType("varchar(300)");
 
-                    b.Property<string>("NomeDocumento")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                b.Property<string>("NomeDocumento")
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnType("varchar(150)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Documentos", (string)null);
-                });
+                b.ToTable("Documentos", (string)null);
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.DocumentoColecao", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    b.Property<int>("FK_IdColecao")
-                        .HasColumnType("int");
+                b.Property<int>("FK_IdColecao")
+                    .HasColumnType("int");
 
-                    b.Property<int>("FK_IdDocumento")
-                        .HasColumnType("int");
+                b.Property<int>("FK_IdDocumento")
+                    .HasColumnType("int");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("FK_IdColecao");
+                b.HasIndex("FK_IdColecao");
 
-                    b.HasIndex("FK_IdDocumento", "FK_IdColecao")
-                        .IsUnique();
+                b.HasIndex("FK_IdDocumento", "FK_IdColecao")
+                    .IsUnique();
 
-                    b.ToTable("DocumentoColecao", (string)null);
-                });
+                b.ToTable("DocumentoColecao", (string)null);
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Empresa", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    b.Property<string>("NomeEmpresa")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                b.Property<string>("NomeEmpresa")
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasColumnType("varchar(200)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Empresa", (string)null);
-                });
+                b.ToTable("Empresa", (string)null);
+            });
+
+            modelBuilder.Entity("ExcelDoc.Server.Models.Mapeamento", b =>
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
+
+                b.Property<DateTime>("DataCriacao")
+                    .HasPrecision(0)
+                    .HasColumnType("datetime(0)");
+
+                b.Property<int>("FK_IdColecao")
+                    .HasColumnType("int");
+
+                b.Property<int?>("FK_IdEmpresa")
+                    .HasColumnType("int");
+
+                b.Property<bool>("IsPadrao")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("tinyint(1)")
+                    .HasDefaultValue(false);
+
+                b.Property<string>("Nome")
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnType("varchar(150)");
+
+                b.HasKey("Id");
+
+                b.HasIndex("FK_IdColecao")
+                    .HasDatabaseName("IX_Mapeamento_FK_IdColecao");
+
+                b.HasIndex("FK_IdEmpresa")
+                    .HasDatabaseName("IX_Mapeamento_FK_IdEmpresa");
+
+                b.ToTable("Mapeamento", (string)null);
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.MapeamentoCampo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    b.Property<string>("DescricaoCampo")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                b.Property<string>("DescricaoCampo")
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnType("varchar(500)");
 
-                    b.Property<int>("FK_IdColecao")
-                        .HasColumnType("int");
+                b.Property<int>("FK_IdMapeamento")
+                    .HasColumnType("int");
 
-                    b.Property<string>("Formato")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                b.Property<string>("Formato")
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
 
-                    b.Property<int>("IndiceColuna")
-                        .HasColumnType("int");
+                b.Property<int>("IndiceColuna")
+                    .HasColumnType("int");
 
-                    b.Property<string>("NomeCampo")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                b.Property<string>("NomeCampo")
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnType("varchar(150)");
 
-                    b.Property<string>("TipoCampo")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                b.Property<string>("TipoCampo")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("varchar(20)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("FK_IdColecao");
+                b.HasIndex("FK_IdMapeamento")
+                    .HasDatabaseName("IX_MapeamentoCampos_FK_IdMapeamento");
 
-                    b.ToTable("MapeamentoCampos", (string)null);
-                });
+                b.HasIndex("FK_IdMapeamento", "IndiceColuna")
+                    .IsUnique()
+                    .HasDatabaseName("UX_MapeamentoCampos_FK_IdMapeamento_IndiceColuna");
+
+                b.ToTable("MapeamentoCampos", (string)null);
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Processamento", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    b.Property<DateTime>("DataExecucao")
-                        .HasPrecision(0)
-                        .HasColumnType("datetime(0)");
+                b.Property<DateTime>("DataExecucao")
+                    .HasPrecision(0)
+                    .HasColumnType("datetime(0)");
 
-                    b.Property<int>("FK_IdDocumento")
-                        .HasColumnType("int");
+                b.Property<int>("FK_IdDocumento")
+                    .HasColumnType("int");
 
-                    b.Property<int>("FK_IdEmpresa")
-                        .HasColumnType("int");
+                b.Property<int>("FK_IdEmpresa")
+                    .HasColumnType("int");
 
-                    b.Property<int>("FK_IdUsuario")
-                        .HasColumnType("int");
+                b.Property<int>("FK_IdUsuario")
+                    .HasColumnType("int");
 
-                    b.Property<string>("HashArquivo")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                b.Property<string>("HashArquivo")
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasColumnType("varchar(200)");
 
-                    b.Property<string>("NomeArquivo")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                b.Property<string>("NomeArquivo")
+                    .IsRequired()
+                    .HasMaxLength(255)
+                    .HasColumnType("varchar(255)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("varchar(20)");
 
-                    b.Property<int>("TotalErro")
-                        .HasColumnType("int");
+                b.Property<int>("TotalErro")
+                    .HasColumnType("int");
 
-                    b.Property<int>("TotalRegistros")
-                        .HasColumnType("int");
+                b.Property<int>("TotalRegistros")
+                    .HasColumnType("int");
 
-                    b.Property<int>("TotalSucesso")
-                        .HasColumnType("int");
+                b.Property<int>("TotalSucesso")
+                    .HasColumnType("int");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("FK_IdDocumento");
+                b.HasIndex("FK_IdDocumento");
 
-                    b.HasIndex("FK_IdUsuario");
+                b.HasIndex("FK_IdUsuario");
 
-                    b.HasIndex("FK_IdEmpresa", "HashArquivo")
-                        .IsUnique();
+                b.HasIndex("FK_IdEmpresa", "HashArquivo")
+                    .IsUnique();
 
-                    b.ToTable("Processamento", (string)null);
-                });
+                b.ToTable("Processamento", (string)null);
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.ProcessamentoItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    b.Property<string>("Erro")
-                        .HasMaxLength(4000)
-                        .HasColumnType("varchar(4000)");
+                b.Property<string>("Erro")
+                    .HasMaxLength(4000)
+                    .HasColumnType("varchar(4000)");
 
-                    b.Property<int>("FK_IdProcessamento")
-                        .HasColumnType("int");
+                b.Property<int>("FK_IdProcessamento")
+                    .HasColumnType("int");
 
-                    b.Property<string>("JsonEnviado")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                b.Property<string>("JsonEnviado")
+                    .IsRequired()
+                    .HasColumnType("longtext");
 
-                    b.Property<string>("JsonRetorno")
-                        .HasColumnType("longtext");
+                b.Property<string>("JsonRetorno")
+                    .HasColumnType("longtext");
 
-                    b.Property<int>("LinhaExcel")
-                        .HasColumnType("int");
+                b.Property<int>("LinhaExcel")
+                    .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("varchar(20)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("FK_IdProcessamento");
+                b.HasIndex("FK_IdProcessamento");
 
-                    b.ToTable("ProcessamentoItem", (string)null);
-                });
+                b.ToTable("ProcessamentoItem", (string)null);
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Usuario", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    b.Property<bool>("Ativo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(true);
+                b.Property<bool>("Ativo")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("tinyint(1)")
+                    .HasDefaultValue(true);
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                b.Property<string>("Email")
+                    .HasMaxLength(200)
+                    .HasColumnType("varchar(200)");
 
-                    b.Property<int?>("FK_IdEmpresa")
-                        .HasColumnType("int");
+                b.Property<int?>("FK_IdEmpresa")
+                    .HasColumnType("int");
 
-                    b.Property<string>("NomeUsuario")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                b.Property<string>("NomeUsuario")
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnType("varchar(150)");
 
-                    b.Property<string>("ResetPasswordCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                b.Property<string>("ResetPasswordCode")
+                    .HasMaxLength(20)
+                    .HasColumnType("varchar(20)");
 
-                    b.Property<DateTime?>("ResetPasswordCodeExpiresAtUtc")
-                        .HasPrecision(0)
-                        .HasColumnType("datetime(0)");
+                b.Property<DateTime?>("ResetPasswordCodeExpiresAtUtc")
+                    .HasPrecision(0)
+                    .HasColumnType("datetime(0)");
 
-                    b.Property<string>("SenhaHash")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                b.Property<string>("SenhaHash")
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnType("varchar(500)");
 
-                    b.Property<string>("TipoUsuario")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                b.Property<string>("TipoUsuario")
+                    .IsRequired()
+                    .HasMaxLength(30)
+                    .HasColumnType("varchar(30)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("FK_IdEmpresa");
+                b.HasIndex("FK_IdEmpresa");
 
-                    b.ToTable("Usuario", (string)null);
-                });
+                b.ToTable("Usuario", (string)null);
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Colecao", b =>
-                {
-                    b.HasOne("ExcelDoc.Server.Models.Empresa", "Empresa")
-                        .WithMany("Colecoes")
-                        .HasForeignKey("FK_IdEmpresa")
-                        .OnDelete(DeleteBehavior.Restrict);
+            {
+                b.HasOne("ExcelDoc.Server.Models.Empresa", "Empresa")
+                    .WithMany("Colecoes")
+                    .HasForeignKey("FK_IdEmpresa")
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("Empresa");
-                });
+                b.Navigation("Empresa");
+            });
+
+            modelBuilder.Entity("ExcelDoc.Server.Models.Mapeamento", b =>
+            {
+                b.HasOne("ExcelDoc.Server.Models.Colecao", "Colecao")
+                    .WithMany("Mapeamentos")
+                    .HasForeignKey("FK_IdColecao")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired()
+                    .HasConstraintName("FK_Mapeamento_Colecoes_FK_IdColecao");
+
+                b.HasOne("ExcelDoc.Server.Models.Empresa", "Empresa")
+                    .WithMany("Mapeamentos")
+                    .HasForeignKey("FK_IdEmpresa")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Mapeamento_Empresa_FK_IdEmpresa");
+
+                b.Navigation("Colecao");
+
+                b.Navigation("Empresa");
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Configuracao", b =>
-                {
-                    b.HasOne("ExcelDoc.Server.Models.Empresa", "Empresa")
-                        .WithOne("Configuracao")
-                        .HasForeignKey("ExcelDoc.Server.Models.Configuracao", "FK_IdEmpresa")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            {
+                b.HasOne("ExcelDoc.Server.Models.Empresa", "Empresa")
+                    .WithOne("Configuracao")
+                    .HasForeignKey("ExcelDoc.Server.Models.Configuracao", "FK_IdEmpresa")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.Navigation("Empresa");
-                });
+                b.Navigation("Empresa");
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.DocumentoColecao", b =>
-                {
-                    b.HasOne("ExcelDoc.Server.Models.Colecao", "Colecao")
-                        .WithMany("DocumentoColecoes")
-                        .HasForeignKey("FK_IdColecao")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            {
+                b.HasOne("ExcelDoc.Server.Models.Colecao", "Colecao")
+                    .WithMany("DocumentoColecoes")
+                    .HasForeignKey("FK_IdColecao")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.HasOne("ExcelDoc.Server.Models.Documento", "Documento")
-                        .WithMany("DocumentoColecoes")
-                        .HasForeignKey("FK_IdDocumento")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                b.HasOne("ExcelDoc.Server.Models.Documento", "Documento")
+                    .WithMany("DocumentoColecoes")
+                    .HasForeignKey("FK_IdDocumento")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.Navigation("Colecao");
+                b.Navigation("Colecao");
 
-                    b.Navigation("Documento");
-                });
+                b.Navigation("Documento");
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.MapeamentoCampo", b =>
-                {
-                    b.HasOne("ExcelDoc.Server.Models.Colecao", "Colecao")
-                        .WithMany("MapeamentoCampos")
-                        .HasForeignKey("FK_IdColecao")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            {
+                b.HasOne("ExcelDoc.Server.Models.Mapeamento", "Mapeamento")
+                    .WithMany("Campos")
+                    .HasForeignKey("FK_IdMapeamento")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Colecao");
-                });
+                b.Navigation("Mapeamento");
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Processamento", b =>
-                {
-                    b.HasOne("ExcelDoc.Server.Models.Documento", "Documento")
-                        .WithMany("Processamentos")
-                        .HasForeignKey("FK_IdDocumento")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+            {
+                b.HasOne("ExcelDoc.Server.Models.Documento", "Documento")
+                    .WithMany("Processamentos")
+                    .HasForeignKey("FK_IdDocumento")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("ExcelDoc.Server.Models.Empresa", "Empresa")
-                        .WithMany("Processamentos")
-                        .HasForeignKey("FK_IdEmpresa")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("ExcelDoc.Server.Models.Empresa", "Empresa")
+                    .WithMany("Processamentos")
+                    .HasForeignKey("FK_IdEmpresa")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("ExcelDoc.Server.Models.Usuario", "Usuario")
-                        .WithMany("Processamentos")
-                        .HasForeignKey("FK_IdUsuario")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("ExcelDoc.Server.Models.Usuario", "Usuario")
+                    .WithMany("Processamentos")
+                    .HasForeignKey("FK_IdUsuario")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Documento");
+                b.Navigation("Documento");
 
-                    b.Navigation("Empresa");
+                b.Navigation("Empresa");
 
-                    b.Navigation("Usuario");
-                });
+                b.Navigation("Usuario");
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.ProcessamentoItem", b =>
-                {
-                    b.HasOne("ExcelDoc.Server.Models.Processamento", "Processamento")
-                        .WithMany("Itens")
-                        .HasForeignKey("FK_IdProcessamento")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            {
+                b.HasOne("ExcelDoc.Server.Models.Processamento", "Processamento")
+                    .WithMany("Itens")
+                    .HasForeignKey("FK_IdProcessamento")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.Navigation("Processamento");
-                });
+                b.Navigation("Processamento");
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Usuario", b =>
-                {
-                    b.HasOne("ExcelDoc.Server.Models.Empresa", "Empresa")
-                        .WithMany("Usuarios")
-                        .HasForeignKey("FK_IdEmpresa")
-                        .OnDelete(DeleteBehavior.Restrict);
+            {
+                b.HasOne("ExcelDoc.Server.Models.Empresa", "Empresa")
+                    .WithMany("Usuarios")
+                    .HasForeignKey("FK_IdEmpresa")
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("Empresa");
-                });
+                b.Navigation("Empresa");
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Colecao", b =>
-                {
-                    b.Navigation("DocumentoColecoes");
+            {
+                b.Navigation("DocumentoColecoes");
 
-                    b.Navigation("MapeamentoCampos");
-                });
+                b.Navigation("Mapeamentos");
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Documento", b =>
-                {
-                    b.Navigation("DocumentoColecoes");
+            {
+                b.Navigation("DocumentoColecoes");
 
-                    b.Navigation("Processamentos");
-                });
+                b.Navigation("Processamentos");
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Empresa", b =>
-                {
-                    b.Navigation("Colecoes");
+            {
+                b.Navigation("Colecoes");
 
-                    b.Navigation("Configuracao");
+                b.Navigation("Configuracao");
 
-                    b.Navigation("Processamentos");
+                b.Navigation("Mapeamentos");
 
-                    b.Navigation("Usuarios");
-                });
+                b.Navigation("Processamentos");
+
+                b.Navigation("Usuarios");
+            });
+
+            modelBuilder.Entity("ExcelDoc.Server.Models.Mapeamento", b =>
+            {
+                b.Navigation("Campos");
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Processamento", b =>
-                {
-                    b.Navigation("Itens");
-                });
+            {
+                b.Navigation("Itens");
+            });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Usuario", b =>
-                {
-                    b.Navigation("Processamentos");
-                });
+            {
+                b.Navigation("Processamentos");
+            });
 #pragma warning restore 612, 618
         }
     }

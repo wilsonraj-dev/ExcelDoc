@@ -14,6 +14,8 @@ namespace ExcelDoc.Server.Models
 
         public ICollection<Colecao> Colecoes { get; set; } = new List<Colecao>();
 
+        public ICollection<Mapeamento> Mapeamentos { get; set; } = new List<Mapeamento>();
+
         public ICollection<Processamento> Processamentos { get; set; } = new List<Processamento>();
 
         public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();

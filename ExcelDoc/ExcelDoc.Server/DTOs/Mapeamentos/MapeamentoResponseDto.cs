@@ -17,5 +17,9 @@ namespace ExcelDoc.Server.DTOs.Mapeamentos
         public string? Formato { get; set; }
 
         public int FK_IdColecao { get; set; }
+
+        public int FK_IdMapeamento { get; set; }
+
+        public string NomeMapeamento { get; set; } = string.Empty;
     }
 }

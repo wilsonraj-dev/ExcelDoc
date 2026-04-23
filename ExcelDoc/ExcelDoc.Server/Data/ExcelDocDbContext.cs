@@ -20,6 +20,8 @@ namespace ExcelDoc.Server.Data
 
         public DbSet<Empresa> Empresas => Set<Empresa>();
 
+        public DbSet<Mapeamento> Mapeamentos => Set<Mapeamento>();
+
         public DbSet<MapeamentoCampo> MapeamentoCampos => Set<MapeamentoCampo>();
 
         public DbSet<Processamento> Processamentos => Set<Processamento>();
@@ -139,6 +141,9 @@ namespace ExcelDoc.Server.Data
 
                 entity.HasKey(e => e.Id);
 
+                entity.HasIndex(e => e.FK_IdEmpresa)
+                    .HasDatabaseName("IX_Colecoes_FK_IdEmpresa");
+
                 entity.Property(e => e.NomeColecao)
                     .IsRequired()
                     .HasMaxLength(150);
@@ -159,7 +164,11 @@ namespace ExcelDoc.Server.Data
 
                 entity.HasKey(e => e.Id);
 
+                entity.HasIndex(e => e.FK_IdColecao)
+                    .HasDatabaseName("IX_DocumentoColecao_FK_IdColecao");
+
                 entity.HasIndex(e => new { e.FK_IdDocumento, e.FK_IdColecao })
+                    .HasDatabaseName("IX_DocumentoColecao_FK_IdDocumento_FK_IdColecao")
                     .IsUnique();
 
                 entity.HasOne(e => e.Documento)
@@ -171,6 +180,41 @@ namespace ExcelDoc.Server.Data
                     .WithMany(e => e.DocumentoColecoes)
                     .HasForeignKey(e => e.FK_IdColecao)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Mapeamento>(entity =>
+            {
+                entity.ToTable("Mapeamento");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Nome)
+                    .IsRequired()
+                    .HasMaxLength(150);
+
+                entity.Property(e => e.DataCriacao)
+                    .HasPrecision(0);
+
+                entity.Property(e => e.IsPadrao)
+                    .HasDefaultValue(false);
+
+                entity.HasIndex(e => e.FK_IdColecao)
+                    .HasDatabaseName("IX_Mapeamento_FK_IdColecao");
+
+                entity.HasIndex(e => e.FK_IdEmpresa)
+                    .HasDatabaseName("IX_Mapeamento_FK_IdEmpresa");
+
+                entity.HasOne(e => e.Colecao)
+                    .WithMany(e => e.Mapeamentos)
+                    .HasForeignKey(e => e.FK_IdColecao)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Mapeamento_Colecoes_FK_IdColecao");
+
+                entity.HasOne(e => e.Empresa)
+                    .WithMany(e => e.Mapeamentos)
+                    .HasForeignKey(e => e.FK_IdEmpresa)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Mapeamento_Empresa_FK_IdEmpresa");
             });
 
             modelBuilder.Entity<MapeamentoCampo>(entity =>
@@ -194,10 +238,18 @@ namespace ExcelDoc.Server.Data
                 entity.Property(e => e.Formato)
                     .HasMaxLength(50);
 
-                entity.HasOne(e => e.Colecao)
-                    .WithMany(e => e.MapeamentoCampos)
-                    .HasForeignKey(e => e.FK_IdColecao)
-                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(e => e.FK_IdMapeamento)
+                    .HasDatabaseName("IX_MapeamentoCampos_FK_IdMapeamento");
+
+                entity.HasIndex(e => new { e.FK_IdMapeamento, e.IndiceColuna })
+                    .IsUnique()
+                    .HasDatabaseName("UX_MapeamentoCampos_FK_IdMapeamento_IndiceColuna");
+
+                entity.HasOne(e => e.Mapeamento)
+                    .WithMany(e => e.Campos)
+                    .HasForeignKey(e => e.FK_IdMapeamento)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_MapeamentoCampos_Mapeamento_FK_IdMapeamento");
             });
 
             modelBuilder.Entity<Processamento>(entity =>
@@ -222,6 +274,7 @@ namespace ExcelDoc.Server.Data
                     .HasPrecision(0);
 
                 entity.HasIndex(e => new { e.FK_IdEmpresa, e.HashArquivo })
+                    .HasDatabaseName("IX_Processamento_FK_IdEmpresa_HashArquivo")
                     .IsUnique();
 
                 entity.HasOne(e => e.Usuario)

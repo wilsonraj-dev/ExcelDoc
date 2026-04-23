@@ -18,6 +18,6 @@ namespace ExcelDoc.Server.Models
 
         public ICollection<DocumentoColecao> DocumentoColecoes { get; set; } = new List<DocumentoColecao>();
 
-        public ICollection<MapeamentoCampo> MapeamentoCampos { get; set; } = new List<MapeamentoCampo>();
+        public ICollection<Mapeamento> Mapeamentos { get; set; } = new List<Mapeamento>();
     }
 }

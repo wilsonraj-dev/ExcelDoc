@@ -8,9 +8,13 @@ namespace ExcelDoc.Server.Repositories.Interfaces
 
         Task<MapeamentoCampo?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
-        Task<bool> ExistsIndiceNaColecaoAsync(int colecaoId, int indiceColuna, string nomeCampo, int? ignoreId = null, CancellationToken cancellationToken = default);
+        Task<bool> ExistsIndiceNoMapeamentoAsync(int mapeamentoId, int indiceColuna, int? ignoreId = null, CancellationToken cancellationToken = default);
 
         Task<Colecao?> GetColecaoByIdAsync(int colecaoId, CancellationToken cancellationToken = default);
+
+        Task<Mapeamento?> GetMapeamentoPadraoByColecaoIdAsync(int colecaoId, CancellationToken cancellationToken = default);
+
+        Task AddMapeamentoAsync(Mapeamento mapeamento, CancellationToken cancellationToken = default);
 
         Task AddAsync(MapeamentoCampo mapeamento, CancellationToken cancellationToken = default);
 

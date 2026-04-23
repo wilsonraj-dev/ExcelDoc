@@ -18,7 +18,8 @@ namespace ExcelDoc.Server.Repositories
         {
             var query = _context.Colecoes
                 .AsNoTracking()
-                .Include(x => x.MapeamentoCampos)
+                .Include(x => x.Mapeamentos)
+                    .ThenInclude(x => x.Campos)
                 .Include(x => x.DocumentoColecoes)
                     .ThenInclude(x => x.Documento)
                 .AsQueryable();
@@ -36,7 +37,8 @@ namespace ExcelDoc.Server.Repositories
         public Task<Colecao?> GetByIdWithMappingsAsync(int id, CancellationToken cancellationToken = default)
         {
             return _context.Colecoes
-                .Include(x => x.MapeamentoCampos)
+                .Include(x => x.Mapeamentos)
+                    .ThenInclude(x => x.Campos)
                 .Include(x => x.DocumentoColecoes)
                     .ThenInclude(x => x.Documento)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);

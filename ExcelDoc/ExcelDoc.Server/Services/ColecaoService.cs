@@ -145,13 +145,20 @@ namespace ExcelDoc.Server.Services
                 NomeColecao = request.NomeColecao.Trim(),
                 TipoColecao = colecaoPadrao.TipoColecao,
                 FK_IdEmpresa = request.EmpresaId,
-                MapeamentoCampos = colecaoPadrao.MapeamentoCampos.Select(x => new MapeamentoCampo
+                Mapeamentos = colecaoPadrao.Mapeamentos.Select(x => new Mapeamento
                 {
-                    IndiceColuna = x.IndiceColuna,
-                    NomeCampo = x.NomeCampo,
-                    DescricaoCampo = x.DescricaoCampo,
-                    TipoCampo = x.TipoCampo,
-                    Formato = x.Formato
+                    Nome = x.Nome,
+                    FK_IdEmpresa = request.EmpresaId,
+                    IsPadrao = x.IsPadrao,
+                    DataCriacao = DateTime.UtcNow,
+                    Campos = x.Campos.Select(campo => new MapeamentoCampo
+                    {
+                        IndiceColuna = campo.IndiceColuna,
+                        NomeCampo = campo.NomeCampo,
+                        DescricaoCampo = campo.DescricaoCampo,
+                        TipoCampo = campo.TipoCampo,
+                        Formato = campo.Formato
+                    }).ToList()
                 }).ToList()
             };
 
@@ -175,11 +182,12 @@ namespace ExcelDoc.Server.Services
                 throw new InvalidOperationException("Apenas coleções customizadas da empresa podem ser alteradas.");
             }
 
-            colecao.MapeamentoCampos.Clear();
+            var mapeamentoPadrao = ObterOuCriarMapeamentoPadrao(colecao);
+            mapeamentoPadrao.Campos.Clear();
 
             foreach (var campo in request.Campos.OrderBy(x => x.IndiceColuna))
             {
-                colecao.MapeamentoCampos.Add(new MapeamentoCampo
+                mapeamentoPadrao.Campos.Add(new MapeamentoCampo
                 {
                     IndiceColuna = campo.IndiceColuna,
                     NomeCampo = campo.NomeCampo.Trim(),
@@ -317,6 +325,8 @@ namespace ExcelDoc.Server.Services
 
         private static ColecaoResponseDto Map(Colecao colecao)
         {
+            var campos = ObterCamposDoMapeamentoPadrao(colecao);
+
             return new ColecaoResponseDto
             {
                 Id = colecao.Id,
@@ -338,7 +348,7 @@ namespace ExcelDoc.Server.Services
                     })
                     .OrderBy(x => x.NomeDocumento)
                     .ToList(),
-                Campos = colecao.MapeamentoCampos
+                Campos = campos
                     .OrderBy(x => x.IndiceColuna)
                     .Select(x => new MapeamentoCampoResponseDto
                     {
@@ -351,6 +361,34 @@ namespace ExcelDoc.Server.Services
                     })
                     .ToList()
             };
+        }
+
+        private static Mapeamento ObterOuCriarMapeamentoPadrao(Colecao colecao)
+        {
+            var mapeamentoPadrao = colecao.Mapeamentos.FirstOrDefault(x => x.IsPadrao);
+            if (mapeamentoPadrao is not null)
+            {
+                return mapeamentoPadrao;
+            }
+
+            mapeamentoPadrao = new Mapeamento
+            {
+                Nome = $"Mapeamento padrão - {colecao.NomeColecao}",
+                FK_IdEmpresa = colecao.FK_IdEmpresa,
+                IsPadrao = true,
+                DataCriacao = DateTime.UtcNow
+            };
+
+            colecao.Mapeamentos.Add(mapeamentoPadrao);
+            return mapeamentoPadrao;
+        }
+
+        private static IReadOnlyCollection<MapeamentoCampo> ObterCamposDoMapeamentoPadrao(Colecao colecao)
+        {
+            var mapeamentoPadrao = colecao.Mapeamentos.FirstOrDefault(x => x.IsPadrao)
+                ?? colecao.Mapeamentos.OrderBy(x => x.Id).FirstOrDefault();
+
+            return mapeamentoPadrao is null ? Array.Empty<MapeamentoCampo>() : mapeamentoPadrao.Campos.ToList();
         }
     }
 }

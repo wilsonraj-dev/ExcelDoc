@@ -50,7 +50,7 @@ namespace ExcelDoc.Server.Services
 
                 if (colecao.TipoColecao == TipoColecao.Header)
                 {
-                    foreach (var campo in colecao.MapeamentoCampos.OrderBy(x => x.IndiceColuna))
+                    foreach (var campo in ObterCamposMapeamento(colecao).OrderBy(x => x.IndiceColuna))
                     {
                         rowValues.TryGetValue(campo.IndiceColuna, out var rawValue);
                         payload[campo.NomeCampo] = ConvertValue(rawValue, campo);
@@ -60,7 +60,7 @@ namespace ExcelDoc.Server.Services
                 }
 
                 var line = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-                foreach (var campo in colecao.MapeamentoCampos.OrderBy(x => x.IndiceColuna))
+                foreach (var campo in ObterCamposMapeamento(colecao).OrderBy(x => x.IndiceColuna))
                 {
                     rowValues.TryGetValue(campo.IndiceColuna, out var rawValue);
                     line[campo.NomeCampo] = ConvertValue(rawValue, campo);
@@ -81,6 +81,14 @@ namespace ExcelDoc.Server.Services
             }
 
             return payload;
+        }
+
+        private static IReadOnlyCollection<MapeamentoCampo> ObterCamposMapeamento(Colecao colecao)
+        {
+            var mapeamento = colecao.Mapeamentos.FirstOrDefault(x => x.IsPadrao)
+                ?? colecao.Mapeamentos.OrderBy(x => x.Id).FirstOrDefault();
+
+            return mapeamento is null ? Array.Empty<MapeamentoCampo>() : mapeamento.Campos.ToList();
         }
 
         private static object? ConvertValue(string? rawValue, MapeamentoCampo campo)

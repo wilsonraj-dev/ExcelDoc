@@ -37,7 +37,7 @@ namespace ExcelDoc.Server.Services
             var mapeamento = await _mapeamentoRepository.GetByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
 
-            EnsureCanAccessColecao(usuario, mapeamento.Colecao);
+            EnsureCanAccessColecao(usuario, mapeamento.Mapeamento.Colecao);
 
             return Map(mapeamento);
         }
@@ -49,22 +49,25 @@ namespace ExcelDoc.Server.Services
                 ?? throw new KeyNotFoundException("Coleção não encontrada.");
 
             EnsureCanEditColecao(usuario, colecao);
-            await ValidarMapeamentoAsync(request, null, cancellationToken);
+            var mapeamentoPadrao = await ObterOuCriarMapeamentoPadraoAsync(colecao, cancellationToken);
+            await ValidarMapeamentoAsync(request, mapeamentoPadrao.Id, null, cancellationToken);
 
-            var mapeamento = new MapeamentoCampo
+            var campo = new MapeamentoCampo
             {
                 NomeCampo = request.NomeCampo.Trim(),
                 DescricaoCampo = request.DescricaoCampo.Trim(),
                 IndiceColuna = request.IndiceColuna,
                 TipoCampo = request.TipoCampo,
                 Formato = request.TipoCampo == TipoCampo.DateTime ? request.Formato?.Trim() : null,
-                FK_IdColecao = request.FK_IdColecao
+                FK_IdMapeamento = mapeamentoPadrao.Id
             };
 
-            await _mapeamentoRepository.AddAsync(mapeamento, cancellationToken);
+            await _mapeamentoRepository.AddAsync(campo, cancellationToken);
             await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
 
-            return Map(mapeamento);
+            campo.Mapeamento = mapeamentoPadrao;
+
+            return Map(campo);
         }
 
         public async Task<MapeamentoResponseDto> AtualizarAsync(int id, MapeamentoRequestDto request, CancellationToken cancellationToken = default)
@@ -73,14 +76,14 @@ namespace ExcelDoc.Server.Services
             var mapeamento = await _mapeamentoRepository.GetByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
 
-            EnsureCanEditColecao(usuario, mapeamento.Colecao);
+            EnsureCanEditColecao(usuario, mapeamento.Mapeamento.Colecao);
 
-            if (mapeamento.FK_IdColecao != request.FK_IdColecao)
+            if (mapeamento.Mapeamento.FK_IdColecao != request.FK_IdColecao)
             {
                 throw new InvalidOperationException("Não é permitido alterar a coleção de um mapeamento existente.");
             }
 
-            await ValidarMapeamentoAsync(request, id, cancellationToken);
+            await ValidarMapeamentoAsync(request, mapeamento.FK_IdMapeamento, id, cancellationToken);
 
             mapeamento.NomeCampo = request.NomeCampo.Trim();
             mapeamento.DescricaoCampo = request.DescricaoCampo.Trim();
@@ -99,13 +102,13 @@ namespace ExcelDoc.Server.Services
             var mapeamento = await _mapeamentoRepository.GetByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
 
-            EnsureCanEditColecao(usuario, mapeamento.Colecao);
+            EnsureCanEditColecao(usuario, mapeamento.Mapeamento.Colecao);
 
             _mapeamentoRepository.Remove(mapeamento);
             await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
         }
 
-        private async Task ValidarMapeamentoAsync(MapeamentoRequestDto request, int? ignoreId, CancellationToken cancellationToken)
+        private async Task ValidarMapeamentoAsync(MapeamentoRequestDto request, int mapeamentoId, int? ignoreId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(request.NomeCampo))
             {
@@ -122,10 +125,34 @@ namespace ExcelDoc.Server.Services
                 throw new InvalidOperationException("Formato é obrigatório quando o tipo do campo é DateTime.");
             }
 
-            if (await _mapeamentoRepository.ExistsIndiceNaColecaoAsync(request.FK_IdColecao, request.IndiceColuna, request.NomeCampo, ignoreId, cancellationToken))
+            if (await _mapeamentoRepository.ExistsIndiceNoMapeamentoAsync(mapeamentoId, request.IndiceColuna, ignoreId, cancellationToken))
             {
-                throw new InvalidOperationException($"Já existe um campo com o índice de coluna {request.IndiceColuna} nesta coleção.");
+                throw new InvalidOperationException($"Já existe um campo com o índice de coluna {request.IndiceColuna} neste mapeamento.");
             }
+        }
+
+        private async Task<Mapeamento> ObterOuCriarMapeamentoPadraoAsync(Colecao colecao, CancellationToken cancellationToken)
+        {
+            var mapeamentoPadrao = await _mapeamentoRepository.GetMapeamentoPadraoByColecaoIdAsync(colecao.Id, cancellationToken);
+            if (mapeamentoPadrao is not null)
+            {
+                return mapeamentoPadrao;
+            }
+
+            mapeamentoPadrao = new Mapeamento
+            {
+                Nome = $"Mapeamento padrão - {colecao.NomeColecao}",
+                FK_IdColecao = colecao.Id,
+                FK_IdEmpresa = colecao.FK_IdEmpresa,
+                IsPadrao = true,
+                DataCriacao = DateTime.UtcNow,
+                Colecao = colecao
+            };
+
+            await _mapeamentoRepository.AddMapeamentoAsync(mapeamentoPadrao, cancellationToken);
+            await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
+
+            return mapeamentoPadrao;
         }
 
         private static void EnsureCanAccessColecao(Usuario usuario, Colecao colecao)
@@ -166,7 +193,9 @@ namespace ExcelDoc.Server.Services
                 IndiceColuna = mapeamento.IndiceColuna,
                 TipoCampo = mapeamento.TipoCampo,
                 Formato = mapeamento.Formato,
-                FK_IdColecao = mapeamento.FK_IdColecao
+                FK_IdColecao = mapeamento.Mapeamento.FK_IdColecao,
+                FK_IdMapeamento = mapeamento.FK_IdMapeamento,
+                NomeMapeamento = mapeamento.Mapeamento.Nome
             };
         }
 

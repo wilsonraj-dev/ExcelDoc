@@ -38,7 +38,8 @@ namespace ExcelDoc.Server.Repositories
                 .Include(x => x.Documento)
                     .ThenInclude(x => x.DocumentoColecoes)
                         .ThenInclude(x => x.Colecao)
-                            .ThenInclude(x => x.MapeamentoCampos)
+                            .ThenInclude(x => x.Mapeamentos)
+                                .ThenInclude(x => x.Campos)
                 .Include(x => x.Empresa)
                 .Include(x => x.Usuario)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
