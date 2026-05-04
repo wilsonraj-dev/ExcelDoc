@@ -28,6 +28,10 @@ namespace ExcelDoc.Server.Data
 
         public DbSet<ProcessamentoItem> ProcessamentoItens => Set<ProcessamentoItem>();
 
+        public DbSet<PerfilMapeamento> PerfilMapeamentos => Set<PerfilMapeamento>();
+
+        public DbSet<PerfilMapeamentoItem> PerfilMapeamentoItens => Set<PerfilMapeamentoItem>();
+
         public DbSet<Usuario> Usuarios => Set<Usuario>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -292,6 +296,73 @@ namespace ExcelDoc.Server.Data
                     .WithMany()
                     .HasForeignKey(e => e.FK_IdMapeamento)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<PerfilMapeamento>(entity =>
+            {
+                entity.ToTable("PerfilMapeamento");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Nome)
+                    .IsRequired()
+                    .HasMaxLength(150);
+
+                entity.Property(e => e.DataCriacao)
+                    .HasPrecision(0);
+
+                entity.Property(e => e.IsPadrao)
+                    .HasDefaultValue(false);
+
+                entity.HasIndex(e => e.FK_IdDocumento)
+                    .HasDatabaseName("IX_PerfilMapeamento_FK_IdDocumento");
+
+                entity.HasIndex(e => e.FK_IdEmpresa)
+                    .HasDatabaseName("IX_PerfilMapeamento_FK_IdEmpresa");
+
+                entity.HasOne(e => e.Documento)
+                    .WithMany(e => e.PerfilMapeamentos)
+                    .HasForeignKey(e => e.FK_IdDocumento)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_PerfilMapeamento_Documentos_FK_IdDocumento");
+
+                entity.HasOne(e => e.Empresa)
+                    .WithMany(e => e.PerfilMapeamentos)
+                    .HasForeignKey(e => e.FK_IdEmpresa)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_PerfilMapeamento_Empresa_FK_IdEmpresa");
+            });
+
+            modelBuilder.Entity<PerfilMapeamentoItem>(entity =>
+            {
+                entity.ToTable("PerfilMapeamentoItem");
+
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => new { e.FK_IdPerfilMapeamento, e.FK_IdColecao })
+                    .IsUnique()
+                    .HasDatabaseName("UX_PerfilMapeamentoItem_FK_IdPerfilMapeamento_FK_IdColecao");
+
+                entity.HasIndex(e => e.FK_IdMapeamento)
+                    .HasDatabaseName("IX_PerfilMapeamentoItem_FK_IdMapeamento");
+
+                entity.HasOne(e => e.PerfilMapeamento)
+                    .WithMany(e => e.Itens)
+                    .HasForeignKey(e => e.FK_IdPerfilMapeamento)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_PerfilMapeamentoItem_PerfilMapeamento_FK_IdPerfilMapeamento");
+
+                entity.HasOne(e => e.Colecao)
+                    .WithMany()
+                    .HasForeignKey(e => e.FK_IdColecao)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_PerfilMapeamentoItem_Colecoes_FK_IdColecao");
+
+                entity.HasOne(e => e.Mapeamento)
+                    .WithMany()
+                    .HasForeignKey(e => e.FK_IdMapeamento)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_PerfilMapeamentoItem_Mapeamento_FK_IdMapeamento");
             });
 
             modelBuilder.Entity<ProcessamentoItem>(entity =>
