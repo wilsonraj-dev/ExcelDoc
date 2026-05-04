@@ -1,0 +1,107 @@
+:host {
+  display: block;
+}
+
+.settings-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+  .settings-header h2 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  .settings-header p {
+    margin: 0.5rem 0 0;
+    color: #475569;
+  }
+
+.settings-header__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.settings-card {
+  border-radius: 24px;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 120px;
+  color: #475569;
+}
+
+.loading-state--inline {
+  min-height: 0;
+  justify-content: flex-start;
+  padding: 1rem 0;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.perfil-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.perfil-page__content {
+  display: grid;
+  gap: 1rem;
+}
+
+.perfil-page__filters {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 400px;
+}
+
+.perfil-page__table {
+  display: grid;
+  gap: 1rem;
+}
+
+.perfil-page__table-content {
+  width: 100%;
+}
+
+.perfil-page__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.perfil-page__empty {
+  color: #475569;
+  padding: 1rem 0;
+}
+
+.perfil-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.perfil-badge--padrao {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.perfil-badge--empresa {
+  background: #dbeafe;
+  color: #1d4ed8;
+}

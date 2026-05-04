@@ -57,6 +57,14 @@ export class SideMenuComponent {
       exact: true
     },
     {
+      label: 'Perfil de Mapeamento',
+      description: 'Agrupe mapeamentos por documento.',
+      icon: 'layers',
+      route: '/perfil-mapeamento',
+      roles: [AUTH_ROLES.administrator, AUTH_ROLES.user],
+      exact: true
+    },
+    {
       label: 'Processamento',
       description: 'Acompanhe execuções e etapas.',
       icon: 'settings_slow_motion',

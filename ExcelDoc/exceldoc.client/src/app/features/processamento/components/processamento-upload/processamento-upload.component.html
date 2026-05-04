@@ -15,23 +15,23 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Mapeamento</mat-label>
-          <mat-select formControlName="mapeamentoId" [disabled]="isLoadingMapeamentos || !form.controls['documentoId'].value">
-            <mat-option *ngFor="let mapeamento of mapeamentosDisponiveis" [value]="mapeamento.id">
+          <mat-label>Perfil de Mapeamento</mat-label>
+          <mat-select formControlName="perfilMapeamentoId" [disabled]="isLoadingPerfis || !form.controls['documentoId'].value">
+            <mat-option *ngFor="let perfil of perfisDisponiveis" [value]="perfil.id">
               <div class="mapping-option">
-                <span class="mapping-option__name">{{ mapeamento.nome }}</span>
+                <span class="mapping-option__name">{{ perfil.nome }}</span>
                 <span class="mapping-option__meta">
-                  <span [class]="getMapeamentoBadgeClass(mapeamento)" [matTooltip]="getMapeamentoTooltip(mapeamento)">
-                    {{ getMapeamentoBadgeLabel(mapeamento) }}
+                  <span [class]="getPerfilBadgeClass(perfil)" [matTooltip]="getPerfilTooltip(perfil)">
+                    {{ getPerfilBadgeLabel(perfil) }}
                   </span>
-                  <span>{{ getCampoQuantidadeLabel(mapeamento) }}</span>
+                  <span>{{ getItensQuantidadeLabel(perfil) }}</span>
                 </span>
               </div>
             </mat-option>
           </mat-select>
-          <mat-hint *ngIf="isLoadingMapeamentos">Carregando mapeamentos...</mat-hint>
-          <mat-hint *ngIf="!isLoadingMapeamentos && form.controls['documentoId'].value && !mapeamentosDisponiveis.length">Nenhum mapeamento disponível para este documento.</mat-hint>
-          <mat-error>Selecione um mapeamento.</mat-error>
+          <mat-hint *ngIf="isLoadingPerfis">Carregando perfis...</mat-hint>
+          <mat-hint *ngIf="!isLoadingPerfis && form.controls['documentoId'].value && !perfisDisponiveis.length">Nenhum perfil disponível para este documento.</mat-hint>
+          <mat-error>Selecione um perfil de mapeamento.</mat-error>
         </mat-form-field>
 
         <div class="file-upload-area">
@@ -45,7 +45,7 @@
         </div>
 
         <div class="actions">
-          <button mat-raised-button color="primary" type="submit" [disabled]="!isFormValid || isLoading || isLoadingMapeamentos">
+          <button mat-raised-button color="primary" type="submit" [disabled]="!isFormValid || isLoading || isLoadingPerfis">
             <mat-icon>play_arrow</mat-icon>
             Processar
           </button>

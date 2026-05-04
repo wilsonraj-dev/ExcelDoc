@@ -1,0 +1,109 @@
+.full-width {
+  width: 100%;
+}
+
+.colecao-groups {
+  margin: 1rem 0;
+  display: grid;
+  gap: 1.25rem;
+}
+
+  .colecao-groups h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    color: #1e293b;
+  }
+
+.colecao-group {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.colecao-group__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.colecao-group__tipo {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.colecao-group__tipo--header {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.colecao-group__name {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.mapping-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mapping-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.mapping-chip--padrao {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.mapping-chip--empresa {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 120px;
+  color: #475569;
+}
+
+.loading-state--inline {
+  min-height: 0;
+  justify-content: flex-start;
+  padding: 1rem 0;
+}
+
+.feature-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+  .feature-page h2 {
+    margin: 0;
+    font-size: 2rem;
+  }

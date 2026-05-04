@@ -15,11 +15,11 @@ export class ProcessamentoService {
     private readonly authService: AuthService
   ) { }
 
-  upload(file: File, documentoId: number, mapeamentoId: number, empresaId: number): Observable<Processamento> {
+  upload(file: File, documentoId: number, perfilMapeamentoId: number, empresaId: number): Observable<Processamento> {
     const formData = new FormData();
     formData.append('Arquivo', file);
     formData.append('DocumentoId', documentoId.toString());
-    formData.append('MapeamentoId', mapeamentoId.toString());
+    formData.append('PerfilMapeamentoId', perfilMapeamentoId.toString());
     formData.append('EmpresaId', empresaId.toString());
     return this.http.post<Processamento>(`${this.apiUrl}/upload`, formData);
   }

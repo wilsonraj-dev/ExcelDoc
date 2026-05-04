@@ -6,12 +6,10 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { Colecao, getColecaoDocumentoIds } from '../../../colecoes/models/colecao.model';
-import { ColecaoService } from '../../../colecoes/services/colecao.service';
 import { Documento } from '../../../documentos/models/documento.model';
 import { DocumentoService } from '../../../documentos/services/documento.service';
-import { Mapeamento, getMapeamentoEmpresaId, orderMapeamentos } from '../../../mapeamento/models/mapeamento.model';
-import { MapeamentoService } from '../../../mapeamento/services/mapeamento.service';
+import { PerfilMapeamento } from '../../../perfil-mapeamento/models/perfil-mapeamento.model';
+import { PerfilMapeamentoService } from '../../../perfil-mapeamento/services/perfil-mapeamento.service';
 import { ProcessamentoService } from '../../services/processamento.service';
 
 @Component({
@@ -22,12 +20,11 @@ import { ProcessamentoService } from '../../services/processamento.service';
 export class ProcessamentoUploadComponent implements OnInit {
   form!: FormGroup;
   documentos: Documento[] = [];
-  colecoesDisponiveis: Colecao[] = [];
-  mapeamentosDisponiveis: Mapeamento[] = [];
+  perfisDisponiveis: PerfilMapeamento[] = [];
   selectedFile: File | null = null;
   isLoading = false;
   isLoadingDocumentos = false;
-  isLoadingMapeamentos = false;
+  isLoadingPerfis = false;
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -35,8 +32,7 @@ export class ProcessamentoUploadComponent implements OnInit {
     private readonly fb: FormBuilder,
     private readonly router: Router,
     private readonly documentoService: DocumentoService,
-    private readonly colecaoService: ColecaoService,
-    private readonly mapeamentoService: MapeamentoService,
+    private readonly perfilService: PerfilMapeamentoService,
     private readonly processamentoService: ProcessamentoService,
     private readonly notificationService: NotificationService,
     private readonly authService: AuthService
@@ -45,17 +41,17 @@ export class ProcessamentoUploadComponent implements OnInit {
   ngOnInit(): void {
     this.form = this.fb.group({
       documentoId: [null, Validators.required],
-      mapeamentoId: [null, Validators.required]
+      perfilMapeamentoId: [null, Validators.required]
     });
 
     this.form.controls['documentoId'].valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((documentoId) => {
-        this.form.controls['mapeamentoId'].setValue(null, { emitEvent: false });
-        this.mapeamentosDisponiveis = [];
+        this.form.controls['perfilMapeamentoId'].setValue(null, { emitEvent: false });
+        this.perfisDisponiveis = [];
 
         if (documentoId) {
-          this.loadMapeamentosByDocumento(documentoId as number);
+          this.loadPerfis(documentoId as number);
         }
       });
 
@@ -95,7 +91,7 @@ export class ProcessamentoUploadComponent implements OnInit {
     }
 
     const documentoId = this.form.value.documentoId as number;
-    const mapeamentoId = this.form.value.mapeamentoId as number;
+    const perfilMapeamentoId = this.form.value.perfilMapeamentoId as number;
     const empresaId = this.empresaId;
 
     if (!empresaId) {
@@ -104,7 +100,7 @@ export class ProcessamentoUploadComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.processamentoService.upload(this.selectedFile, documentoId, mapeamentoId, empresaId)
+    this.processamentoService.upload(this.selectedFile, documentoId, perfilMapeamentoId, empresaId)
       .pipe(
         finalize(() => { this.isLoading = false; }),
         takeUntilDestroyed(this.destroyRef)
@@ -121,23 +117,23 @@ export class ProcessamentoUploadComponent implements OnInit {
       });
   }
 
-  getMapeamentoBadgeClass(mapeamento: Mapeamento): string {
-    return mapeamento.isPadrao ? 'mapping-chip mapping-chip--padrao' : 'mapping-chip mapping-chip--empresa';
+  getPerfilBadgeClass(perfil: PerfilMapeamento): string {
+    return perfil.isPadrao ? 'mapping-chip mapping-chip--padrao' : 'mapping-chip mapping-chip--empresa';
   }
 
-  getMapeamentoBadgeLabel(mapeamento: Mapeamento): string {
-    return mapeamento.isPadrao ? 'Padrão' : 'Empresa';
+  getPerfilBadgeLabel(perfil: PerfilMapeamento): string {
+    return perfil.isPadrao ? 'Padrão' : 'Empresa';
   }
 
-  getMapeamentoTooltip(mapeamento: Mapeamento): string {
-    return mapeamento.isPadrao
-      ? 'Mapeamento padrão disponível para todos os usuários com acesso à coleção.'
-      : 'Mapeamento customizado para a empresa.';
+  getPerfilTooltip(perfil: PerfilMapeamento): string {
+    return perfil.isPadrao
+      ? 'Perfil padrão disponível para todos os usuários.'
+      : 'Perfil customizado para a empresa.';
   }
 
-  getCampoQuantidadeLabel(mapeamento: Mapeamento): string {
-    const quantidade = mapeamento.quantidadeCampos ?? 0;
-    return quantidade === 1 ? '1 campo' : `${quantidade} campos`;
+  getItensQuantidadeLabel(perfil: PerfilMapeamento): string {
+    const quantidade = perfil.itens?.length ?? 0;
+    return quantidade === 1 ? '1 coleção' : `${quantidade} coleções`;
   }
 
   private loadDocumentos(): void {
@@ -150,7 +146,6 @@ export class ProcessamentoUploadComponent implements OnInit {
       .subscribe({
         next: (docs) => {
           this.documentos = docs;
-          this.loadColecoes();
         },
         error: () => {
           this.notificationService.showError('Erro ao carregar documentos.');
@@ -158,59 +153,23 @@ export class ProcessamentoUploadComponent implements OnInit {
       });
   }
 
-  private loadColecoes(): void {
-    this.colecaoService.getAll()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (colecoes) => {
-          this.colecoesDisponiveis = colecoes;
-        },
-        error: () => {
-          this.notificationService.showError('Erro ao carregar coleções dos documentos.');
-        }
-      });
-  }
-
-  private loadMapeamentosByDocumento(documentoId: number): void {
-    const colecao = this.resolveColecaoByDocumento(documentoId);
-
-    if (!colecao) {
-      this.notificationService.showError('Não foi possível identificar a coleção vinculada ao documento selecionado.');
-      return;
-    }
-
-    this.isLoadingMapeamentos = true;
-    this.mapeamentoService.getMapeamentosByColecao(colecao.id)
+  private loadPerfis(documentoId: number): void {
+    this.isLoadingPerfis = true;
+    this.perfilService.getByDocumento(documentoId)
       .pipe(
-        finalize(() => { this.isLoadingMapeamentos = false; }),
+        finalize(() => { this.isLoadingPerfis = false; }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: (mapeamentos) => {
-          this.mapeamentosDisponiveis = orderMapeamentos(mapeamentos.filter((item) => this.isMapeamentoVisible(item)));
-          if (!this.mapeamentosDisponiveis.length) {
-            this.notificationService.showInfo('Nenhum mapeamento disponível para o documento selecionado.');
+        next: (perfis) => {
+          this.perfisDisponiveis = perfis;
+          if (!perfis.length) {
+            this.notificationService.showInfo('Nenhum perfil de mapeamento disponível para o documento selecionado.');
           }
         },
         error: () => {
-          this.notificationService.showError('Falha ao carregar mapeamentos para o documento selecionado.');
+          this.notificationService.showError('Falha ao carregar perfis de mapeamento.');
         }
       });
-  }
-
-  private resolveColecaoByDocumento(documentoId: number): Colecao | null {
-    return this.colecoesDisponiveis.find((colecao) => getColecaoDocumentoIds(colecao).includes(documentoId)) ?? null;
-  }
-
-  private isMapeamentoVisible(mapeamento: Mapeamento): boolean {
-    if (this.isAdministrator) {
-      return true;
-    }
-
-    if (mapeamento.isPadrao) {
-      return true;
-    }
-
-    return getMapeamentoEmpresaId(mapeamento) === this.empresaId;
   }
 }
