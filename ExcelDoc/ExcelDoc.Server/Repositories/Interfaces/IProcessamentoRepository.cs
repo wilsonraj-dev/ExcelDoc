@@ -4,8 +4,6 @@ namespace ExcelDoc.Server.Repositories.Interfaces
 {
     public interface IProcessamentoRepository
     {
-        Task<bool> ExistsByHashAsync(int empresaId, string hashArquivo, CancellationToken cancellationToken = default);
-
         Task AddAsync(Processamento processamento, CancellationToken cancellationToken = default);
 
         Task<Processamento?> GetByIdAsync(int id, CancellationToken cancellationToken = default);

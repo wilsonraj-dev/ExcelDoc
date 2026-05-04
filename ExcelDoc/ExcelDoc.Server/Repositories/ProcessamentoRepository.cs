@@ -14,11 +14,6 @@ namespace ExcelDoc.Server.Repositories
             _context = context;
         }
 
-        public Task<bool> ExistsByHashAsync(int empresaId, string hashArquivo, CancellationToken cancellationToken = default)
-        {
-            return _context.Processamentos.AnyAsync(x => x.FK_IdEmpresa == empresaId && x.HashArquivo == hashArquivo, cancellationToken);
-        }
-
         public async Task AddAsync(Processamento processamento, CancellationToken cancellationToken = default)
         {
             await _context.Processamentos.AddAsync(processamento, cancellationToken);

@@ -284,13 +284,11 @@ namespace ExcelDoc.Server.Migrations
 
                     b.HasIndex("FK_IdDocumento");
 
+                    b.HasIndex("FK_IdEmpresa");
+
                     b.HasIndex("FK_IdMapeamento");
 
                     b.HasIndex("FK_IdUsuario");
-
-                    b.HasIndex("FK_IdEmpresa", "HashArquivo")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Processamento_FK_IdEmpresa_HashArquivo");
 
                     b.ToTable("Processamento", (string)null);
                 });

@@ -83,11 +83,6 @@ namespace ExcelDoc.Server.Services
 
             var hash = _hashArquivoService.ComputeSha256(content);
 
-            if (await _processamentoRepository.ExistsByHashAsync(request.EmpresaId, hash, cancellationToken))
-            {
-                throw new InvalidOperationException("Arquivo já processado anteriormente para a empresa informada.");
-            }
-
             var fileName = $"{hash}_{Guid.NewGuid():N}{extension}";
             var filePath = await _arquivoStorageService.SaveAsync(fileName, content, cancellationToken);
 
@@ -103,13 +98,14 @@ namespace ExcelDoc.Server.Services
                 TotalErro = 0,
                 TotalRegistros = 0,
                 TotalSucesso = 0,
-                HashArquivo = hash,
-                Documento = documento,
-                Mapeamento = mapeamento
+                HashArquivo = hash
             };
 
             await _processamentoRepository.AddAsync(entity, cancellationToken);
             await _processamentoRepository.SaveChangesAsync(cancellationToken);
+
+            entity.Documento = documento;
+            entity.Mapeamento = mapeamento;
 
             await _backgroundTaskQueue.EnqueueAsync(new ProcessamentoQueueItem
             {

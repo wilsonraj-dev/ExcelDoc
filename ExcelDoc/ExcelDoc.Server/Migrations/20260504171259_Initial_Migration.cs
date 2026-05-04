@@ -101,6 +101,8 @@ namespace ExcelDoc.Server.Migrations
                     NomeUsuario = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false),
                     SenhaHash = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false),
                     Email = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true),
+                    ResetPasswordCode = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: true),
+                    ResetPasswordCodeExpiresAtUtc = table.Column<DateTime>(type: "datetime(0)", precision: 0, nullable: true),
                     TipoUsuario = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false),
                     FK_IdEmpresa = table.Column<int>(type: "int", nullable: true),
                     Ativo = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: true)
@@ -145,6 +147,36 @@ namespace ExcelDoc.Server.Migrations
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "Mapeamento",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    Nome = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false),
+                    FK_IdColecao = table.Column<int>(type: "int", nullable: false),
+                    FK_IdEmpresa = table.Column<int>(type: "int", nullable: true),
+                    IsPadrao = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false),
+                    DataCriacao = table.Column<DateTime>(type: "datetime(0)", precision: 0, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Mapeamento", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Mapeamento_Colecoes_FK_IdColecao",
+                        column: x => x.FK_IdColecao,
+                        principalTable: "Colecoes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Mapeamento_Empresa_FK_IdEmpresa",
+                        column: x => x.FK_IdEmpresa,
+                        principalTable: "Empresa",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "MapeamentoCampos",
                 columns: table => new
                 {
@@ -155,17 +187,17 @@ namespace ExcelDoc.Server.Migrations
                     DescricaoCampo = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false),
                     TipoCampo = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
                     Formato = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
-                    FK_IdColecao = table.Column<int>(type: "int", nullable: false)
+                    FK_IdMapeamento = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MapeamentoCampos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MapeamentoCampos_Colecoes_FK_IdColecao",
-                        column: x => x.FK_IdColecao,
-                        principalTable: "Colecoes",
+                        name: "FK_MapeamentoCampos_Mapeamento_FK_IdMapeamento",
+                        column: x => x.FK_IdMapeamento,
+                        principalTable: "Mapeamento",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySQL:Charset", "utf8mb4");
 
@@ -178,6 +210,7 @@ namespace ExcelDoc.Server.Migrations
                     FK_IdUsuario = table.Column<int>(type: "int", nullable: false),
                     FK_IdEmpresa = table.Column<int>(type: "int", nullable: false),
                     FK_IdDocumento = table.Column<int>(type: "int", nullable: false),
+                    FK_IdMapeamento = table.Column<int>(type: "int", nullable: false),
                     NomeArquivo = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false),
                     DataExecucao = table.Column<DateTime>(type: "datetime(0)", precision: 0, nullable: false),
                     Status = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
@@ -199,6 +232,12 @@ namespace ExcelDoc.Server.Migrations
                         name: "FK_Processamento_Empresa_FK_IdEmpresa",
                         column: x => x.FK_IdEmpresa,
                         principalTable: "Empresa",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Processamento_Mapeamento_FK_IdMapeamento",
+                        column: x => x.FK_IdMapeamento,
+                        principalTable: "Mapeamento",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -258,9 +297,25 @@ namespace ExcelDoc.Server.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_MapeamentoCampos_FK_IdColecao",
-                table: "MapeamentoCampos",
+                name: "IX_Mapeamento_FK_IdColecao",
+                table: "Mapeamento",
                 column: "FK_IdColecao");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Mapeamento_FK_IdEmpresa",
+                table: "Mapeamento",
+                column: "FK_IdEmpresa");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MapeamentoCampos_FK_IdMapeamento",
+                table: "MapeamentoCampos",
+                column: "FK_IdMapeamento");
+
+            migrationBuilder.CreateIndex(
+                name: "UX_MapeamentoCampos_FK_IdMapeamento_IndiceColuna",
+                table: "MapeamentoCampos",
+                columns: new[] { "FK_IdMapeamento", "IndiceColuna" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Processamento_FK_IdDocumento",
@@ -268,10 +323,14 @@ namespace ExcelDoc.Server.Migrations
                 column: "FK_IdDocumento");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Processamento_FK_IdEmpresa_HashArquivo",
+                name: "IX_Processamento_FK_IdEmpresa",
                 table: "Processamento",
-                columns: new[] { "FK_IdEmpresa", "HashArquivo" },
-                unique: true);
+                column: "FK_IdEmpresa");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Processamento_FK_IdMapeamento",
+                table: "Processamento",
+                column: "FK_IdMapeamento");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Processamento_FK_IdUsuario",
@@ -305,16 +364,19 @@ namespace ExcelDoc.Server.Migrations
                 name: "ProcessamentoItem");
 
             migrationBuilder.DropTable(
-                name: "Colecoes");
-
-            migrationBuilder.DropTable(
                 name: "Processamento");
 
             migrationBuilder.DropTable(
                 name: "Documentos");
 
             migrationBuilder.DropTable(
+                name: "Mapeamento");
+
+            migrationBuilder.DropTable(
                 name: "Usuario");
+
+            migrationBuilder.DropTable(
+                name: "Colecoes");
 
             migrationBuilder.DropTable(
                 name: "Empresa");

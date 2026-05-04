@@ -273,10 +273,6 @@ namespace ExcelDoc.Server.Data
                 entity.Property(e => e.DataExecucao)
                     .HasPrecision(0);
 
-                entity.HasIndex(e => new { e.FK_IdEmpresa, e.HashArquivo })
-                    .HasDatabaseName("IX_Processamento_FK_IdEmpresa_HashArquivo")
-                    .IsUnique();
-
                 entity.HasOne(e => e.Usuario)
                     .WithMany(e => e.Processamentos)
                     .HasForeignKey(e => e.FK_IdUsuario)

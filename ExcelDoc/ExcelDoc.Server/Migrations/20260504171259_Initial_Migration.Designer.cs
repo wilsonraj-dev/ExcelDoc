@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelDoc.Server.Migrations
 {
     [DbContext(typeof(ExcelDocDbContext))]
-    [Migration("20260405104603_AddPasswordResetFields")]
-    partial class AddPasswordResetFields
+    [Migration("20260504171259_Initial_Migration")]
+    partial class Initial_Migration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,7 +43,8 @@ namespace ExcelDoc.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FK_IdEmpresa");
+                    b.HasIndex("FK_IdEmpresa")
+                        .HasDatabaseName("IX_Colecoes_FK_IdEmpresa");
 
                     b.ToTable("Colecoes", (string)null);
                 });
@@ -130,10 +131,12 @@ namespace ExcelDoc.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FK_IdColecao");
+                    b.HasIndex("FK_IdColecao")
+                        .HasDatabaseName("IX_DocumentoColecao_FK_IdColecao");
 
                     b.HasIndex("FK_IdDocumento", "FK_IdColecao")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_DocumentoColecao_FK_IdDocumento_FK_IdColecao");
 
                     b.ToTable("DocumentoColecao", (string)null);
                 });
@@ -154,6 +157,43 @@ namespace ExcelDoc.Server.Migrations
                     b.ToTable("Empresa", (string)null);
                 });
 
+            modelBuilder.Entity("ExcelDoc.Server.Models.Mapeamento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasPrecision(0)
+                        .HasColumnType("datetime(0)");
+
+                    b.Property<int>("FK_IdColecao")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FK_IdEmpresa")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPadrao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FK_IdColecao")
+                        .HasDatabaseName("IX_Mapeamento_FK_IdColecao");
+
+                    b.HasIndex("FK_IdEmpresa")
+                        .HasDatabaseName("IX_Mapeamento_FK_IdEmpresa");
+
+                    b.ToTable("Mapeamento", (string)null);
+                });
+
             modelBuilder.Entity("ExcelDoc.Server.Models.MapeamentoCampo", b =>
                 {
                     b.Property<int>("Id")
@@ -165,7 +205,7 @@ namespace ExcelDoc.Server.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
-                    b.Property<int>("FK_IdColecao")
+                    b.Property<int>("FK_IdMapeamento")
                         .HasColumnType("int");
 
                     b.Property<string>("Formato")
@@ -187,7 +227,12 @@ namespace ExcelDoc.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FK_IdColecao");
+                    b.HasIndex("FK_IdMapeamento")
+                        .HasDatabaseName("IX_MapeamentoCampos_FK_IdMapeamento");
+
+                    b.HasIndex("FK_IdMapeamento", "IndiceColuna")
+                        .IsUnique()
+                        .HasDatabaseName("UX_MapeamentoCampos_FK_IdMapeamento_IndiceColuna");
 
                     b.ToTable("MapeamentoCampos", (string)null);
                 });
@@ -206,6 +251,9 @@ namespace ExcelDoc.Server.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("FK_IdEmpresa")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FK_IdMapeamento")
                         .HasColumnType("int");
 
                     b.Property<int>("FK_IdUsuario")
@@ -239,10 +287,11 @@ namespace ExcelDoc.Server.Migrations
 
                     b.HasIndex("FK_IdDocumento");
 
-                    b.HasIndex("FK_IdUsuario");
+                    b.HasIndex("FK_IdEmpresa");
 
-                    b.HasIndex("FK_IdEmpresa", "HashArquivo")
-                        .IsUnique();
+                    b.HasIndex("FK_IdMapeamento");
+
+                    b.HasIndex("FK_IdUsuario");
 
                     b.ToTable("Processamento", (string)null);
                 });
@@ -370,15 +419,36 @@ namespace ExcelDoc.Server.Migrations
                     b.Navigation("Documento");
                 });
 
-            modelBuilder.Entity("ExcelDoc.Server.Models.MapeamentoCampo", b =>
+            modelBuilder.Entity("ExcelDoc.Server.Models.Mapeamento", b =>
                 {
                     b.HasOne("ExcelDoc.Server.Models.Colecao", "Colecao")
-                        .WithMany("MapeamentoCampos")
+                        .WithMany("Mapeamentos")
                         .HasForeignKey("FK_IdColecao")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Mapeamento_Colecoes_FK_IdColecao");
+
+                    b.HasOne("ExcelDoc.Server.Models.Empresa", "Empresa")
+                        .WithMany("Mapeamentos")
+                        .HasForeignKey("FK_IdEmpresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Mapeamento_Empresa_FK_IdEmpresa");
 
                     b.Navigation("Colecao");
+
+                    b.Navigation("Empresa");
+                });
+
+            modelBuilder.Entity("ExcelDoc.Server.Models.MapeamentoCampo", b =>
+                {
+                    b.HasOne("ExcelDoc.Server.Models.Mapeamento", "Mapeamento")
+                        .WithMany("Campos")
+                        .HasForeignKey("FK_IdMapeamento")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_MapeamentoCampos_Mapeamento_FK_IdMapeamento");
+
+                    b.Navigation("Mapeamento");
                 });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Processamento", b =>
@@ -395,6 +465,12 @@ namespace ExcelDoc.Server.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("ExcelDoc.Server.Models.Mapeamento", "Mapeamento")
+                        .WithMany()
+                        .HasForeignKey("FK_IdMapeamento")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ExcelDoc.Server.Models.Usuario", "Usuario")
                         .WithMany("Processamentos")
                         .HasForeignKey("FK_IdUsuario")
@@ -404,6 +480,8 @@ namespace ExcelDoc.Server.Migrations
                     b.Navigation("Documento");
 
                     b.Navigation("Empresa");
+
+                    b.Navigation("Mapeamento");
 
                     b.Navigation("Usuario");
                 });
@@ -433,7 +511,7 @@ namespace ExcelDoc.Server.Migrations
                 {
                     b.Navigation("DocumentoColecoes");
 
-                    b.Navigation("MapeamentoCampos");
+                    b.Navigation("Mapeamentos");
                 });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Documento", b =>
@@ -449,9 +527,16 @@ namespace ExcelDoc.Server.Migrations
 
                     b.Navigation("Configuracao");
 
+                    b.Navigation("Mapeamentos");
+
                     b.Navigation("Processamentos");
 
                     b.Navigation("Usuarios");
+                });
+
+            modelBuilder.Entity("ExcelDoc.Server.Models.Mapeamento", b =>
+                {
+                    b.Navigation("Campos");
                 });
 
             modelBuilder.Entity("ExcelDoc.Server.Models.Processamento", b =>
