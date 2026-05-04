@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>Novo Mapeamento</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Nome do mapeamento</mat-label>
+      <input matInput formControlName="nome" maxlength="120" placeholder="Ex: Mapeamento Financeiro" />
+      <mat-error *ngIf="form.controls.nome.hasError('required')">Informe o nome do mapeamento.</mat-error>
+      <mat-error *ngIf="form.controls.nome.hasError('maxlength')">O nome deve ter no máximo 120 caracteres.</mat-error>
+    </mat-form-field>
+
+    <mat-checkbox *ngIf="exibirCampoPadrao" formControlName="isPadrao">
+      Mapeamento padrão
+    </mat-checkbox>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button type="button" (click)="cancelar()">Cancelar</button>
+  <button mat-raised-button color="primary" type="button" (click)="confirmar()">Criar</button>
+</mat-dialog-actions>

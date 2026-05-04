@@ -12,6 +12,9 @@ namespace ExcelDoc.Server.DTOs.Processamentos
         public int DocumentoId { get; set; }
 
         [Required]
+        public int MapeamentoId { get; set; }
+
+        [Required]
         public IFormFile Arquivo { get; set; } = null!;
     }
 }

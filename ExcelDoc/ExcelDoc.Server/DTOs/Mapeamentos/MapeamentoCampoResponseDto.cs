@@ -2,13 +2,11 @@ using ExcelDoc.Server.Models;
 
 namespace ExcelDoc.Server.DTOs.Mapeamentos
 {
-    public class MapeamentoResponseDto
+    public class MapeamentoCampoResponseDto
     {
         public int Id { get; set; }
 
         public string NomeCampo { get; set; } = string.Empty;
-
-        public string DescricaoCampo { get; set; } = string.Empty;
 
         public int IndiceColuna { get; set; }
 
@@ -16,10 +14,6 @@ namespace ExcelDoc.Server.DTOs.Mapeamentos
 
         public string? Formato { get; set; }
 
-        public int FK_IdColecao { get; set; }
-
         public int FK_IdMapeamento { get; set; }
-
-        public string NomeMapeamento { get; set; } = string.Empty;
     }
 }

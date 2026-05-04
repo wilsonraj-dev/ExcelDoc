@@ -291,6 +291,11 @@ namespace ExcelDoc.Server.Data
                     .WithMany(e => e.Processamentos)
                     .HasForeignKey(e => e.FK_IdDocumento)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Mapeamento)
+                    .WithMany()
+                    .HasForeignKey(e => e.FK_IdMapeamento)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<ProcessamentoItem>(entity =>

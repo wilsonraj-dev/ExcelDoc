@@ -1,5 +1,3 @@
-using ExcelDoc.Server.DTOs.Colecoes;
-using ExcelDoc.Server.DTOs.Documentos;
 using ExcelDoc.Server.DTOs.Mapeamentos;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
@@ -23,7 +21,7 @@ namespace ExcelDoc.Server.Services
             _logger = logger;
         }
 
-        public async Task<IReadOnlyCollection<MapeamentoResponseDto>> GetByColecaoAsync(int colecaoId, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyCollection<MapeamentoResumoResponseDto>> GetByColecaoAsync(int colecaoId, CancellationToken cancellationToken = default)
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var colecao = await _mapeamentoRepository.GetColecaoByIdAsync(colecaoId, cancellationToken)
@@ -31,228 +29,156 @@ namespace ExcelDoc.Server.Services
 
             EnsureCanAccessColecao(usuario, colecao);
 
-            var campos = await _mapeamentoRepository.GetByColecaoIdAsync(colecaoId, cancellationToken);
-            return campos.Select(Map).ToList();
+            var mapeamentos = await _mapeamentoRepository.GetMapeamentosByColecaoIdAsync(colecaoId, cancellationToken);
+            return mapeamentos
+                .Where(mapeamento => PodeVisualizarMapeamento(usuario, mapeamento))
+                .Select(Map)
+                .ToList();
         }
 
-        public async Task<MapeamentoResponseDto> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<MapeamentoResumoResponseDto> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
-            var mapeamento = await _mapeamentoRepository.GetByIdAsync(id, cancellationToken)
+            var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
 
-            EnsureCanAccessColecao(usuario, mapeamento.Mapeamento.Colecao);
-
+            EnsureCanAccessMapeamento(usuario, mapeamento);
             return Map(mapeamento);
         }
 
-        public async Task<MapeamentoResponseDto> CriarAsync(MapeamentoRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<MapeamentoResumoResponseDto> CriarAsync(MapeamentoRequestDto request, CancellationToken cancellationToken = default)
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var colecao = await _mapeamentoRepository.GetColecaoByIdAsync(request.FK_IdColecao, cancellationToken)
                 ?? throw new KeyNotFoundException("Coleção não encontrada.");
 
-            EnsureCanEditColecao(usuario, colecao);
-            var mapeamentoPadrao = await ObterOuCriarMapeamentoPadraoAsync(colecao, cancellationToken);
-            await ValidarMapeamentoAsync(request, mapeamentoPadrao.Id, null, cancellationToken);
+            EnsureCanCreateMapeamento(usuario, request, colecao);
 
-            var campo = new MapeamentoCampo
+            var mapeamento = new Mapeamento
             {
-                NomeCampo = request.NomeCampo.Trim(),
-                DescricaoCampo = request.DescricaoCampo.Trim(),
-                IndiceColuna = request.IndiceColuna,
-                TipoCampo = request.TipoCampo,
-                Formato = request.TipoCampo == TipoCampo.DateTime ? request.Formato?.Trim() : null,
-                FK_IdMapeamento = mapeamentoPadrao.Id
+                Nome = request.Nome.Trim(),
+                FK_IdColecao = request.FK_IdColecao,
+                FK_IdEmpresa = usuario.TipoUsuario == TipoUsuario.Administrador ? request.FK_IdEmpresa : usuario.FK_IdEmpresa,
+                IsPadrao = usuario.TipoUsuario == TipoUsuario.Administrador && request.IsPadrao,
+                DataCriacao = DateTime.UtcNow,
+                Colecao = colecao
             };
 
-            await _mapeamentoRepository.AddAsync(campo, cancellationToken);
+            await _mapeamentoRepository.AddMapeamentoAsync(mapeamento, cancellationToken);
             await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
 
-            campo.Mapeamento = mapeamentoPadrao;
+            _logger.LogInformation("Mapeamento {MapeamentoId} criado para a coleção {ColecaoId} pelo usuário {UsuarioId}", mapeamento.Id, colecao.Id, usuario.Id);
 
-            return Map(campo);
+            return Map(mapeamento);
         }
 
-        public async Task<MapeamentoResponseDto> AtualizarAsync(int id, MapeamentoRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<MapeamentoResumoResponseDto> ClonarAsync(int id, CancellationToken cancellationToken = default)
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
-            var mapeamento = await _mapeamentoRepository.GetByIdAsync(id, cancellationToken)
+            var origem = await _mapeamentoRepository.GetMapeamentoByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
 
-            EnsureCanEditColecao(usuario, mapeamento.Mapeamento.Colecao);
+            EnsureCanAccessMapeamento(usuario, origem);
 
-            if (mapeamento.Mapeamento.FK_IdColecao != request.FK_IdColecao)
+            if (!usuario.FK_IdEmpresa.HasValue && usuario.TipoUsuario != TipoUsuario.Administrador)
             {
-                throw new InvalidOperationException("Não é permitido alterar a coleção de um mapeamento existente.");
+                throw new UnauthorizedAccessException("Usuário sem empresa vinculada não pode clonar mapeamentos.");
             }
 
-            await ValidarMapeamentoAsync(request, mapeamento.FK_IdMapeamento, id, cancellationToken);
+            var clone = new Mapeamento
+            {
+                Nome = BuildCloneName(origem.Nome),
+                FK_IdColecao = origem.FK_IdColecao,
+                FK_IdEmpresa = usuario.TipoUsuario == TipoUsuario.Administrador ? usuario.FK_IdEmpresa : usuario.FK_IdEmpresa,
+                IsPadrao = false,
+                DataCriacao = DateTime.UtcNow,
+                Campos = origem.Campos
+                    .OrderBy(campo => campo.IndiceColuna)
+                    .Select(campo => new MapeamentoCampo
+                    {
+                        NomeCampo = campo.NomeCampo,
+                        IndiceColuna = campo.IndiceColuna,
+                        TipoCampo = campo.TipoCampo,
+                        Formato = campo.Formato
+                    })
+                    .ToList()
+            };
 
-            mapeamento.NomeCampo = request.NomeCampo.Trim();
-            mapeamento.DescricaoCampo = request.DescricaoCampo.Trim();
-            mapeamento.IndiceColuna = request.IndiceColuna;
-            mapeamento.TipoCampo = request.TipoCampo;
-            mapeamento.Formato = request.TipoCampo == TipoCampo.DateTime ? request.Formato?.Trim() : null;
-
+            await _mapeamentoRepository.AddMapeamentoAsync(clone, cancellationToken);
             await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
 
+            _logger.LogInformation("Mapeamento {MapeamentoOrigemId} clonado para {MapeamentoCloneId} pelo usuário {UsuarioId}", origem.Id, clone.Id, usuario.Id);
+
+            return Map(clone);
+        }
+
+        public async Task<MapeamentoResumoResponseDto> AtualizarAsync(int id, MapeamentoRequestDto request, CancellationToken cancellationToken = default)
+        {
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(id, cancellationToken)
+                ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
+
+            EnsureCanEditMapeamento(usuario, mapeamento);
+
+            if (mapeamento.FK_IdColecao != request.FK_IdColecao)
+            {
+                throw new InvalidOperationException("Não é permitido alterar a coleção do mapeamento.");
+            }
+
+            if (mapeamento.IsPadrao && usuario.TipoUsuario != TipoUsuario.Administrador)
+            {
+                throw new UnauthorizedAccessException("Apenas administradores podem alterar mapeamentos padrão.");
+            }
+
+            mapeamento.Nome = request.Nome.Trim();
+
+            if (usuario.TipoUsuario == TipoUsuario.Administrador)
+            {
+                mapeamento.FK_IdEmpresa = request.FK_IdEmpresa;
+                mapeamento.IsPadrao = request.IsPadrao;
+            }
+
+            await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
             return Map(mapeamento);
         }
 
         public async Task ExcluirAsync(int id, CancellationToken cancellationToken = default)
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
-            var mapeamento = await _mapeamentoRepository.GetByIdAsync(id, cancellationToken)
+            var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
 
-            EnsureCanEditColecao(usuario, mapeamento.Mapeamento.Colecao);
+            EnsureCanEditMapeamento(usuario, mapeamento);
 
-            _mapeamentoRepository.Remove(mapeamento);
+            if (mapeamento.IsPadrao)
+            {
+                throw new InvalidOperationException("Mapeamentos padrão não podem ser excluídos.");
+            }
+
+            _mapeamentoRepository.RemoveMapeamento(mapeamento);
             await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<ColecaoResponseDto> ClonePadraoAsync(CloneColecaoRequestDto request, CancellationToken cancellationToken = default)
+        private static string BuildCloneName(string nome)
         {
-            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
-
-            var colecaoPadrao = await _mapeamentoRepository.GetColecaoByIdWithMappingsAsync(request.ColecaoPadraoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Coleção padrão não encontrada.");
-
-            if (colecaoPadrao.FK_IdEmpresa.HasValue)
-            {
-                throw new InvalidOperationException("Somente coleções padrão do sistema podem ser clonadas.");
-            }
-
-            var novaColecao = new Colecao
-            {
-                NomeColecao = request.NomeColecao.Trim(),
-                TipoColecao = colecaoPadrao.TipoColecao,
-                FK_IdEmpresa = request.EmpresaId,
-                Mapeamentos = colecaoPadrao.Mapeamentos.Select(x => new Mapeamento
-                {
-                    Nome = x.Nome,
-                    FK_IdEmpresa = request.EmpresaId,
-                    IsPadrao = x.IsPadrao,
-                    DataCriacao = DateTime.UtcNow,
-                    Campos = x.Campos.Select(campo => new MapeamentoCampo
-                    {
-                        IndiceColuna = campo.IndiceColuna,
-                        NomeCampo = campo.NomeCampo,
-                        DescricaoCampo = campo.DescricaoCampo,
-                        TipoCampo = campo.TipoCampo,
-                        Formato = campo.Formato
-                    }).ToList()
-                }).ToList()
-            };
-
-            await _mapeamentoRepository.AddColecaoAsync(novaColecao, cancellationToken);
-            await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Coleção padrão {ColecaoPadraoId} clonada para empresa {EmpresaId} pelo usuário {UsuarioId}", request.ColecaoPadraoId, request.EmpresaId, usuario.Id);
-
-            return MapColecao(novaColecao);
+            return nome.Contains("Cópia", StringComparison.OrdinalIgnoreCase)
+                ? nome
+                : $"{nome} - Cópia";
         }
 
-        public async Task<ColecaoResponseDto> AtualizarMapeamentosAsync(int colecaoId, AtualizarMapeamentosRequestDto request, CancellationToken cancellationToken = default)
+        private static bool PodeVisualizarMapeamento(Usuario usuario, Mapeamento mapeamento)
         {
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
-
-            var colecao = await _mapeamentoRepository.GetColecaoByIdWithMappingsAsync(colecaoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Coleção não encontrada.");
-
-            if (colecao.FK_IdEmpresa != request.EmpresaId)
+            if (usuario.TipoUsuario == TipoUsuario.Administrador)
             {
-                throw new InvalidOperationException("Apenas coleções customizadas da empresa podem ser alteradas.");
+                return true;
             }
 
-            var mapeamentoPadrao = ObterOuCriarMapeamentoPadrao(colecao);
-            mapeamentoPadrao.Campos.Clear();
-
-            foreach (var campo in request.Campos.OrderBy(x => x.IndiceColuna))
+            if (mapeamento.IsPadrao)
             {
-                mapeamentoPadrao.Campos.Add(new MapeamentoCampo
-                {
-                    IndiceColuna = campo.IndiceColuna,
-                    NomeCampo = campo.NomeCampo.Trim(),
-                    DescricaoCampo = campo.DescricaoCampo.Trim(),
-                    TipoCampo = campo.TipoCampo,
-                    Formato = campo.Formato?.Trim()
-                });
+                return true;
             }
 
-            await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Mapeamentos da coleção {ColecaoId} atualizados para empresa {EmpresaId}", colecaoId, request.EmpresaId);
-
-            return MapColecao(colecao);
-        }
-
-        private async Task ValidarMapeamentoAsync(MapeamentoRequestDto request, int mapeamentoId, int? ignoreId, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(request.NomeCampo))
-            {
-                throw new InvalidOperationException("Nome do campo é obrigatório.");
-            }
-
-            if (request.IndiceColuna < 1)
-            {
-                throw new InvalidOperationException("Índice da coluna deve ser um número positivo.");
-            }
-
-            if (request.TipoCampo == TipoCampo.DateTime && string.IsNullOrWhiteSpace(request.Formato))
-            {
-                throw new InvalidOperationException("Formato é obrigatório quando o tipo do campo é DateTime.");
-            }
-
-            if (await _mapeamentoRepository.ExistsIndiceNoMapeamentoAsync(mapeamentoId, request.IndiceColuna, ignoreId, cancellationToken))
-            {
-                throw new InvalidOperationException($"Já existe um campo com o índice de coluna {request.IndiceColuna} neste mapeamento.");
-            }
-        }
-
-        private async Task<Mapeamento> ObterOuCriarMapeamentoPadraoAsync(Colecao colecao, CancellationToken cancellationToken)
-        {
-            var mapeamentoPadrao = await _mapeamentoRepository.GetMapeamentoPadraoByColecaoIdAsync(colecao.Id, cancellationToken);
-            if (mapeamentoPadrao is not null)
-            {
-                return mapeamentoPadrao;
-            }
-
-            mapeamentoPadrao = new Mapeamento
-            {
-                Nome = $"Mapeamento padrão - {colecao.NomeColecao}",
-                FK_IdColecao = colecao.Id,
-                FK_IdEmpresa = colecao.FK_IdEmpresa,
-                IsPadrao = true,
-                DataCriacao = DateTime.UtcNow,
-                Colecao = colecao
-            };
-
-            await _mapeamentoRepository.AddMapeamentoAsync(mapeamentoPadrao, cancellationToken);
-            await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
-
-            return mapeamentoPadrao;
-        }
-
-        private static Mapeamento ObterOuCriarMapeamentoPadrao(Colecao colecao)
-        {
-            var mapeamentoPadrao = colecao.Mapeamentos.FirstOrDefault(x => x.IsPadrao);
-            if (mapeamentoPadrao is not null)
-            {
-                return mapeamentoPadrao;
-            }
-
-            mapeamentoPadrao = new Mapeamento
-            {
-                Nome = $"Mapeamento padrão - {colecao.NomeColecao}",
-                FK_IdEmpresa = colecao.FK_IdEmpresa,
-                IsPadrao = true,
-                DataCriacao = DateTime.UtcNow
-            };
-
-            colecao.Mapeamentos.Add(mapeamentoPadrao);
-            return mapeamentoPadrao;
+            return usuario.FK_IdEmpresa == mapeamento.FK_IdEmpresa;
         }
 
         private static void EnsureCanAccessColecao(Usuario usuario, Colecao colecao)
@@ -273,79 +199,67 @@ namespace ExcelDoc.Server.Services
             }
         }
 
-        private static void EnsureCanEditColecao(Usuario usuario, Colecao colecao)
+        private static void EnsureCanAccessMapeamento(Usuario usuario, Mapeamento mapeamento)
         {
-            EnsureCanAccessColecao(usuario, colecao);
+            EnsureCanAccessColecao(usuario, mapeamento.Colecao);
 
-            if (usuario.TipoUsuario != TipoUsuario.Administrador && !colecao.FK_IdEmpresa.HasValue)
+            if (!PodeVisualizarMapeamento(usuario, mapeamento))
             {
-                throw new UnauthorizedAccessException("Apenas administradores podem alterar coleções padrão do sistema.");
+                throw new UnauthorizedAccessException("Usuário não possui acesso a este mapeamento.");
             }
         }
 
-        private static MapeamentoResponseDto Map(MapeamentoCampo mapeamento)
+        private static void EnsureCanEditMapeamento(Usuario usuario, Mapeamento mapeamento)
         {
-            return new MapeamentoResponseDto
+            EnsureCanAccessMapeamento(usuario, mapeamento);
+
+            if (usuario.TipoUsuario == TipoUsuario.Administrador)
+            {
+                return;
+            }
+
+            if (mapeamento.IsPadrao || mapeamento.FK_IdEmpresa != usuario.FK_IdEmpresa)
+            {
+                throw new UnauthorizedAccessException("Usuário não possui permissão para alterar este mapeamento.");
+            }
+        }
+
+        private static void EnsureCanCreateMapeamento(Usuario usuario, MapeamentoRequestDto request, Colecao colecao)
+        {
+            EnsureCanAccessColecao(usuario, colecao);
+
+            if (usuario.TipoUsuario == TipoUsuario.Administrador)
+            {
+                return;
+            }
+
+            if (!usuario.FK_IdEmpresa.HasValue)
+            {
+                throw new UnauthorizedAccessException("Usuário sem empresa vinculada não pode criar mapeamentos.");
+            }
+
+            if (request.IsPadrao)
+            {
+                throw new UnauthorizedAccessException("Apenas administradores podem criar mapeamentos padrão.");
+            }
+
+            if (request.FK_IdEmpresa.HasValue && request.FK_IdEmpresa != usuario.FK_IdEmpresa)
+            {
+                throw new UnauthorizedAccessException("Usuário não pode criar mapeamentos para outra empresa.");
+            }
+        }
+
+        private static MapeamentoResumoResponseDto Map(Mapeamento mapeamento)
+        {
+            return new MapeamentoResumoResponseDto
             {
                 Id = mapeamento.Id,
-                NomeCampo = mapeamento.NomeCampo,
-                DescricaoCampo = mapeamento.DescricaoCampo,
-                IndiceColuna = mapeamento.IndiceColuna,
-                TipoCampo = mapeamento.TipoCampo,
-                Formato = mapeamento.Formato,
-                FK_IdColecao = mapeamento.Mapeamento.FK_IdColecao,
-                FK_IdMapeamento = mapeamento.FK_IdMapeamento,
-                NomeMapeamento = mapeamento.Mapeamento.Nome
+                Nome = mapeamento.Nome,
+                FK_IdColecao = mapeamento.FK_IdColecao,
+                FK_IdEmpresa = mapeamento.FK_IdEmpresa,
+                IsPadrao = mapeamento.IsPadrao,
+                QuantidadeCampos = mapeamento.Campos.Count
             };
         }
-
-        private static ColecaoResponseDto MapColecao(Colecao colecao)
-        {
-            var campos = ObterCamposDoMapeamentoPadrao(colecao);
-
-            return new ColecaoResponseDto
-            {
-                Id = colecao.Id,
-                NomeColecao = colecao.NomeColecao,
-                TipoColecao = colecao.TipoColecao,
-                EmpresaId = colecao.FK_IdEmpresa,
-                DocumentoIds = colecao.DocumentoColecoes
-                    .Select(x => x.FK_IdDocumento)
-                    .Distinct()
-                    .OrderBy(x => x)
-                    .ToList(),
-                Documentos = colecao.DocumentoColecoes
-                    .Where(x => x.Documento is not null)
-                    .Select(x => new DocumentoResponseDto
-                    {
-                        Id = x.Documento!.Id,
-                        NomeDocumento = x.Documento.NomeDocumento,
-                        Endpoint = x.Documento.Endpoint
-                    })
-                    .OrderBy(x => x.NomeDocumento)
-                    .ToList(),
-                Campos = campos
-                    .OrderBy(x => x.IndiceColuna)
-                    .Select(x => new MapeamentoCampoResponseDto
-                    {
-                        Id = x.Id,
-                        IndiceColuna = x.IndiceColuna,
-                        NomeCampo = x.NomeCampo,
-                        DescricaoCampo = x.DescricaoCampo,
-                        TipoCampo = x.TipoCampo,
-                        Formato = x.Formato
-                    })
-                    .ToList()
-            };
-        }
-
-        private static IReadOnlyCollection<MapeamentoCampo> ObterCamposDoMapeamentoPadrao(Colecao colecao)
-        {
-            var mapeamentoPadrao = colecao.Mapeamentos.FirstOrDefault(x => x.IsPadrao)
-                ?? colecao.Mapeamentos.OrderBy(x => x.Id).FirstOrDefault();
-
-            return mapeamentoPadrao is null ? Array.Empty<MapeamentoCampo>() : mapeamentoPadrao.Campos.ToList();
-        }
-
     }
 }

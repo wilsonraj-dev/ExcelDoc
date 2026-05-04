@@ -19,6 +19,7 @@ namespace ExcelDoc.Server.Services
         private readonly IDocumentoRepository _documentoRepository;
         private readonly IArquivoStorageService _arquivoStorageService;
         private readonly IHashArquivoService _hashArquivoService;
+        private readonly IMapeamentoRepository _mapeamentoRepository;
         private readonly IProcessamentoRepository _processamentoRepository;
         private readonly ISystemClock _systemClock;
         private readonly IUsuarioAcessoService _usuarioAcessoService;
@@ -30,6 +31,7 @@ namespace ExcelDoc.Server.Services
             IDocumentoRepository documentoRepository,
             IArquivoStorageService arquivoStorageService,
             IHashArquivoService hashArquivoService,
+            IMapeamentoRepository mapeamentoRepository,
             IProcessamentoRepository processamentoRepository,
             ISystemClock systemClock,
             IUsuarioAcessoService usuarioAcessoService,
@@ -40,6 +42,7 @@ namespace ExcelDoc.Server.Services
             _documentoRepository = documentoRepository;
             _arquivoStorageService = arquivoStorageService;
             _hashArquivoService = hashArquivoService;
+            _mapeamentoRepository = mapeamentoRepository;
             _processamentoRepository = processamentoRepository;
             _systemClock = systemClock;
             _usuarioAcessoService = usuarioAcessoService;
@@ -58,6 +61,11 @@ namespace ExcelDoc.Server.Services
 
             var documento = await _documentoRepository.GetByIdAsync(request.DocumentoId, cancellationToken)
                 ?? throw new KeyNotFoundException("Documento não encontrado.");
+            var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(request.MapeamentoId, cancellationToken)
+                ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
+
+            ValidateDocumentoMapeamento(documento, mapeamento);
+            ValidateAccessToMapeamento(usuario, mapeamento);
 
             var extension = Path.GetExtension(request.Arquivo.FileName);
             if (!string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase) &&
@@ -88,19 +96,20 @@ namespace ExcelDoc.Server.Services
                 FK_IdUsuario = usuario.Id,
                 FK_IdEmpresa = request.EmpresaId,
                 FK_IdDocumento = documento.Id,
+                FK_IdMapeamento = mapeamento.Id,
                 NomeArquivo = request.Arquivo.FileName,
                 DataExecucao = _systemClock.UtcNow,
                 Status = StatusProcessamento.Processando,
                 TotalErro = 0,
                 TotalRegistros = 0,
                 TotalSucesso = 0,
-                HashArquivo = hash
+                HashArquivo = hash,
+                Documento = documento,
+                Mapeamento = mapeamento
             };
 
             await _processamentoRepository.AddAsync(entity, cancellationToken);
             await _processamentoRepository.SaveChangesAsync(cancellationToken);
-
-            entity.Documento = documento;
 
             await _backgroundTaskQueue.EnqueueAsync(new ProcessamentoQueueItem
             {
@@ -109,7 +118,7 @@ namespace ExcelDoc.Server.Services
                 Attempt = 0
             }, cancellationToken);
 
-            _logger.LogInformation("Processamento {ProcessamentoId} criado para empresa {EmpresaId} e documento {DocumentoId}", entity.Id, entity.FK_IdEmpresa, entity.FK_IdDocumento);
+            _logger.LogInformation("Processamento {ProcessamentoId} criado para empresa {EmpresaId}, documento {DocumentoId} e mapeamento {MapeamentoId}", entity.Id, entity.FK_IdEmpresa, entity.FK_IdDocumento, entity.FK_IdMapeamento);
 
             return Map(entity);
         }
@@ -191,6 +200,33 @@ namespace ExcelDoc.Server.Services
             await _processamentoRepository.SaveChangesAsync(cancellationToken);
         }
 
+        private static void ValidateDocumentoMapeamento(Documento documento, Mapeamento mapeamento)
+        {
+            var colecaoIds = documento.DocumentoColecoes.Select(x => x.FK_IdColecao).Distinct().ToHashSet();
+            if (!colecaoIds.Contains(mapeamento.FK_IdColecao))
+            {
+                throw new InvalidOperationException("O mapeamento informado não pertence a uma coleção vinculada ao documento selecionado.");
+            }
+        }
+
+        private static void ValidateAccessToMapeamento(Usuario usuario, Mapeamento mapeamento)
+        {
+            if (usuario.TipoUsuario == TipoUsuario.Administrador)
+            {
+                return;
+            }
+
+            if (mapeamento.IsPadrao)
+            {
+                return;
+            }
+
+            if (usuario.FK_IdEmpresa != mapeamento.FK_IdEmpresa)
+            {
+                throw new UnauthorizedAccessException("Usuário não possui acesso ao mapeamento informado.");
+            }
+        }
+
         private static string? GetExceptionData(Exception exception, string key)
         {
             return exception.Data.Contains(key) ? exception.Data[key]?.ToString() : null;
@@ -204,6 +240,8 @@ namespace ExcelDoc.Server.Services
                 UsuarioId = processamento.FK_IdUsuario,
                 EmpresaId = processamento.FK_IdEmpresa,
                 DocumentoId = processamento.FK_IdDocumento,
+                MapeamentoId = processamento.FK_IdMapeamento,
+                NomeMapeamento = processamento.Mapeamento?.Nome ?? string.Empty,
                 NomeDocumento = processamento.Documento?.NomeDocumento ?? string.Empty,
                 EndpointDocumento = processamento.Documento?.Endpoint ?? string.Empty,
                 NomeArquivo = processamento.NomeArquivo,

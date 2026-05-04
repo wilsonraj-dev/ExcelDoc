@@ -26,6 +26,7 @@ namespace ExcelDoc.Server.Repositories
         {
             return _context.Documentos
                 .AsNoTracking()
+                .Include(x => x.DocumentoColecoes)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 

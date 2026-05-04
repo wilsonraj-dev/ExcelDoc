@@ -7,6 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using ExcelDoc.Server.IoC;
 using Microsoft.IdentityModel.Tokens;
 
+
+var bytes = File.ReadAllBytes("C:\\Users\\wilso\\OneDrive\\Área de Trabalho\\Modelo_Importacao_Orcamento.xlsx");
+var base64 = Convert.ToBase64String(bytes);
+
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");

@@ -29,6 +29,7 @@ namespace ExcelDoc.Server.Repositories
             return _context.Processamentos
                 .AsNoTracking()
                 .Include(x => x.Documento)
+                .Include(x => x.Mapeamento)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
@@ -38,8 +39,8 @@ namespace ExcelDoc.Server.Repositories
                 .Include(x => x.Documento)
                     .ThenInclude(x => x.DocumentoColecoes)
                         .ThenInclude(x => x.Colecao)
-                            .ThenInclude(x => x.Mapeamentos)
-                                .ThenInclude(x => x.Campos)
+                .Include(x => x.Mapeamento)
+                    .ThenInclude(x => x.Campos)
                 .Include(x => x.Empresa)
                 .Include(x => x.Usuario)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -59,6 +60,7 @@ namespace ExcelDoc.Server.Repositories
             var totalCount = await query.CountAsync(cancellationToken);
             var items = await query
                 .Include(x => x.Documento)
+                .Include(x => x.Mapeamento)
                 .OrderByDescending(x => x.DataExecucao)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)

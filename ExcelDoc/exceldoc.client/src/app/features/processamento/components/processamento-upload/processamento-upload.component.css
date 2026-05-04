@@ -2,6 +2,45 @@
   width: 100%;
 }
 
+.mapping-option {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.mapping-option__name {
+  font-weight: 500;
+}
+
+.mapping-option__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.mapping-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.mapping-chip--padrao {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.mapping-chip--empresa {
+  background: #dcfce7;
+  color: #15803d;
+}
+
 .file-upload-area {
   display: flex;
   align-items: center;

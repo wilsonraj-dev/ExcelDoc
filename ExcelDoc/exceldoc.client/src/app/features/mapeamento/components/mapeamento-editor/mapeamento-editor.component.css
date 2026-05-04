@@ -1,7 +1,6 @@
 .mapeamento-editor-container {
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
 }
 
 .header-bar {
@@ -17,12 +16,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
-  .header-left h2 {
-    margin: 0;
-    font-size: 1.4rem;
-  }
+.header-left h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
 
 .colecao-badge {
   background: #e3f2fd;
@@ -31,6 +31,15 @@
   border-radius: 16px;
   font-size: 0.85rem;
   font-weight: 500;
+}
+
+.readonly-badge {
+  background: #fef3c7;
+  color: #b45309;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .header-actions {
@@ -125,6 +134,12 @@
 .action-bar-right {
   display: flex;
   gap: 12px;
+  align-items: center;
+}
+
+.table-action-wrapper {
+  display: flex;
+  gap: 0.5rem;
   align-items: center;
 }
 

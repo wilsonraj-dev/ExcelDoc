@@ -1,13 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize, forkJoin, of } from 'rxjs';
 import * as XLSX from 'xlsx';
-import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { ColecaoService } from '../../../colecoes/services/colecao.service';
 import {
+  Mapeamento,
   MapeamentoCampo,
   MapeamentoCampoPayload,
   MapeamentoCampoRow,
@@ -22,54 +20,39 @@ import { MapeamentoService } from '../../services/mapeamento.service';
   templateUrl: './mapeamento-editor.component.html',
   styleUrl: './mapeamento-editor.component.css'
 })
-export class MapeamentoEditorComponent implements OnInit {
-  readonly displayedColumns: string[] = [
-    'nomeCampo', 'descricaoCampo', 'indiceColuna', 'tipoCampo', 'formato', 'preview', 'acoes'
-  ];
+export class MapeamentoEditorComponent implements OnChanges {
+  @Input({ required: true }) colecaoId!: number;
+  @Input() colecaoNome = '';
+  @Input({ required: true }) mapeamento!: Mapeamento;
+  @Input() readonly = false;
+
+  @Output() camposChanged = new EventEmitter<void>();
+
+  readonly displayedColumns: string[] = ['nomeCampo', 'indiceColuna', 'tipoCampo', 'formato', 'preview', 'acoes'];
   readonly tipoCampoOptions = TIPO_CAMPO_OPTIONS;
 
-  colecaoId!: number;
-  colecaoNome = '';
   rows: MapeamentoCampoRow[] = [];
   originalRows: MapeamentoCampoRow[] = [];
   isLoading = false;
   isSaving = false;
-  isAdministrator: boolean;
   excelPreviewData: string[] = [];
 
   private readonly destroyRef = inject(DestroyRef);
 
   constructor(
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly authService: AuthService,
-    private readonly colecaoService: ColecaoService,
     private readonly mapeamentoService: MapeamentoService,
     private readonly notificationService: NotificationService
-  ) {
-    this.isAdministrator = this.authService.isAdministrator();
-  }
+  ) {}
 
-  ngOnInit(): void {
-    this.colecaoId = Number(this.route.snapshot.paramMap.get('colecaoId'));
-
-    if (isNaN(this.colecaoId) || this.colecaoId <= 0) {
-      this.notificationService.showError('Coleção inválida.');
-      void this.router.navigate(['/colecoes']);
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['mapeamento']?.currentValue?.id) {
+      this.loadCampos();
       return;
     }
 
-    this.loadColecao();
-    this.loadMapeamentos();
-  }
-
-  loadColecao(): void {
-    this.colecaoService.getById(this.colecaoId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (colecao) => this.colecaoNome = colecao.nomeColecao,
-        error: () => this.colecaoNome = `Coleção #${this.colecaoId}`
-      });
+    if (changes['readonly'] && this.readonly) {
+      this.validateAll();
+    }
   }
 
   get hasChanges(): boolean {
@@ -77,40 +60,17 @@ export class MapeamentoEditorComponent implements OnInit {
   }
 
   get hasErrors(): boolean {
-    return this.rows.some(r =>
-      r.errors.nomeCampo || r.errors.indiceColuna || r.errors.tipoCampo || r.errors.formato
-    );
-  }
-
-  loadMapeamentos(): void {
-    this.isLoading = true;
-
-    this.mapeamentoService.getByColecao(this.colecaoId)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.isLoading = false)
-      )
-      .subscribe({
-        next: (campos) => {
-          this.rows = campos
-            .sort((a, b) => a.indiceColuna - b.indiceColuna)
-            .map(c => this.toRow(c));
-          this.snapshotOriginal();
-          this.refreshPreview();
-        },
-        error: (err: HttpErrorResponse) => {
-          this.notificationService.showError(
-            err.error?.message ?? 'Erro ao carregar mapeamentos.'
-          );
-        }
-      });
+    return this.rows.some((row) => !!(row.errors.nomeCampo || row.errors.indiceColuna || row.errors.tipoCampo || row.errors.formato));
   }
 
   adicionarCampo(): void {
+    if (this.readonly) {
+      return;
+    }
+
     const newRow: MapeamentoCampoRow = {
       id: null,
       nomeCampo: '',
-      descricaoCampo: '',
       indiceColuna: null,
       tipoCampo: '',
       formato: '',
@@ -118,24 +78,165 @@ export class MapeamentoEditorComponent implements OnInit {
       previewValue: '',
       errors: this.emptyErrors()
     };
+
     this.rows = [...this.rows, newRow];
   }
 
   removerCampo(index: number): void {
-    this.rows = this.rows.filter((_, i) => i !== index);
+    if (this.readonly) {
+      return;
+    }
+
+    this.rows = this.rows.filter((_, currentIndex) => currentIndex !== index);
     this.validateAll();
     this.refreshPreview();
   }
 
   onFieldChange(row: MapeamentoCampoRow): void {
+    if (this.readonly) {
+      return;
+    }
+
     if (row.tipoCampo !== TipoCampo.DateTime) {
       row.formato = '';
     }
+
     this.validateRow(row);
     this.refreshPreview();
   }
 
-  validateRow(row: MapeamentoCampoRow): void {
+  salvar(): void {
+    if (this.readonly) {
+      return;
+    }
+
+    this.validateAll();
+
+    if (this.hasErrors) {
+      const messages: string[] = [];
+      for (const row of this.rows) {
+        const label = row.nomeCampo?.trim() || `Linha ${this.rows.indexOf(row) + 1}`;
+        if (row.errors.nomeCampo) messages.push(`${label}: ${row.errors.nomeCampo}`);
+        if (row.errors.indiceColuna) messages.push(`${label}: ${row.errors.indiceColuna}`);
+        if (row.errors.tipoCampo) messages.push(`${label}: ${row.errors.tipoCampo}`);
+        if (row.errors.formato) messages.push(`${label}: ${row.errors.formato}`);
+      }
+
+      this.notificationService.showError(messages.length ? messages.join(' | ') : 'Corrija os erros antes de salvar.');
+      return;
+    }
+
+    const deletedIds = this.originalRows
+      .filter((original) => original.id !== null && !this.rows.some((row) => row.id === original.id))
+      .map((original) => original.id!);
+
+    const deletes$ = deletedIds.map((id) => this.mapeamentoService.deleteCampo(id));
+    const creates$ = this.rows
+      .filter((row) => row.isNew)
+      .map((row) => this.mapeamentoService.createCampo(this.toPayload(row)));
+    const updates$ = this.rows
+      .filter((row) => !row.isNew && row.id !== null)
+      .map((row) => this.mapeamentoService.updateCampo(row.id!, this.toPayload(row)));
+
+    const operations = [...deletes$, ...creates$, ...updates$];
+
+    if (!operations.length) {
+      this.notificationService.showInfo('Nenhuma alteração para salvar.');
+      return;
+    }
+
+    this.isSaving = true;
+    forkJoin(operations.length ? operations : [of(null)])
+      .pipe(
+        finalize(() => { this.isSaving = false; }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Campos do mapeamento salvos com sucesso.');
+          this.loadCampos(true);
+          this.camposChanged.emit();
+        },
+        error: (error: HttpErrorResponse) => {
+          this.notificationService.showError(error.error?.detail ?? 'Falha ao salvar os campos do mapeamento.');
+        }
+      });
+  }
+
+  cancelar(): void {
+    this.rows = this.originalRows.map((row) => ({ ...row, errors: this.emptyErrors() }));
+    this.refreshPreview();
+  }
+
+  onExcelUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input?.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (loadEvent: ProgressEvent<FileReader>) => {
+      try {
+        const data = new Uint8Array(loadEvent.target!.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json<string[]>(firstSheet, { header: 1 });
+
+        if (jsonData.length > 0) {
+          this.excelPreviewData = (jsonData[0] as unknown[]).map((value) => value !== null && value !== undefined ? String(value) : '');
+          this.refreshPreview();
+          this.notificationService.showSuccess(`Preview carregado: ${this.excelPreviewData.length} colunas detectadas.`);
+        } else {
+          this.notificationService.showError('O arquivo Excel está vazio.');
+        }
+      } catch {
+        this.notificationService.showError('Erro ao ler o arquivo Excel.');
+      }
+
+      input.value = '';
+    };
+
+    reader.readAsArrayBuffer(file);
+  }
+
+  isFormatoEnabled(row: MapeamentoCampoRow): boolean {
+    return !this.readonly && row.tipoCampo === TipoCampo.DateTime;
+  }
+
+  trackByRow(_: number, row: MapeamentoCampoRow): number | string {
+    return row.id ?? `new-${row.nomeCampo}-${row.indiceColuna}`;
+  }
+
+  private loadCampos(showSuccess = false): void {
+    this.isLoading = true;
+    this.mapeamentoService.getCamposByMapeamento(this.mapeamento.id)
+      .pipe(
+        finalize(() => { this.isLoading = false; }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (campos) => {
+          this.rows = campos
+            .sort((left, right) => left.indiceColuna - right.indiceColuna)
+            .map((campo) => this.toRow(campo));
+          this.snapshotOriginal();
+          this.refreshPreview();
+
+          if (showSuccess) {
+            this.notificationService.showSuccess('Editor atualizado com os campos mais recentes.');
+          }
+        },
+        error: (error: HttpErrorResponse) => {
+          this.rows = [];
+          this.originalRows = [];
+          this.notificationService.showError(error.error?.detail ?? 'Falha ao carregar os campos do mapeamento.');
+        }
+      });
+  }
+
+  private validateRow(row: MapeamentoCampoRow): void {
     const errors = this.emptyErrors();
 
     if (!row.nomeCampo?.trim()) {
@@ -145,11 +246,9 @@ export class MapeamentoEditorComponent implements OnInit {
     if (row.indiceColuna === null || row.indiceColuna === undefined || row.indiceColuna < 1) {
       errors.indiceColuna = 'Índice deve ser um número positivo';
     } else {
-      const duplicate = this.rows.find(
-        r => r !== row && r.indiceColuna === row.indiceColuna
-      );
+      const duplicate = this.rows.find((current) => current !== row && current.indiceColuna === row.indiceColuna);
       if (duplicate) {
-        errors.indiceColuna = 'Índice duplicado nesta coleção';
+        errors.indiceColuna = 'Índice duplicado neste mapeamento';
       }
     }
 
@@ -164,133 +263,25 @@ export class MapeamentoEditorComponent implements OnInit {
     row.errors = errors;
   }
 
-  validateAll(): void {
-    this.rows.forEach(r => this.validateRow(r));
+  private validateAll(): void {
+    this.rows.forEach((row) => this.validateRow(row));
   }
 
-  salvar(): void {
-    this.validateAll();
-
-    if (this.hasErrors) {
-      const messages: string[] = [];
-      for (const row of this.rows) {
-        const label = row.nomeCampo?.trim() || `Linha ${this.rows.indexOf(row) + 1}`;
-        if (row.errors.nomeCampo) messages.push(`${label}: ${row.errors.nomeCampo}`);
-        if (row.errors.indiceColuna) messages.push(`${label}: ${row.errors.indiceColuna}`);
-        if (row.errors.tipoCampo) messages.push(`${label}: ${row.errors.tipoCampo}`);
-        if (row.errors.formato) messages.push(`${label}: ${row.errors.formato}`);
-      }
-      this.notificationService.showError(messages.length > 0 ? messages.join(' | ') : 'Corrija os erros antes de salvar.');
-      return;
-    }
-
-    this.isSaving = true;
-
-    const deletedIds = this.originalRows
-      .filter(o => o.id !== null && !this.rows.some(r => r.id === o.id))
-      .map(o => o.id!);
-
-    const deletes$ = deletedIds.map(id => this.mapeamentoService.delete(id));
-    const creates$ = this.rows
-      .filter(r => r.isNew)
-      .map(r => this.mapeamentoService.create(this.toPayload(r)));
-    const updates$ = this.rows
-      .filter(r => !r.isNew && r.id !== null)
-      .map(r => this.mapeamentoService.update(r.id!, this.toPayload(r)));
-
-    const all$ = [...deletes$, ...creates$, ...updates$];
-
-    if (all$.length === 0) {
-      this.isSaving = false;
-      this.notificationService.showInfo('Nenhuma alteração para salvar.');
-      return;
-    }
-
-    forkJoin(all$)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.isSaving = false)
-      )
-      .subscribe({
-        next: () => {
-          this.notificationService.showSuccess('Mapeamentos salvos com sucesso!');
-          this.loadMapeamentos();
-        },
-        error: (err: HttpErrorResponse) => {
-          this.notificationService.showError(
-            err.error?.message ?? 'Erro ao salvar mapeamentos.'
-          );
-        }
-      });
-  }
-
-  cancelar(): void {
-    this.rows = this.originalRows.map(r => ({ ...r, errors: this.emptyErrors() }));
-    this.refreshPreview();
-  }
-
-  voltar(): void {
-    void this.router.navigate(['/colecoes']);
-  }
-
-  onExcelUpload(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input?.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      try {
-        const data = new Uint8Array(e.target!.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json<string[]>(firstSheet, { header: 1 });
-
-        if (jsonData.length > 0) {
-          this.excelPreviewData = (jsonData[0] as unknown[]).map(v =>
-            v !== null && v !== undefined ? String(v) : ''
-          );
-          this.refreshPreview();
-          this.notificationService.showSuccess(
-            `Preview carregado: ${this.excelPreviewData.length} colunas detectadas.`
-          );
-        } else {
-          this.notificationService.showError('O arquivo Excel está vazio.');
-        }
-      } catch {
-        this.notificationService.showError('Erro ao ler o arquivo Excel.');
-      }
-
-      input.value = '';
-    };
-    reader.readAsArrayBuffer(file);
-  }
-
-  refreshPreview(): void {
+  private refreshPreview(): void {
     for (const row of this.rows) {
       if (row.indiceColuna !== null && row.indiceColuna > 0 && this.excelPreviewData.length > 0) {
-        const idx = row.indiceColuna - 1;
-        row.previewValue = idx < this.excelPreviewData.length
-          ? this.excelPreviewData[idx]
-          : '(coluna vazia)';
+        const index = row.indiceColuna - 1;
+        row.previewValue = index < this.excelPreviewData.length ? this.excelPreviewData[index] : '(coluna vazia)';
       } else {
         row.previewValue = '';
       }
     }
   }
 
-  isFormatoEnabled(row: MapeamentoCampoRow): boolean {
-    return row.tipoCampo === TipoCampo.DateTime;
-  }
-
   private toRow(campo: MapeamentoCampo): MapeamentoCampoRow {
     return {
       id: campo.id,
       nomeCampo: campo.nomeCampo,
-      descricaoCampo: campo.descricaoCampo ?? '',
       indiceColuna: campo.indiceColuna,
       tipoCampo: campo.tipoCampo,
       formato: campo.formato ?? '',
@@ -303,16 +294,15 @@ export class MapeamentoEditorComponent implements OnInit {
   private toPayload(row: MapeamentoCampoRow): MapeamentoCampoPayload {
     return {
       nomeCampo: row.nomeCampo.trim(),
-      descricaoCampo: row.descricaoCampo?.trim() || null,
       indiceColuna: row.indiceColuna!,
       tipoCampo: row.tipoCampo as number,
       formato: row.tipoCampo === TipoCampo.DateTime ? (row.formato?.trim() || null) : null,
-      fk_IdColecao: this.colecaoId
+      fk_IdMapeamento: this.mapeamento.id
     };
   }
 
   private snapshotOriginal(): void {
-    this.originalRows = this.rows.map(r => ({ ...r, errors: this.emptyErrors() }));
+    this.originalRows = this.rows.map((row) => ({ ...row, errors: this.emptyErrors() }));
   }
 
   private emptyErrors(): MapeamentoRowErrors {

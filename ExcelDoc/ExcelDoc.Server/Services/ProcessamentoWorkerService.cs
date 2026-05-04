@@ -69,7 +69,7 @@ namespace ExcelDoc.Server.Services
 
                 try
                 {
-                    var payload = _payloadBuilderService.BuildPayload(processamento.Documento, row.Values);
+                    var payload = _payloadBuilderService.BuildPayload(processamento.Documento, processamento.Mapeamento, row.Values);
                     var payloadJson = JsonSerializer.Serialize(payload, JsonOptions);
                     var responseJson = await _sapServiceLayerClient.PostAsync(sapConfig, sapSession, processamento.Documento.Endpoint, payloadJson, cancellationToken);
 

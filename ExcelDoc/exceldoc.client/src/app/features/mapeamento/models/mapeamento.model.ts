@@ -22,29 +22,42 @@ export const TIPO_CAMPO_OPTIONS: readonly { label: string; value: TipoCampo }[] 
   { label: 'Boolean', value: TipoCampo.Boolean }
 ];
 
+export interface Mapeamento {
+  id: number;
+  nome: string;
+  fk_IdColecao: number;
+  fk_IdEmpresa: number | null;
+  isPadrao: boolean;
+  quantidadeCampos?: number;
+}
+
+export interface MapeamentoPayload {
+  nome: string;
+  fk_IdColecao: number;
+  fk_IdEmpresa: number | null;
+  isPadrao?: boolean;
+}
+
 export interface MapeamentoCampo {
   id: number;
   nomeCampo: string;
-  descricaoCampo: string | null;
   indiceColuna: number;
   tipoCampo: TipoCampo;
   formato: string | null;
-  fk_IdColecao: number;
+  fk_IdMapeamento: number;
 }
 
 export interface MapeamentoCampoPayload {
   nomeCampo: string;
-  descricaoCampo: string | null;
   indiceColuna: number;
   tipoCampo: number;
   formato: string | null;
-  fk_IdColecao: number;
+  fk_IdMapeamento: number;
 }
 
 export interface MapeamentoCampoRow {
   id: number | null;
   nomeCampo: string;
-  descricaoCampo: string;
   indiceColuna: number | null;
   tipoCampo: TipoCampo | '';
   formato: string;
@@ -58,4 +71,22 @@ export interface MapeamentoRowErrors {
   indiceColuna: string;
   tipoCampo: string;
   formato: string;
+}
+
+export function getMapeamentoEmpresaId(mapeamento: Mapeamento): number | null {
+  return mapeamento.fk_IdEmpresa ?? null;
+}
+
+export function isMapeamentoEmpresa(mapeamento: Mapeamento): boolean {
+  return getMapeamentoEmpresaId(mapeamento) !== null;
+}
+
+export function orderMapeamentos(mapeamentos: readonly Mapeamento[]): Mapeamento[] {
+  return [...mapeamentos].sort((left, right) => {
+    if (left.isPadrao !== right.isPadrao) {
+      return left.isPadrao ? -1 : 1;
+    }
+
+    return left.nome.localeCompare(right.nome, 'pt-BR', { sensitivity: 'base' });
+  });
 }

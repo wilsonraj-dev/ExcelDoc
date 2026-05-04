@@ -1,5 +1,75 @@
-<section class="feature-page">
-  <span class="feature-page__eyebrow">Domínio</span>
-  <h2>Mapeamento</h2>
-  <p>Estrutura preparada para componentes reutilizáveis, serviços e modelos do domínio de mapeamento.</p>
+<section class="mapeamento-home">
+  <header class="page-header">
+    <div>
+      <span class="page-header__eyebrow">Mapeamento de Campos</span>
+      <h2>{{ colecaoNome || ('Coleção #' + colecaoId) }}</h2>
+      <p>Selecione um mapeamento da coleção para editar os campos ou usar como base para clonagem.</p>
+    </div>
+
+    <div class="header-actions">
+      <button mat-stroked-button type="button" [disabled]="isSubmitting || !canCreateMapeamento" (click)="openNovoMapeamentoDialog()">
+        <mat-icon>add</mat-icon>
+        Novo Mapeamento
+      </button>
+
+      <button mat-stroked-button type="button" [disabled]="isSubmitting || !canCloneMapeamento" (click)="cloneSelectedMapeamento()">
+        <mat-icon>content_copy</mat-icon>
+        Clonar
+      </button>
+
+      <button mat-stroked-button color="warn" type="button" [disabled]="isSubmitting || !canDeleteMapeamento" (click)="confirmDeleteSelectedMapeamento()">
+        <mat-icon>delete</mat-icon>
+        Excluir
+      </button>
+    </div>
+  </header>
+
+  <mat-card>
+    <mat-card-content>
+      <div class="toolbar-row">
+        <mat-form-field appearance="outline" class="toolbar-row__select">
+          <mat-label>Mapeamento</mat-label>
+          <mat-select [ngModel]="selectedMapeamentoId" (ngModelChange)="onMapeamentoSelectionChange($event)" [compareWith]="compareMapeamento">
+            <mat-option *ngFor="let mapeamento of mapeamentos" [value]="mapeamento.id">
+              {{ mapeamento.nome }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="toolbar-row__summary" *ngIf="selectedMapeamento as mapeamento">
+          <span [class]="getMapeamentoBadgeClass(mapeamento)" [matTooltip]="mapeamento.isPadrao ? 'Mapeamento padrão disponível para toda a coleção.' : 'Mapeamento customizado da sua empresa.'">
+            {{ selectedMapeamentoTipoLabel }}
+          </span>
+          <span class="summary-text">{{ getCampoQuantidadeLabel(mapeamento) }}</span>
+          <span class="summary-text" *ngIf="isMapeamentoEmpresa(mapeamento)">Empresa</span>
+          <span class="summary-text summary-text--readonly" *ngIf="isReadOnlySelectedMapeamento">Somente leitura</span>
+        </div>
+      </div>
+
+      <app-loading-spinner *ngIf="isLoadingMapeamentos || isLoading"></app-loading-spinner>
+
+      <div class="empty-state" *ngIf="!isLoadingMapeamentos && !isLoading && loadError">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ loadError }}</p>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoadingMapeamentos && !isLoading && !loadError && mapeamentos.length === 0">
+        <mat-icon>schema</mat-icon>
+        <p>Nenhum mapeamento disponível para esta coleção.</p>
+        <button mat-raised-button color="primary" type="button" [disabled]="isSubmitting || !canCreateMapeamento" (click)="openNovoMapeamentoDialog()">
+          <mat-icon>add</mat-icon>
+          Criar primeiro mapeamento
+        </button>
+      </div>
+
+      <app-mapeamento-editor
+        *ngIf="!isLoadingMapeamentos && !isLoading && selectedMapeamento"
+        [colecaoId]="colecaoId"
+        [colecaoNome]="colecaoNome"
+        [mapeamento]="selectedMapeamento"
+        [readonly]="isReadOnlySelectedMapeamento"
+        (camposChanged)="loadMapeamentos(selectedMapeamento.id)">
+      </app-mapeamento-editor>
+    </mat-card-content>
+  </mat-card>
 </section>

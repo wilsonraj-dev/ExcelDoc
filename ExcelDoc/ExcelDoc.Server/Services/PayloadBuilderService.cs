@@ -35,60 +35,17 @@ namespace ExcelDoc.Server.Services
             "M-d-yyyy"
         ];
 
-        public IDictionary<string, object?> BuildPayload(Documento documento, IReadOnlyDictionary<int, string?> rowValues)
+        public IDictionary<string, object?> BuildPayload(Documento documento, Mapeamento mapeamento, IReadOnlyDictionary<int, string?> rowValues)
         {
             var payload = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-            var lineCollections = new Dictionary<string, List<Dictionary<string, object?>>>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var documentoColecao in documento.DocumentoColecoes)
+            foreach (var campo in mapeamento.Campos.OrderBy(x => x.IndiceColuna))
             {
-                var colecao = documentoColecao.Colecao;
-                if (colecao is null)
-                {
-                    continue;
-                }
-
-                if (colecao.TipoColecao == TipoColecao.Header)
-                {
-                    foreach (var campo in ObterCamposMapeamento(colecao).OrderBy(x => x.IndiceColuna))
-                    {
-                        rowValues.TryGetValue(campo.IndiceColuna, out var rawValue);
-                        payload[campo.NomeCampo] = ConvertValue(rawValue, campo);
-                    }
-
-                    continue;
-                }
-
-                var line = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-                foreach (var campo in ObterCamposMapeamento(colecao).OrderBy(x => x.IndiceColuna))
-                {
-                    rowValues.TryGetValue(campo.IndiceColuna, out var rawValue);
-                    line[campo.NomeCampo] = ConvertValue(rawValue, campo);
-                }
-
-                if (!lineCollections.TryGetValue(colecao.NomeColecao, out var items))
-                {
-                    items = new List<Dictionary<string, object?>>();
-                    lineCollections[colecao.NomeColecao] = items;
-                }
-
-                items.Add(line);
-            }
-
-            foreach (var lineCollection in lineCollections)
-            {
-                payload[lineCollection.Key] = lineCollection.Value;
+                rowValues.TryGetValue(campo.IndiceColuna, out var rawValue);
+                payload[campo.NomeCampo] = ConvertValue(rawValue, campo);
             }
 
             return payload;
-        }
-
-        private static IReadOnlyCollection<MapeamentoCampo> ObterCamposMapeamento(Colecao colecao)
-        {
-            var mapeamento = colecao.Mapeamentos.FirstOrDefault(x => x.IsPadrao)
-                ?? colecao.Mapeamentos.OrderBy(x => x.Id).FirstOrDefault();
-
-            return mapeamento is null ? Array.Empty<MapeamentoCampo>() : mapeamento.Campos.ToList();
         }
 
         private static object? ConvertValue(string? rawValue, MapeamentoCampo campo)

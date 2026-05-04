@@ -2,12 +2,20 @@
   display: block;
 }
 
-.feature-page {
+.mapeamento-home {
   display: grid;
-  gap: 0.75rem;
+  gap: 1.5rem;
 }
 
-.feature-page__eyebrow {
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.page-header__eyebrow {
   color: #2563eb;
   font-size: 0.85rem;
   font-weight: 600;
@@ -15,11 +23,107 @@
   letter-spacing: 0.08em;
 }
 
-h2,
-p {
+.page-header h2,
+.page-header p {
   margin: 0;
 }
 
-p {
+.page-header p {
   color: #475569;
+  margin-top: 0.5rem;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.toolbar-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.toolbar-row__select {
+  width: min(100%, 28rem);
+}
+
+.toolbar-row__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.mapeamento-option {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.mapeamento-option__nome {
+  font-weight: 500;
+}
+
+.mapeamento-option__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.mapeamento-option__count {
+  white-space: nowrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.chip--padrao {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.chip--empresa {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.summary-text {
+  color: #475569;
+  font-size: 0.875rem;
+}
+
+.summary-text--readonly {
+  color: #b45309;
+  font-weight: 600;
+}
+
+.empty-state {
+  display: grid;
+  place-items: center;
+  gap: 0.75rem;
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #64748b;
+}
+
+.empty-state mat-icon {
+  width: 2rem;
+  height: 2rem;
+  font-size: 2rem;
 }

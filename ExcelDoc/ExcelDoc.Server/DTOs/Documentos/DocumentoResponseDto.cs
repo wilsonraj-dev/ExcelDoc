@@ -7,5 +7,7 @@ namespace ExcelDoc.Server.DTOs.Documentos
         public string NomeDocumento { get; set; } = string.Empty;
 
         public string Endpoint { get; set; } = string.Empty;
+
+        public IReadOnlyCollection<int> ColecaoIds { get; set; } = Array.Empty<int>();
     }
 }

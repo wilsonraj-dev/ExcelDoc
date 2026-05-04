@@ -1,22 +1,19 @@
-using ExcelDoc.Server.DTOs.Colecoes;
 using ExcelDoc.Server.DTOs.Mapeamentos;
 
 namespace ExcelDoc.Server.Services.Interfaces
 {
     public interface IMapeamentoService
     {
-        Task<IReadOnlyCollection<MapeamentoResponseDto>> GetByColecaoAsync(int colecaoId, CancellationToken cancellationToken = default);
+        Task<IReadOnlyCollection<MapeamentoResumoResponseDto>> GetByColecaoAsync(int colecaoId, CancellationToken cancellationToken = default);
 
-        Task<MapeamentoResponseDto> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+        Task<MapeamentoResumoResponseDto> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
-        Task<MapeamentoResponseDto> CriarAsync(MapeamentoRequestDto request, CancellationToken cancellationToken = default);
+        Task<MapeamentoResumoResponseDto> CriarAsync(MapeamentoRequestDto request, CancellationToken cancellationToken = default);
 
-        Task<MapeamentoResponseDto> AtualizarAsync(int id, MapeamentoRequestDto request, CancellationToken cancellationToken = default);
+        Task<MapeamentoResumoResponseDto> ClonarAsync(int id, CancellationToken cancellationToken = default);
+
+        Task<MapeamentoResumoResponseDto> AtualizarAsync(int id, MapeamentoRequestDto request, CancellationToken cancellationToken = default);
 
         Task ExcluirAsync(int id, CancellationToken cancellationToken = default);
-
-        Task<ColecaoResponseDto> ClonePadraoAsync(CloneColecaoRequestDto request, CancellationToken cancellationToken = default);
-
-        Task<ColecaoResponseDto> AtualizarMapeamentosAsync(int colecaoId, AtualizarMapeamentosRequestDto request, CancellationToken cancellationToken = default);
     }
 }

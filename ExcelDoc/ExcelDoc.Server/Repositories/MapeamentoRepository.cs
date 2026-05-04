@@ -14,18 +14,32 @@ namespace ExcelDoc.Server.Repositories
             _context = context;
         }
 
-        public async Task<IReadOnlyCollection<MapeamentoCampo>> GetByColecaoIdAsync(int colecaoId, CancellationToken cancellationToken = default)
+        public Task<Colecao?> GetColecaoByIdAsync(int colecaoId, CancellationToken cancellationToken = default)
         {
-            return await _context.MapeamentoCampos
+            return _context.Colecoes
+                .FirstOrDefaultAsync(x => x.Id == colecaoId, cancellationToken);
+        }
+
+        public async Task<IReadOnlyCollection<Mapeamento>> GetMapeamentosByColecaoIdAsync(int colecaoId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Mapeamentos
                 .AsNoTracking()
-                .Include(x => x.Mapeamento)
-                    .ThenInclude(x => x.Colecao)
-                .Where(x => x.Mapeamento.FK_IdColecao == colecaoId && x.Mapeamento.IsPadrao)
-                .OrderBy(x => x.IndiceColuna)
+                .Include(x => x.Campos)
+                .Where(x => x.FK_IdColecao == colecaoId)
+                .OrderByDescending(x => x.IsPadrao)
+                .ThenBy(x => x.Nome)
                 .ToListAsync(cancellationToken);
         }
 
-        public Task<MapeamentoCampo?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public Task<Mapeamento?> GetMapeamentoByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return _context.Mapeamentos
+                .Include(x => x.Colecao)
+                .Include(x => x.Campos)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        public Task<MapeamentoCampo?> GetCampoByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return _context.MapeamentoCampos
                 .Include(x => x.Mapeamento)
@@ -33,14 +47,13 @@ namespace ExcelDoc.Server.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
-        public Task<Colecao?> GetColecaoByIdWithMappingsAsync(int colecaoId, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyCollection<MapeamentoCampo>> GetCamposByMapeamentoIdAsync(int mapeamentoId, CancellationToken cancellationToken = default)
         {
-            return _context.Colecoes
-                .Include(x => x.Mapeamentos)
-                    .ThenInclude(x => x.Campos)
-                .Include(x => x.DocumentoColecoes)
-                    .ThenInclude(x => x.Documento)
-                .FirstOrDefaultAsync(x => x.Id == colecaoId, cancellationToken);
+            return await _context.MapeamentoCampos
+                .AsNoTracking()
+                .Where(x => x.FK_IdMapeamento == mapeamentoId)
+                .OrderBy(x => x.IndiceColuna)
+                .ToListAsync(cancellationToken);
         }
 
         public Task<bool> ExistsIndiceNoMapeamentoAsync(int mapeamentoId, int indiceColuna, int? ignoreId = null, CancellationToken cancellationToken = default)
@@ -52,37 +65,24 @@ namespace ExcelDoc.Server.Repositories
                 cancellationToken);
         }
 
-        public Task<Colecao?> GetColecaoByIdAsync(int colecaoId, CancellationToken cancellationToken = default)
-        {
-            return _context.Colecoes
-                .FirstOrDefaultAsync(x => x.Id == colecaoId, cancellationToken);
-        }
-
-        public Task<Mapeamento?> GetMapeamentoPadraoByColecaoIdAsync(int colecaoId, CancellationToken cancellationToken = default)
-        {
-            return _context.Mapeamentos
-                .Include(x => x.Colecao)
-                .FirstOrDefaultAsync(x => x.FK_IdColecao == colecaoId && x.IsPadrao, cancellationToken);
-        }
-
         public async Task AddMapeamentoAsync(Mapeamento mapeamento, CancellationToken cancellationToken = default)
         {
             await _context.Mapeamentos.AddAsync(mapeamento, cancellationToken);
         }
 
-        public async Task AddColecaoAsync(Colecao colecao, CancellationToken cancellationToken = default)
+        public async Task AddCampoAsync(MapeamentoCampo campo, CancellationToken cancellationToken = default)
         {
-            await _context.Colecoes.AddAsync(colecao, cancellationToken);
+            await _context.MapeamentoCampos.AddAsync(campo, cancellationToken);
         }
 
-        public async Task AddAsync(MapeamentoCampo mapeamento, CancellationToken cancellationToken = default)
+        public void RemoveMapeamento(Mapeamento mapeamento)
         {
-            await _context.MapeamentoCampos.AddAsync(mapeamento, cancellationToken);
+            _context.Mapeamentos.Remove(mapeamento);
         }
 
-        public void Remove(MapeamentoCampo mapeamento)
+        public void RemoveCampo(MapeamentoCampo campo)
         {
-            _context.MapeamentoCampos.Remove(mapeamento);
+            _context.MapeamentoCampos.Remove(campo);
         }
 
         public Task SaveChangesAsync(CancellationToken cancellationToken = default)

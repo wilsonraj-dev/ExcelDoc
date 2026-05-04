@@ -1,29 +1,55 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpService } from '../../../core/services/http.service';
-import { MapeamentoCampo, MapeamentoCampoPayload } from '../models/mapeamento.model';
+import {
+  Mapeamento,
+  MapeamentoCampo,
+  MapeamentoCampoPayload,
+  MapeamentoPayload
+} from '../models/mapeamento.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MapeamentoService {
-  private readonly apiUrl = '/api/mapeamentos';
+  private readonly mapeamentosApiUrl = '/api/mapeamentos';
+  private readonly mapeamentosCamposApiUrl = '/api/mapeamentos-campos';
 
   constructor(private readonly httpService: HttpService) {}
 
-  getByColecao(colecaoId: number): Observable<MapeamentoCampo[]> {
-    return this.httpService.get<MapeamentoCampo[]>(`${this.apiUrl}/colecao/${colecaoId}`);
+  getMapeamentosByColecao(colecaoId: number): Observable<Mapeamento[]> {
+    return this.httpService.get<Mapeamento[]>(`${this.mapeamentosApiUrl}/colecao/${colecaoId}`);
   }
 
-  create(mapeamento: MapeamentoCampoPayload): Observable<MapeamentoCampo> {
-    return this.httpService.post<MapeamentoCampo, MapeamentoCampoPayload>(this.apiUrl, mapeamento);
+  createMapeamento(mapeamento: MapeamentoPayload): Observable<Mapeamento> {
+    return this.httpService.post<Mapeamento, MapeamentoPayload>(this.mapeamentosApiUrl, mapeamento);
   }
 
-  update(id: number, mapeamento: MapeamentoCampoPayload): Observable<MapeamentoCampo> {
-    return this.httpService.put<MapeamentoCampo, MapeamentoCampoPayload>(`${this.apiUrl}/${id}`, mapeamento);
+  cloneMapeamento(id: number): Observable<Mapeamento> {
+    return this.httpService.post<Mapeamento, undefined>(`${this.mapeamentosApiUrl}/${id}/clone`, undefined);
   }
 
-  delete(id: number): Observable<void> {
-    return this.httpService.delete<void>(`${this.apiUrl}/${id}`);
+  updateMapeamento(id: number, mapeamento: MapeamentoPayload): Observable<Mapeamento> {
+    return this.httpService.put<Mapeamento, MapeamentoPayload>(`${this.mapeamentosApiUrl}/${id}`, mapeamento);
+  }
+
+  deleteMapeamento(id: number): Observable<void> {
+    return this.httpService.delete<void>(`${this.mapeamentosApiUrl}/${id}`);
+  }
+
+  getCamposByMapeamento(mapeamentoId: number): Observable<MapeamentoCampo[]> {
+    return this.httpService.get<MapeamentoCampo[]>(`${this.mapeamentosCamposApiUrl}/${mapeamentoId}`);
+  }
+
+  createCampo(mapeamento: MapeamentoCampoPayload): Observable<MapeamentoCampo> {
+    return this.httpService.post<MapeamentoCampo, MapeamentoCampoPayload>(this.mapeamentosCamposApiUrl, mapeamento);
+  }
+
+  updateCampo(id: number, mapeamento: MapeamentoCampoPayload): Observable<MapeamentoCampo> {
+    return this.httpService.put<MapeamentoCampo, MapeamentoCampoPayload>(`${this.mapeamentosCamposApiUrl}/${id}`, mapeamento);
+  }
+
+  deleteCampo(id: number): Observable<void> {
+    return this.httpService.delete<void>(`${this.mapeamentosCamposApiUrl}/${id}`);
   }
 }

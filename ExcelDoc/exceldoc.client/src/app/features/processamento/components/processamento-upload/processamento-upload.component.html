@@ -14,6 +14,26 @@
           <mat-error>Selecione um documento.</mat-error>
         </mat-form-field>
 
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mapeamento</mat-label>
+          <mat-select formControlName="mapeamentoId" [disabled]="isLoadingMapeamentos || !form.controls['documentoId'].value">
+            <mat-option *ngFor="let mapeamento of mapeamentosDisponiveis" [value]="mapeamento.id">
+              <div class="mapping-option">
+                <span class="mapping-option__name">{{ mapeamento.nome }}</span>
+                <span class="mapping-option__meta">
+                  <span [class]="getMapeamentoBadgeClass(mapeamento)" [matTooltip]="getMapeamentoTooltip(mapeamento)">
+                    {{ getMapeamentoBadgeLabel(mapeamento) }}
+                  </span>
+                  <span>{{ getCampoQuantidadeLabel(mapeamento) }}</span>
+                </span>
+              </div>
+            </mat-option>
+          </mat-select>
+          <mat-hint *ngIf="isLoadingMapeamentos">Carregando mapeamentos...</mat-hint>
+          <mat-hint *ngIf="!isLoadingMapeamentos && form.controls['documentoId'].value && !mapeamentosDisponiveis.length">Nenhum mapeamento disponível para este documento.</mat-hint>
+          <mat-error>Selecione um mapeamento.</mat-error>
+        </mat-form-field>
+
         <div class="file-upload-area">
           <button type="button" mat-stroked-button (click)="fileInput.click()">
             <mat-icon>upload_file</mat-icon>
@@ -25,7 +45,7 @@
         </div>
 
         <div class="actions">
-          <button mat-raised-button color="primary" type="submit" [disabled]="!isFormValid || isLoading">
+          <button mat-raised-button color="primary" type="submit" [disabled]="!isFormValid || isLoading || isLoadingMapeamentos">
             <mat-icon>play_arrow</mat-icon>
             Processar
           </button>

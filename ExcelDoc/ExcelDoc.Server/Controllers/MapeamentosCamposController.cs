@@ -7,37 +7,23 @@ using Microsoft.AspNetCore.Mvc;
 namespace ExcelDoc.Server.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/mapeamentos-campos")]
     [Authorize(Roles = AuthRoles.All)]
-    public class MapeamentosController : ControllerBase
+    public class MapeamentosCamposController : ControllerBase
     {
-        private readonly IMapeamentoService _mapeamentoService;
+        private readonly IMapeamentoCampoService _mapeamentoCampoService;
 
-        public MapeamentosController(IMapeamentoService mapeamentoService)
+        public MapeamentosCamposController(IMapeamentoCampoService mapeamentoCampoService)
         {
-            _mapeamentoService = mapeamentoService;
+            _mapeamentoCampoService = mapeamentoCampoService;
         }
 
-        [HttpGet("colecao/{colecaoId:int}")]
-        public async Task<IActionResult> GetByColecao(int colecaoId, CancellationToken cancellationToken)
+        [HttpGet("{mapeamentoId:int}")]
+        public async Task<IActionResult> GetByMapeamento(int mapeamentoId, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _mapeamentoService.GetByColecaoAsync(colecaoId, cancellationToken);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return ToActionResult(ex);
-            }
-        }
-
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var result = await _mapeamentoService.GetByIdAsync(id, cancellationToken);
+                var result = await _mapeamentoCampoService.GetByMapeamentoAsync(mapeamentoId, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -47,25 +33,11 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] MapeamentoRequestDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Post([FromBody] MapeamentoCampoRequestDto request, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _mapeamentoService.CriarAsync(request, cancellationToken);
-                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-            }
-            catch (Exception ex)
-            {
-                return ToActionResult(ex);
-            }
-        }
-
-        [HttpPost("{id:int}/clone")]
-        public async Task<IActionResult> Clone(int id, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var result = await _mapeamentoService.ClonarAsync(id, cancellationToken);
+                var result = await _mapeamentoCampoService.CriarAsync(request, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -75,11 +47,11 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> Put(int id, [FromBody] MapeamentoRequestDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Put(int id, [FromBody] MapeamentoCampoRequestDto request, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _mapeamentoService.AtualizarAsync(id, request, cancellationToken);
+                var result = await _mapeamentoCampoService.AtualizarAsync(id, request, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -93,7 +65,7 @@ namespace ExcelDoc.Server.Controllers
         {
             try
             {
-                await _mapeamentoService.ExcluirAsync(id, cancellationToken);
+                await _mapeamentoCampoService.ExcluirAsync(id, cancellationToken);
                 return NoContent();
             }
             catch (Exception ex)

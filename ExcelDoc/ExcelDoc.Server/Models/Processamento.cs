@@ -12,6 +12,8 @@ namespace ExcelDoc.Server.Models
 
         public int FK_IdDocumento { get; set; }
 
+        public int FK_IdMapeamento { get; set; }
+
         [Required]
         [MaxLength(255)]
         public string NomeArquivo { get; set; } = string.Empty;
@@ -31,6 +33,8 @@ namespace ExcelDoc.Server.Models
         public string HashArquivo { get; set; } = string.Empty;
 
         public Documento Documento { get; set; } = null!;
+
+        public Mapeamento Mapeamento { get; set; } = null!;
 
         public Empresa Empresa { get; set; } = null!;
 
