@@ -18,6 +18,7 @@ namespace ExcelDoc.Server.Repositories
         {
             return await _context.Documentos
                 .AsNoTracking()
+                .Include(x => x.DocumentoColecoes)
                 .OrderBy(x => x.NomeDocumento)
                 .ToListAsync(cancellationToken);
         }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ExcelDoc.Server.DTOs.PerfilMapeamentos
 {
@@ -10,8 +11,10 @@ namespace ExcelDoc.Server.DTOs.PerfilMapeamentos
 
         [Required(ErrorMessage = "Documento é obrigatório.")]
         [Range(1, int.MaxValue, ErrorMessage = "Documento inválido.")]
+        [JsonPropertyName("fk_IdDocumento")]
         public int FK_IdDocumento { get; set; }
 
+        [JsonPropertyName("fk_IdEmpresa")]
         public int? FK_IdEmpresa { get; set; }
 
         public bool IsPadrao { get; set; }

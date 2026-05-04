@@ -136,7 +136,10 @@ namespace ExcelDoc.Server.Services
             {
                 Id = documento.Id,
                 NomeDocumento = documento.NomeDocumento,
-                Endpoint = documento.Endpoint
+                Endpoint = documento.Endpoint,
+                ColecaoIds = documento.DocumentoColecoes
+                    .Select(dc => dc.FK_IdColecao)
+                    .ToList()
             };
         }
     }
