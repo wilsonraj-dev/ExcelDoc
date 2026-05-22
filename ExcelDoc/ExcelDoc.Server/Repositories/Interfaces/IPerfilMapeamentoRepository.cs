@@ -6,6 +6,8 @@ namespace ExcelDoc.Server.Repositories.Interfaces
     {
         Task<PerfilMapeamento?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
+        Task<PerfilMapeamento?> GetForExecutionAsync(int id, CancellationToken cancellationToken = default);
+
         Task<IReadOnlyCollection<PerfilMapeamento>> GetByDocumentoIdAsync(int documentoId, CancellationToken cancellationToken = default);
 
         Task<IReadOnlyCollection<DocumentoColecao>> GetColecoesDoDocumentoAsync(int documentoId, CancellationToken cancellationToken = default);

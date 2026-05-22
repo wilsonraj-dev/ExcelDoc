@@ -144,7 +144,6 @@ namespace ExcelDoc.Server.Services
                 IndiceColuna = campo.IndiceColuna,
                 TipoCampo = campo.TipoCampo,
                 Formato = campo.Formato,
-                FK_IdMapeamento = campo.FK_IdMapeamento
             };
         }
     }

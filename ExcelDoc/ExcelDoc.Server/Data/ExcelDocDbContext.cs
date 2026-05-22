@@ -240,7 +240,7 @@ namespace ExcelDoc.Server.Data
                     .HasMaxLength(20);
 
                 entity.Property(e => e.Formato)
-                    .HasMaxLength(50);
+                    .HasMaxLength(50);                
 
                 entity.HasIndex(e => e.FK_IdMapeamento)
                     .HasDatabaseName("IX_MapeamentoCampos_FK_IdMapeamento");
@@ -292,10 +292,11 @@ namespace ExcelDoc.Server.Data
                     .HasForeignKey(e => e.FK_IdDocumento)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(e => e.Mapeamento)
+                entity.HasOne(e => e.PerfilMapeamento)
                     .WithMany()
-                    .HasForeignKey(e => e.FK_IdMapeamento)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasForeignKey(e => e.FK_IdPerfilMapeamento)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(false);
             });
 
             modelBuilder.Entity<PerfilMapeamento>(entity =>

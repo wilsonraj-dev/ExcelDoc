@@ -32,6 +32,7 @@ namespace ExcelDoc.Server.Background
 
                 try
                 {
+
                     using var scope = _serviceScopeFactory.CreateScope();
                     var worker = scope.ServiceProvider.GetRequiredService<IProcessamentoWorkerService>();
 

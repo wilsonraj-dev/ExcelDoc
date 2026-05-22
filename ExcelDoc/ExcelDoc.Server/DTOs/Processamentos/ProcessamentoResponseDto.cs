@@ -12,9 +12,9 @@ namespace ExcelDoc.Server.DTOs.Processamentos
 
         public int DocumentoId { get; set; }
 
-        public int MapeamentoId { get; set; }
+        public int? PerfilMapeamentoId { get; set; }
 
-        public string NomeMapeamento { get; set; } = string.Empty;
+        public string NomePerfilMapeamento { get; set; } = string.Empty;
 
         public string NomeDocumento { get; set; } = string.Empty;
 

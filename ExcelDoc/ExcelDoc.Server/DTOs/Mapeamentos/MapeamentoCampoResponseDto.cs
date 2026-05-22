@@ -13,7 +13,5 @@ namespace ExcelDoc.Server.DTOs.Mapeamentos
         public TipoCampo TipoCampo { get; set; }
 
         public string? Formato { get; set; }
-
-        public int FK_IdMapeamento { get; set; }
     }
 }

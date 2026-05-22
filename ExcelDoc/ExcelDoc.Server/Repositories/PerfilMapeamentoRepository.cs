@@ -21,6 +21,7 @@ namespace ExcelDoc.Server.Repositories
                     .ThenInclude(x => x.Colecao)
                 .Include(x => x.Itens)
                     .ThenInclude(x => x.Mapeamento)
+                        .ThenInclude(x => x.Campos)
                 .Include(x => x.Documento)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
@@ -50,6 +51,19 @@ namespace ExcelDoc.Server.Repositories
         public Task<Mapeamento?> GetMapeamentoByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return _context.Mapeamentos
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        public Task<PerfilMapeamento?> GetForExecutionAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return _context.PerfilMapeamentos
+                .AsNoTracking()
+                .Include(x => x.Itens)
+                    .ThenInclude(x => x.Colecao)
+                .Include(x => x.Itens)
+                    .ThenInclude(x => x.Mapeamento)
+                        .ThenInclude(x => x.Campos)
+                .Include(x => x.Documento)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 

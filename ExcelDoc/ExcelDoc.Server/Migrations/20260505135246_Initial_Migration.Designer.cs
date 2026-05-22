@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelDoc.Server.Migrations
 {
     [DbContext(typeof(ExcelDocDbContext))]
-    [Migration("20260504181923_AddPerfilMapeamento")]
-    partial class AddPerfilMapeamento
+    [Migration("20260505135246_Initial_Migration")]
+    partial class Initial_Migration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -319,7 +319,7 @@ namespace ExcelDoc.Server.Migrations
                     b.Property<int>("FK_IdEmpresa")
                         .HasColumnType("int");
 
-                    b.Property<int>("FK_IdMapeamento")
+                    b.Property<int?>("FK_IdPerfilMapeamento")
                         .HasColumnType("int");
 
                     b.Property<int>("FK_IdUsuario")
@@ -355,7 +355,7 @@ namespace ExcelDoc.Server.Migrations
 
                     b.HasIndex("FK_IdEmpresa");
 
-                    b.HasIndex("FK_IdMapeamento");
+                    b.HasIndex("FK_IdPerfilMapeamento");
 
                     b.HasIndex("FK_IdUsuario");
 
@@ -581,11 +581,10 @@ namespace ExcelDoc.Server.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ExcelDoc.Server.Models.Mapeamento", "Mapeamento")
+                    b.HasOne("ExcelDoc.Server.Models.PerfilMapeamento", "PerfilMapeamento")
                         .WithMany()
-                        .HasForeignKey("FK_IdMapeamento")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("FK_IdPerfilMapeamento")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("ExcelDoc.Server.Models.Usuario", "Usuario")
                         .WithMany("Processamentos")
@@ -597,7 +596,7 @@ namespace ExcelDoc.Server.Migrations
 
                     b.Navigation("Empresa");
 
-                    b.Navigation("Mapeamento");
+                    b.Navigation("PerfilMapeamento");
 
                     b.Navigation("Usuario");
                 });

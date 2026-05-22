@@ -12,7 +12,7 @@ namespace ExcelDoc.Server.Models
 
         public int FK_IdDocumento { get; set; }
 
-        public int FK_IdMapeamento { get; set; }
+        public int? FK_IdPerfilMapeamento { get; set; }
 
         [Required]
         [MaxLength(255)]
@@ -34,7 +34,7 @@ namespace ExcelDoc.Server.Models
 
         public Documento Documento { get; set; } = null!;
 
-        public Mapeamento Mapeamento { get; set; } = null!;
+        public PerfilMapeamento? PerfilMapeamento { get; set; }
 
         public Empresa Empresa { get; set; } = null!;
 

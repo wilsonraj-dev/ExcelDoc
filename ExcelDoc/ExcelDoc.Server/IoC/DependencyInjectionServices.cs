@@ -40,6 +40,8 @@ namespace ExcelDoc.Server.IoC
             services.AddScoped<IMapeamentoService, MapeamentoService>();
             services.AddScoped<IMapeamentoCampoService, MapeamentoCampoService>();
             services.AddScoped<IPayloadBuilderService, PayloadBuilderService>();
+            services.AddScoped<IJsonBuilderService, JsonBuilderService>();
+            services.AddScoped<IAgrupamentoService, AgrupamentoService>();
             services.AddScoped<ISapServiceLayerClient, SapServiceLayerClient>();
             services.AddScoped<IProcessamentoService, ProcessamentoService>();
             services.AddScoped<IPerfilMapeamentoService, PerfilMapeamentoService>();
