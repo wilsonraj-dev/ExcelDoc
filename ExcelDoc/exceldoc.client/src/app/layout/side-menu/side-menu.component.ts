@@ -49,14 +49,6 @@ export class SideMenuComponent {
       exact: true
     },
     {
-      label: 'Mapeamento',
-      description: 'Defina regras e relacionamentos.',
-      icon: 'map',
-      route: '/mapeamento',
-      roles: [AUTH_ROLES.administrator, AUTH_ROLES.user],
-      exact: true
-    },
-    {
       label: 'Perfil de Mapeamento',
       description: 'Agrupe mapeamentos por documento.',
       icon: 'layers',

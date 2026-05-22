@@ -44,6 +44,7 @@ namespace ExcelDoc.Server.Repositories
         {
             return await _context.DocumentoColecoes
                 .AsNoTracking()
+                .Include(x => x.Colecao)
                 .Where(x => x.FK_IdDocumento == documentoId)
                 .ToListAsync(cancellationToken);
         }

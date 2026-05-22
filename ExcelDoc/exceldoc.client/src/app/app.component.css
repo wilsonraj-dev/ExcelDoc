@@ -7,6 +7,7 @@
   min-height: 100vh;
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
+  align-items: start;
   background: #f1f5f9;
 }
 
@@ -23,6 +24,7 @@
 }
 
 .workspace {
+  min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 1.5rem;

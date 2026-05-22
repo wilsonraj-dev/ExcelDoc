@@ -8,11 +8,38 @@
   gap: 1.25rem;
 }
 
-  .colecao-groups h3 {
-    margin: 0;
-    font-size: 1.125rem;
-    color: #1e293b;
-  }
+.colecao-groups h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  color: #1e293b;
+}
+
+.colecao-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.colecao-section__heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.colecao-section__heading h4,
+.colecao-section__heading p {
+  margin: 0;
+}
+
+.colecao-section__heading p {
+  color: #475569;
+  margin-top: 0.35rem;
+}
+
+.line-colecoes {
+  display: grid;
+  gap: 1rem;
+}
 
 .colecao-group {
   display: grid;
@@ -27,6 +54,23 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.colecao-group__header--stacked {
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.colecao-group__checkbox {
+  font-weight: 500;
+}
+
+.colecao-group__details {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .colecao-group__tipo {
@@ -48,6 +92,11 @@
 .colecao-group__name {
   font-weight: 500;
   font-size: 0.95rem;
+}
+
+.colecao-group__description {
+  color: #64748b;
+  font-size: 0.875rem;
 }
 
 .mapping-option {
@@ -107,3 +156,14 @@
     margin: 0;
     font-size: 2rem;
   }
+
+@media (max-width: 768px) {
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .colecao-group__details {
+    width: 100%;
+  }
+}

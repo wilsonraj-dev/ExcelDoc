@@ -1,13 +1,17 @@
 :host {
   display: block;
+  height: 100%;
 }
 
 .side-menu {
-  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  height: 100vh;
   display: grid;
   align-content: start;
   gap: 2rem;
   padding: 2rem 1.5rem;
+  overflow-y: auto;
   background: linear-gradient(180deg, #0f172a, #1e293b);
   color: #ffffff;
 }
@@ -93,8 +97,13 @@
 }
 
 @media (max-width: 960px) {
+  :host {
+    height: auto;
+  }
+
   .side-menu {
-    min-height: auto;
+    position: static;
+    height: auto;
     padding: 1.5rem 1rem;
   }
 }

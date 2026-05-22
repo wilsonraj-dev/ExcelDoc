@@ -1,43 +1,69 @@
 .mapeamento-list-container {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-  .mapeamento-list-container h2 {
-    margin-bottom: 8px;
-  }
-
-  .mapeamento-list-container > p {
-    margin-bottom: 24px;
-    color: #757575;
-  }
-
-.colecoes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  gap: 1.5rem;
 }
 
-.colecao-card {
-  cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.2s;
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
 }
 
-  .colecao-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
+.page-header h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.page-header p {
+  margin: 0.5rem 0 0;
+  color: #475569;
+}
+
+.mapeamento-list-card {
+  border-radius: 24px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.mapeamento-list-table {
+  width: 100%;
+}
+
+.mapeamento-list-table__name {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mapeamento-list-table__name mat-icon {
+  color: #2563eb;
+}
+
+.mapeamento-list-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.mapeamento-list-table__actions-cell {
+  vertical-align: middle;
+}
 
 .empty-state {
+  display: grid;
+  place-items: center;
+  gap: 0.75rem;
   text-align: center;
-  padding: 48px 16px;
-  color: #9e9e9e;
+  padding: 2rem 1rem;
+  color: #64748b;
 }
 
-  .empty-state mat-icon {
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
-    margin-bottom: 16px;
-  }
+.empty-state mat-icon {
+  width: 2rem;
+  height: 2rem;
+  font-size: 2rem;
+}

@@ -70,6 +70,16 @@ export class ProcessamentoUploadComponent implements OnInit {
     return this.form.valid && this.selectedFile !== null;
   }
 
+  get selectedPerfilNome(): string {
+    const perfilMapeamentoId = this.form?.controls['perfilMapeamentoId']?.value as number | null | undefined;
+
+    if (!perfilMapeamentoId) {
+      return '';
+    }
+
+    return this.perfisDisponiveis.find((perfil) => perfil.id === perfilMapeamentoId)?.nome ?? '';
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {

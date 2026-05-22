@@ -60,7 +60,21 @@
                         {{ getEscopoLabel(colecao) }}
                       </mat-chip>
                     </mat-chip-set>
-                    <span class="colecao-page__scope-description">{{ getEscopoDescricao(colecao) }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="mapeamentos">
+                <th mat-header-cell *matHeaderCellDef>Mapeamentos</th>
+                <td mat-cell *matCellDef="let colecao" class="colecao-page__actions-cell">
+                  <div class="colecao-page__actions">
+                    <button type="button"
+                            mat-stroked-button
+                            color="primary"
+                            (click)="abrirMapeamento(colecao)">
+                      <mat-icon>settings</mat-icon>
+                      Configurar Campos
+                    </button>
                   </div>
                 </td>
               </ng-container>

@@ -25,33 +25,89 @@
           <mat-error>Selecione um documento.</mat-error>
         </mat-form-field>
 
-        <div class="colecao-groups" *ngIf="colecaoGroups.length > 0">
+        <div class="colecao-groups" *ngIf="hasHeaderColecoes || hasLineColecoes">
           <h3>Mapeamentos por Coleção</h3>
 
-          <div class="colecao-group" *ngFor="let group of colecaoGroups">
-            <div class="colecao-group__header">
-              <span class="colecao-group__tipo" [class.colecao-group__tipo--header]="getTipoColecaoLabel(group.colecao) === 'Header'">
-                {{ getTipoColecaoLabel(group.colecao) }}
-              </span>
-              <span class="colecao-group__name">{{ group.colecao.nomeColecao }}</span>
+          <section class="colecao-section" *ngIf="hasHeaderColecoes">
+            <div class="colecao-section__heading">
+              <span class="colecao-group__tipo colecao-group__tipo--header">Header</span>
+              <div>
+                <h4>Coleção de Cabeçalho</h4>
+                <p>Selecione qual coleção do tipo cabeçalho deve compor o perfil.</p>
+              </div>
             </div>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Mapeamento</mat-label>
-              <mat-select [formControl]="group.control" [disabled]="group.isLoadingMapeamentos || isReadonly">
-                <mat-option *ngFor="let mapeamento of group.mapeamentos" [value]="mapeamento.id">
+              <mat-label>Coleção de Cabeçalho</mat-label>
+              <mat-select [formControl]="headerColecaoControl" [disabled]="isReadonly">
+                <mat-option *ngFor="let option of headerColecoes" [value]="option.colecao.id">
+                  {{ option.colecao.nomeColecao }}
+                </mat-option>
+              </mat-select>
+              <mat-error>Selecione uma coleção de cabeçalho.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Mapeamento do Cabeçalho</mat-label>
+              <mat-select [formControl]="headerMapeamentoControl"
+                          [disabled]="selectedHeaderColecao?.isLoadingMapeamentos || isReadonly || !selectedHeaderColecao">
+                <mat-option *ngFor="let mapeamento of selectedHeaderMapeamentos" [value]="mapeamento.id">
                   <div class="mapping-option">
                     <span>{{ mapeamento.nome }}</span>
-                    <span [class]="getMapeamentoBadgeClass(mapeamento)">
-                      {{ getMapeamentoBadgeLabel(mapeamento) }}
-                    </span>
                   </div>
                 </mat-option>
               </mat-select>
-              <mat-hint *ngIf="group.isLoadingMapeamentos">Carregando mapeamentos...</mat-hint>
-              <mat-error>Selecione um mapeamento para esta coleção.</mat-error>
+              <mat-hint *ngIf="selectedHeaderColecao?.isLoadingMapeamentos">Carregando mapeamentos...</mat-hint>
+              <mat-error>Selecione um mapeamento para o cabeçalho.</mat-error>
             </mat-form-field>
-          </div>
+          </section>
+
+          <section class="colecao-section" *ngIf="hasLineColecoes">
+            <div class="colecao-section__heading">
+              <span class="colecao-group__tipo">Line</span>
+              <div>
+                <h4>Coleções de Linha</h4>
+                <p>Marque as coleções line que deseja utilizar e defina um mapeamento para cada uma.</p>
+              </div>
+            </div>
+
+            <div class="line-colecoes">
+              <div class="colecao-group" *ngFor="let group of lineColecaoGroups">
+                <div class="colecao-group__header colecao-group__header--stacked">
+                  <mat-checkbox class="colecao-group__checkbox"
+                                [formControl]="group.selectedControl"
+                                [disabled]="isReadonly"
+                                (change)="onLineColecaoSelectionChange(group)">
+                    {{ group.colecao.nomeColecao }}
+                  </mat-checkbox>
+
+                  <div class="colecao-group__details">
+                    <span class="colecao-group__tipo">
+                      {{ getTipoColecaoLabel(group.colecao) }}
+                    </span>
+                    <span class="colecao-group__description">
+                      {{ group.selectedControl.value ? 'Coleção incluída no perfil.' : 'Coleção opcional.' }}
+                    </span>
+                  </div>
+                </div>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Mapeamento</mat-label>
+                  <mat-select [formControl]="group.mapeamentoControl"
+                              [disabled]="group.isLoadingMapeamentos || !group.selectedControl.value || isReadonly">
+                    <mat-option *ngFor="let mapeamento of group.mapeamentos" [value]="mapeamento.id">
+                      <div class="mapping-option">
+                        <span>{{ mapeamento.nome }}</span>
+                      </div>
+                    </mat-option>
+                  </mat-select>
+                  <mat-hint *ngIf="group.isLoadingMapeamentos">Carregando mapeamentos...</mat-hint>
+                  <mat-hint *ngIf="!group.isLoadingMapeamentos && !group.selectedControl.value">Selecione a coleção para habilitar o mapeamento.</mat-hint>
+                  <mat-error>Selecione um mapeamento para esta coleção.</mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </section>
         </div>
 
         <div class="loading-state loading-state--inline" *ngIf="isLoadingColecoes">

@@ -31,7 +31,7 @@ interface ColecaoListFilter {
   styleUrl: './colecao-list.component.css'
 })
 export class ColecaoListComponent implements OnInit {
-  readonly displayedColumns: string[] = ['nomeColecao', 'tipoColecao', 'tipo', 'acoes'];
+  readonly displayedColumns: string[] = ['nomeColecao', 'tipoColecao', 'tipo', 'mapeamentos', 'acoes'];
   readonly pageSizeOptions = [5, 10, 20];
   readonly dataSource = new MatTableDataSource<Colecao>([]);
   readonly filterForm = new FormGroup({
@@ -96,6 +96,10 @@ export class ColecaoListComponent implements OnInit {
     void this.router.navigate(['/colecoes', colecao.id]);
   }
 
+  abrirMapeamento(colecao: Colecao): void {
+    void this.router.navigate(['/mapeamento', colecao.id]);
+  }
+
   excluir(colecao: Colecao): void {
     if (!this.canManageColecao(colecao)) {
       this.notificationService.showError('Você não pode excluir coleções padrão do sistema.');
@@ -131,14 +135,6 @@ export class ColecaoListComponent implements OnInit {
 
   getEscopoLabel(colecao: Colecao): string {
     return isColecaoPadrao(colecao) ? 'Padrão' : 'Minha Empresa';
-  }
-
-  getEscopoDescricao(colecao: Colecao): string {
-    if (isColecaoPadrao(colecao)) {
-      return 'Global';
-    }
-
-    return getColecaoEmpresaId(colecao) ? 'Custom da empresa' : 'Custom';
   }
 
   isPadrao(colecao: Colecao): boolean {

@@ -17,6 +17,9 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Perfil de Mapeamento</mat-label>
           <mat-select formControlName="perfilMapeamentoId" [disabled]="isLoadingPerfis || !form.controls['documentoId'].value">
+            <mat-select-trigger>
+              {{ selectedPerfilNome }}
+            </mat-select-trigger>
             <mat-option *ngFor="let perfil of perfisDisponiveis" [value]="perfil.id">
               <div class="mapping-option">
                 <span class="mapping-option__name">{{ perfil.nome }}</span>

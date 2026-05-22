@@ -14,6 +14,7 @@ import { ColecaoService } from '../../../colecoes/services/colecao.service';
   styleUrl: './mapeamento-list.component.css'
 })
 export class MapeamentoListComponent implements OnInit {
+  readonly displayedColumns: string[] = ['id', 'nomeColecao', 'acoes'];
   colecoes: Colecao[] = [];
   isLoading = false;
 
@@ -28,6 +29,10 @@ export class MapeamentoListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadColecoes();
+  }
+
+  get hasColecoes(): boolean {
+    return this.colecoes.length > 0;
   }
 
   loadColecoes(): void {

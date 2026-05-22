@@ -164,6 +164,11 @@ namespace ExcelDoc.Server.Services
 
         private async Task ValidarItensAsync(int documentoId, List<PerfilMapeamentoItemRequestDto> itens, CancellationToken cancellationToken)
         {
+            if (itens.Count == 0)
+            {
+                throw new InvalidOperationException("Selecione ao menos uma coleção para compor o perfil.");
+            }
+
             // Verificar duplicidade de coleção
             var colecaoIds = itens.Select(i => i.FK_IdColecao).ToList();
             if (colecaoIds.Distinct().Count() != colecaoIds.Count)
@@ -171,13 +176,45 @@ namespace ExcelDoc.Server.Services
                 throw new InvalidOperationException("Não é permitido duplicar coleções dentro do mesmo perfil.");
             }
 
-            // Verificar que o perfil contém TODAS as coleções do documento
+            // Verificar que as coleções selecionadas pertencem ao documento e respeitam a regra por tipo
             var colecoesDocumento = await _repository.GetColecoesDoDocumentoAsync(documentoId, cancellationToken);
             var colecoesDocumentoIds = colecoesDocumento.Select(c => c.FK_IdColecao).ToHashSet();
 
-            if (!colecoesDocumentoIds.SetEquals(colecaoIds.ToHashSet()))
+            if (colecoesDocumento.Count == 0)
             {
-                throw new InvalidOperationException("O perfil deve conter exatamente todas as coleções do documento.");
+                throw new InvalidOperationException("O documento informado não possui coleções vinculadas.");
+            }
+
+            if (colecaoIds.Any(id => !colecoesDocumentoIds.Contains(id)))
+            {
+                throw new InvalidOperationException("O perfil contém coleções que não pertencem ao documento selecionado.");
+            }
+
+            var headerColecoesIds = colecoesDocumento
+                .Where(item => item.Colecao.TipoColecao == TipoColecao.Header)
+                .Select(item => item.FK_IdColecao)
+                .ToHashSet();
+
+            if (headerColecoesIds.Count == 0)
+            {
+                throw new InvalidOperationException("O documento deve possuir ao menos uma coleção do tipo cabeçalho vinculada.");
+            }
+
+            var lineColecoesIds = colecoesDocumento
+                .Where(item => item.Colecao.TipoColecao == TipoColecao.Line)
+                .Select(item => item.FK_IdColecao)
+                .ToHashSet();
+
+            var selectedHeaderIds = colecaoIds.Where(headerColecoesIds.Contains).ToList();
+            if (selectedHeaderIds.Count != 1)
+            {
+                throw new InvalidOperationException("O perfil deve conter exatamente uma coleção do tipo cabeçalho.");
+            }
+
+            var selectedLineIds = colecaoIds.Where(lineColecoesIds.Contains).ToList();
+            if (lineColecoesIds.Count > 0 && selectedLineIds.Count == 0)
+            {
+                throw new InvalidOperationException("Selecione ao menos uma coleção do tipo line para compor o perfil.");
             }
 
             // Verificar que cada mapeamento pertence à coleção informada
