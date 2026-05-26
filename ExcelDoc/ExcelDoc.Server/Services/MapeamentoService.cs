@@ -72,7 +72,7 @@ namespace ExcelDoc.Server.Services
             return Map(mapeamento);
         }
 
-        public async Task<MapeamentoResumoResponseDto> ClonarAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<MapeamentoResumoResponseDto> ClonarAsync(int id, CloneMapeamentoRequestDto request, CancellationToken cancellationToken = default)
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var origem = await _mapeamentoRepository.GetMapeamentoByIdAsync(id, cancellationToken)
@@ -87,7 +87,7 @@ namespace ExcelDoc.Server.Services
 
             var clone = new Mapeamento
             {
-                Nome = BuildCloneName(origem.Nome),
+                Nome = request.Nome.Trim(),
                 FK_IdColecao = origem.FK_IdColecao,
                 FK_IdEmpresa = usuario.TipoUsuario == TipoUsuario.Administrador ? usuario.FK_IdEmpresa : usuario.FK_IdEmpresa,
                 IsPadrao = false,
@@ -157,13 +157,6 @@ namespace ExcelDoc.Server.Services
 
             _mapeamentoRepository.RemoveMapeamento(mapeamento);
             await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
-        }
-
-        private static string BuildCloneName(string nome)
-        {
-            return nome.Contains("Cópia", StringComparison.OrdinalIgnoreCase)
-                ? nome
-                : $"{nome} - Cópia";
         }
 
         private static bool PodeVisualizarMapeamento(Usuario usuario, Mapeamento mapeamento)

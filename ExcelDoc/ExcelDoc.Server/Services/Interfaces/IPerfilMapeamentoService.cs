@@ -14,6 +14,6 @@ namespace ExcelDoc.Server.Services.Interfaces
 
         Task ExcluirAsync(int id, CancellationToken cancellationToken = default);
 
-        Task<PerfilMapeamentoResponseDto> ClonarAsync(int id, CancellationToken cancellationToken = default);
+        Task<PerfilMapeamentoResponseDto> ClonarAsync(int id, ClonePerfilMapeamentoRequestDto request, CancellationToken cancellationToken = default);
     }
 }

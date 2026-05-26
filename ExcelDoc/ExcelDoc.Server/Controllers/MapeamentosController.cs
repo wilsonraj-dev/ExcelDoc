@@ -61,11 +61,11 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpPost("{id:int}/clone")]
-        public async Task<IActionResult> Clone(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> Clone(int id, [FromBody] CloneMapeamentoRequestDto request, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _mapeamentoService.ClonarAsync(id, cancellationToken);
+                var result = await _mapeamentoService.ClonarAsync(id, request, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)

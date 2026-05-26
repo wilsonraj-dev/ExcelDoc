@@ -10,7 +10,7 @@ namespace ExcelDoc.Server.Services.Interfaces
 
         Task<MapeamentoResumoResponseDto> CriarAsync(MapeamentoRequestDto request, CancellationToken cancellationToken = default);
 
-        Task<MapeamentoResumoResponseDto> ClonarAsync(int id, CancellationToken cancellationToken = default);
+        Task<MapeamentoResumoResponseDto> ClonarAsync(int id, CloneMapeamentoRequestDto request, CancellationToken cancellationToken = default);
 
         Task<MapeamentoResumoResponseDto> AtualizarAsync(int id, MapeamentoRequestDto request, CancellationToken cancellationToken = default);
 

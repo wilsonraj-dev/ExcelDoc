@@ -127,7 +127,7 @@ namespace ExcelDoc.Server.Services
             await _repository.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<PerfilMapeamentoResponseDto> ClonarAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<PerfilMapeamentoResponseDto> ClonarAsync(int id, ClonePerfilMapeamentoRequestDto request, CancellationToken cancellationToken = default)
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var origem = await _repository.GetByIdAsync(id, cancellationToken)
@@ -142,7 +142,7 @@ namespace ExcelDoc.Server.Services
 
             var clone = new PerfilMapeamento
             {
-                Nome = $"Cópia de {origem.Nome}",
+                Nome = request.Nome.Trim(),
                 FK_IdDocumento = origem.FK_IdDocumento,
                 FK_IdEmpresa = usuario.FK_IdEmpresa,
                 IsPadrao = false,
