@@ -9,6 +9,10 @@ import { finalize } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import {
+  CloneNameDialogComponent,
+  CloneNameDialogResult
+} from '../../../../shared/components/clone-name-dialog/clone-name-dialog.component';
 import { Documento } from '../../../documentos/models/documento.model';
 import { DocumentoService } from '../../../documentos/services/documento.service';
 import { PerfilMapeamento } from '../../models/perfil-mapeamento.model';
@@ -76,16 +80,36 @@ export class PerfilListComponent implements OnInit {
   }
 
   clonar(perfil: PerfilMapeamento): void {
-    this.perfilService.clone(perfil.id)
+    const dialogRef = this.dialog.open(CloneNameDialogComponent, {
+      width: '360px',
+      data: {
+        title: 'Clonar perfil',
+        label: 'Nome do novo perfil',
+        initialValue: `${perfil.nome}`,
+        confirmLabel: 'Clonar'
+      }
+    });
+
+    dialogRef.afterClosed()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (clone) => {
-          this.notificationService.showSuccess('Perfil clonado com sucesso.');
-          void this.router.navigate(['/perfil-mapeamento', clone.id]);
-        },
-        error: (err: HttpErrorResponse) => {
-          this.notificationService.showError(err.error?.detail ?? 'Erro ao clonar perfil.');
+      .subscribe((result?: CloneNameDialogResult) => {
+        const nome = result?.nome?.trim();
+
+        if (!nome) {
+          return;
         }
+
+        this.perfilService.clone(perfil.id, nome)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: (clone) => {
+              this.notificationService.showSuccess('Perfil clonado com sucesso.');
+              void this.router.navigate(['/perfil-mapeamento', clone.id]);
+            },
+            error: (err: HttpErrorResponse) => {
+              this.notificationService.showError(err.error?.detail ?? 'Erro ao clonar perfil.');
+            }
+          });
       });
   }
 

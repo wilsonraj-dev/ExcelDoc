@@ -18,11 +18,12 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
+import { CloneNameDialogComponent } from './components/clone-name-dialog/clone-name-dialog.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { LoadingSpinnerComponent } from './components/loading-spinner/loading-spinner.component';
 
 @NgModule({
-  declarations: [LoadingSpinnerComponent, ConfirmDialogComponent],
+  declarations: [LoadingSpinnerComponent, ConfirmDialogComponent, CloneNameDialogComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -67,7 +68,8 @@ import { LoadingSpinnerComponent } from './components/loading-spinner/loading-sp
     MatToolbarModule,
     MatTooltipModule,
     LoadingSpinnerComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    CloneNameDialogComponent
   ]
 })
 export class SharedModule {}

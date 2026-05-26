@@ -31,7 +31,7 @@ export class PerfilMapeamentoService {
     return this.httpService.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  clone(id: number): Observable<PerfilMapeamento> {
-    return this.httpService.post<PerfilMapeamento, undefined>(`${this.apiUrl}/${id}/clone`, undefined);
+  clone(id: number, nome: string): Observable<PerfilMapeamento> {
+    return this.httpService.post<PerfilMapeamento, { nome: string }>(`${this.apiUrl}/${id}/clone`, { nome });
   }
 }

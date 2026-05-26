@@ -25,8 +25,8 @@ export class MapeamentoService {
     return this.httpService.post<Mapeamento, MapeamentoPayload>(this.mapeamentosApiUrl, mapeamento);
   }
 
-  cloneMapeamento(id: number): Observable<Mapeamento> {
-    return this.httpService.post<Mapeamento, undefined>(`${this.mapeamentosApiUrl}/${id}/clone`, undefined);
+  cloneMapeamento(id: number, nome: string): Observable<Mapeamento> {
+    return this.httpService.post<Mapeamento, { nome: string }>(`${this.mapeamentosApiUrl}/${id}/clone`, { nome });
   }
 
   updateMapeamento(id: number, mapeamento: MapeamentoPayload): Observable<Mapeamento> {

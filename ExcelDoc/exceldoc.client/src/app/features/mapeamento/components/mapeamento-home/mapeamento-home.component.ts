@@ -20,6 +20,10 @@ import {
   NovoMapeamentoDialogResult
 } from '../novo-mapeamento-dialog/novo-mapeamento-dialog.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import {
+  CloneNameDialogComponent,
+  CloneNameDialogResult
+} from '../../../../shared/components/clone-name-dialog/clone-name-dialog.component';
 
 @Component({
   selector: 'app-mapeamento-home',
@@ -46,7 +50,7 @@ export class MapeamentoHomeComponent implements OnInit {
     private readonly colecaoService: ColecaoService,
     private readonly mapeamentoService: MapeamentoService,
     private readonly notificationService: NotificationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.colecaoId = Number(this.route.snapshot.paramMap.get('colecaoId'));
@@ -144,20 +148,38 @@ export class MapeamentoHomeComponent implements OnInit {
       return;
     }
 
-    this.isSubmitting = true;
-    this.mapeamentoService.cloneMapeamento(mapeamento.id)
-      .pipe(
-        finalize(() => { this.isSubmitting = false; }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: (novoMapeamento) => {
-          this.notificationService.showSuccess('Mapeamento clonado com sucesso.');
-          this.mergeAndSelectMapeamento(novoMapeamento.id);
-        },
-        error: (error: HttpErrorResponse) => {
-          this.notificationService.showError(error.error?.detail ?? 'Falha ao clonar o mapeamento.');
+    this.dialog.open(CloneNameDialogComponent, {
+      width: '360px',
+      data: {
+        title: 'Clonar mapeamento',
+        label: 'Nome do novo mapeamento',
+        initialValue: `${mapeamento.nome}`,
+        confirmLabel: 'Clonar'
+      }
+    }).afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result?: CloneNameDialogResult) => {
+        const nome = result?.nome?.trim();
+
+        if (!nome) {
+          return;
         }
+
+        this.isSubmitting = true;
+        this.mapeamentoService.cloneMapeamento(mapeamento.id, nome)
+          .pipe(
+            finalize(() => { this.isSubmitting = false; }),
+            takeUntilDestroyed(this.destroyRef)
+          )
+          .subscribe({
+            next: (novoMapeamento) => {
+              this.notificationService.showSuccess('Mapeamento clonado com sucesso.');
+              this.mergeAndSelectMapeamento(novoMapeamento.id);
+            },
+            error: (error: HttpErrorResponse) => {
+              this.notificationService.showError(error.error?.detail ?? 'Falha ao clonar o mapeamento.');
+            }
+          });
       });
   }
 

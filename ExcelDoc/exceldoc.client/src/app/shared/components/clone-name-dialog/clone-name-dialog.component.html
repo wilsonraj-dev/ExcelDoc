@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ data.label }}</mat-label>
+      <input matInput formControlName="nome" [maxlength]="data.maxLength ?? 150" />
+      <mat-error *ngIf="form.controls.nome.hasError('required')">Informe um nome para o clone.</mat-error>
+      <mat-error *ngIf="form.controls.nome.hasError('maxlength')">O nome deve ter no máximo {{ data.maxLength ?? 150 }} caracteres.</mat-error>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button type="button" mat-stroked-button (click)="cancelar()">{{ data.cancelLabel ?? 'Cancelar' }}</button>
+  <button type="button" mat-raised-button color="primary" (click)="confirmar()">{{ data.confirmLabel ?? 'Clonar' }}</button>
+</mat-dialog-actions>
