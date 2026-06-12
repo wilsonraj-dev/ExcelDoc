@@ -33,6 +33,14 @@ export class SideMenuComponent {
       roles: [AUTH_ROLES.administrator, AUTH_ROLES.user]
     },
     {
+      label: 'Usuários',
+      description: 'Gerencie acessos e vínculos com empresas.',
+      icon: 'group',
+      route: '/usuarios',
+      roles: [AUTH_ROLES.administrator],
+      exact: true
+    },
+    {
       label: 'Documentos',
       description: 'Centralize o fluxo documental.',
       icon: 'description',
@@ -65,7 +73,7 @@ export class SideMenuComponent {
     }
   ];
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   get isAuthenticated(): boolean {
     return this.authService.getSession() !== null;

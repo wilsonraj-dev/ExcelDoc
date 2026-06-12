@@ -1,0 +1,176 @@
+:host {
+  display: block;
+}
+
+.users-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+  .users-header h2 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  .users-header p {
+    margin: 0.5rem 0 0;
+    color: #475569;
+  }
+
+.users-card {
+  border-radius: 24px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+  .card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  .card-header p {
+    margin: 0.5rem 0 0;
+    color: #475569;
+  }
+
+.card-header__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-field {
+  min-width: 280px;
+}
+
+.users-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.users-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+  .users-form__grid mat-form-field {
+    width: 100%;
+  }
+
+.users-form__grid-column-full {
+  grid-column: 1 / -1;
+}
+
+.users-form__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 120px;
+  color: #475569;
+}
+
+.loading-state--inline {
+  min-height: 0;
+  justify-content: flex-start;
+  padding: 1rem 0;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.users-table {
+  width: 100%;
+}
+
+.table-action {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  min-width: 320px;
+}
+
+.table-action__field {
+  flex: 1;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-badge--active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge--inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.not-applicable,
+.empty-state {
+  color: #475569;
+}
+
+@media (max-width: 960px) {
+  .users-form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .users-form__grid-column-full {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .card-header__actions,
+  .users-form__actions,
+  .table-action {
+    width: 100%;
+  }
+
+  .search-field {
+    min-width: 100%;
+  }
+
+  .card-header__actions button,
+  .users-form__actions button,
+  .table-action button {
+    width: 100%;
+  }
+
+  .table-action {
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 240px;
+  }
+}

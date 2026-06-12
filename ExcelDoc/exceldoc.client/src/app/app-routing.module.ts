@@ -53,6 +53,12 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: [AUTH_ROLES.administrator, AUTH_ROLES.user] }
   },
+  {
+    path: 'usuarios',
+    loadChildren: () => import('./features/usuarios/usuarios.module').then((module) => module.UsuariosModule),
+    canActivate: [AuthGuard],
+    data: { roles: [AUTH_ROLES.administrator] }
+  },
   { path: 'criar-empresa', redirectTo: 'empresa/criar', pathMatch: 'full' },
   { path: 'configuracoes-empresa', redirectTo: 'empresa/configuracoes', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
