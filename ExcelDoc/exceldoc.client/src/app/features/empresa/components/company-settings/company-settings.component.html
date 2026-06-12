@@ -107,18 +107,6 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Usuário do banco</mat-label>
-            <input matInput formControlName="usuarioBanco" maxlength="500" />
-            <mat-error *ngIf="isInvalid('usuarioBanco')">Informe o usuário do banco.</mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Senha do banco</mat-label>
-            <input matInput type="password" formControlName="senhaBanco" maxlength="500" />
-            <mat-error *ngIf="isInvalid('senhaBanco')">Informe a senha do banco.</mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
             <mat-label>Usuário SAP</mat-label>
             <input matInput formControlName="usuarioSAP" maxlength="500" />
             <mat-error *ngIf="isInvalid('usuarioSAP')">Informe o usuário SAP.</mat-error>

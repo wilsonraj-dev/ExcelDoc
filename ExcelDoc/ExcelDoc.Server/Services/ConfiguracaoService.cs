@@ -52,8 +52,6 @@ namespace ExcelDoc.Server.Services
 
             entity.LinkServiceLayer = request.LinkServiceLayer.Trim();
             entity.Database = request.Database.Trim();
-            entity.UsuarioBanco = _encryptionService.Encrypt(request.UsuarioBanco.Trim());
-            entity.SenhaBanco = _encryptionService.Encrypt(request.SenhaBanco);
             entity.UsuarioSAP = _encryptionService.Encrypt(request.UsuarioSAP.Trim());
             entity.SenhaSAP = _encryptionService.Encrypt(request.SenhaSAP);
 
@@ -72,8 +70,6 @@ namespace ExcelDoc.Server.Services
                 EmpresaId = entity.FK_IdEmpresa,
                 LinkServiceLayer = entity.LinkServiceLayer,
                 Database = entity.Database,
-                UsuarioBanco = _encryptionService.Decrypt(entity.UsuarioBanco),
-                SenhaBanco = _encryptionService.Decrypt(entity.SenhaBanco),
                 UsuarioSAP = _encryptionService.Decrypt(entity.UsuarioSAP),
                 SenhaSAP = _encryptionService.Decrypt(entity.SenhaSAP)
             };

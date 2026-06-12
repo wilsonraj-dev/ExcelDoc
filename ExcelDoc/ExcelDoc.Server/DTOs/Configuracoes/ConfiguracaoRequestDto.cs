@@ -17,14 +17,6 @@ namespace ExcelDoc.Server.DTOs.Configuracoes
 
         [Required]
         [MaxLength(500)]
-        public string UsuarioBanco { get; set; } = string.Empty;
-
-        [Required]
-        [MaxLength(500)]
-        public string SenhaBanco { get; set; } = string.Empty;
-
-        [Required]
-        [MaxLength(500)]
         public string UsuarioSAP { get; set; } = string.Empty;
 
         [Required]

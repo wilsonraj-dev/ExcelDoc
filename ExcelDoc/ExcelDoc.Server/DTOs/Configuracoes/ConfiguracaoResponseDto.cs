@@ -10,10 +10,6 @@ namespace ExcelDoc.Server.DTOs.Configuracoes
 
         public string Database { get; set; } = string.Empty;
 
-        public string UsuarioBanco { get; set; } = string.Empty;
-
-        public string SenhaBanco { get; set; } = string.Empty;
-
         public string UsuarioSAP { get; set; } = string.Empty;
 
         public string SenhaSAP { get; set; } = string.Empty;

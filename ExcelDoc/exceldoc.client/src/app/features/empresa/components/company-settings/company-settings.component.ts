@@ -164,8 +164,6 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
           this.form.reset({
             linkServiceLayer: response.linkServiceLayer,
             database: response.database,
-            usuarioBanco: response.usuarioBanco,
-            senhaBanco: response.senhaBanco,
             usuarioSAP: response.usuarioSAP,
             senhaSAP: response.senhaSAP
           });
@@ -264,8 +262,6 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
           this.form.reset({
             linkServiceLayer: response.linkServiceLayer,
             database: response.database,
-            usuarioBanco: response.usuarioBanco,
-            senhaBanco: response.senhaBanco,
             usuarioSAP: response.usuarioSAP,
             senhaSAP: response.senhaSAP
           });

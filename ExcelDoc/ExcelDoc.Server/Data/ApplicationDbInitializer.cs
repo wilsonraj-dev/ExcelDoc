@@ -86,8 +86,6 @@ namespace ExcelDoc.Server.Data
             {
                 LinkServiceLayer = "https://b1.ativy.com:50824",
                 Database = "SBO_FABRICA_SOFTWARE",
-                UsuarioBanco = encryptionService.Encrypt("Teste"),
-                SenhaBanco = encryptionService.Encrypt("Teste"),
                 UsuarioSAP = encryptionService.Encrypt("DEV_03"),
                 SenhaSAP = encryptionService.Encrypt("B1Admin@"),
                 FK_IdEmpresa = empresaId

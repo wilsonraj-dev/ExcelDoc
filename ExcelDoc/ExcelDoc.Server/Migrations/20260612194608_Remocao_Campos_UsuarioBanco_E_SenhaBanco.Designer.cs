@@ -3,6 +3,7 @@ using System;
 using ExcelDoc.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelDoc.Server.Migrations
 {
     [DbContext(typeof(ExcelDocDbContext))]
-    partial class ExcelDocDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260612194608_Remocao_Campos_UsuarioBanco_E_SenhaBanco")]
+    partial class Remocao_Campos_UsuarioBanco_E_SenhaBanco
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

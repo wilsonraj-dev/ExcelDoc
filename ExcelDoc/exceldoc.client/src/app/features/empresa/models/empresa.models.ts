@@ -11,8 +11,6 @@ export interface ConfiguracaoRequest {
   empresaId: number;
   linkServiceLayer: string;
   database: string;
-  usuarioBanco: string;
-  senhaBanco: string;
   usuarioSAP: string;
   senhaSAP: string;
 }

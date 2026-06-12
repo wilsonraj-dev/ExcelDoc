@@ -148,8 +148,6 @@ namespace ExcelDoc.Server.Services
                 FK_IdEmpresa = configuracao.FK_IdEmpresa,
                 LinkServiceLayer = configuracao.LinkServiceLayer,
                 Database = configuracao.Database,
-                UsuarioBanco = _encryptionService.Decrypt(configuracao.UsuarioBanco),
-                SenhaBanco = _encryptionService.Decrypt(configuracao.SenhaBanco),
                 UsuarioSAP = _encryptionService.Decrypt(configuracao.UsuarioSAP),
                 SenhaSAP = _encryptionService.Decrypt(configuracao.SenhaSAP)
             };

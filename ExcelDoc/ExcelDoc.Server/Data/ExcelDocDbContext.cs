@@ -99,14 +99,6 @@ namespace ExcelDoc.Server.Data
                     .IsRequired()
                     .HasMaxLength(150);
 
-                entity.Property(e => e.UsuarioBanco)
-                    .IsRequired()
-                    .HasMaxLength(500);
-
-                entity.Property(e => e.SenhaBanco)
-                    .IsRequired()
-                    .HasMaxLength(500);
-
                 entity.Property(e => e.UsuarioSAP)
                     .IsRequired()
                     .HasMaxLength(500);
