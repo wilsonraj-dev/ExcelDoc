@@ -62,13 +62,12 @@
         </button>
       </div>
 
-      <app-mapeamento-editor
-        *ngIf="!isLoadingMapeamentos && !isLoading && selectedMapeamento"
-        [colecaoId]="colecaoId"
-        [colecaoNome]="colecaoNome"
-        [mapeamento]="selectedMapeamento"
-        [readonly]="isReadOnlySelectedMapeamento"
-        (camposChanged)="loadMapeamentos(selectedMapeamento.id)">
+      <app-mapeamento-editor *ngIf="!isLoadingMapeamentos && !isLoading && selectedMapeamento"
+                             [colecaoId]="colecaoId"
+                             [colecaoNome]="colecaoNome"
+                             [mapeamento]="selectedMapeamento"
+                             [readonly]="isReadOnlySelectedMapeamento"
+                             (camposChanged)="loadMapeamentos(selectedMapeamento.id)">
       </app-mapeamento-editor>
     </mat-card-content>
   </mat-card>

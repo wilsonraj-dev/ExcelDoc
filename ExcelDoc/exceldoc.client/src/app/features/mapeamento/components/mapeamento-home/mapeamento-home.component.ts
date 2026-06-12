@@ -10,7 +10,6 @@ import { ColecaoService } from '../../../colecoes/services/colecao.service';
 import {
   Mapeamento,
   MapeamentoPayload,
-  getMapeamentoEmpresaId,
   isMapeamentoEmpresa,
   orderMapeamentos
 } from '../../models/mapeamento.model';
@@ -100,11 +99,7 @@ export class MapeamentoHomeComponent implements OnInit {
       return true;
     }
 
-    if (mapeamento.isPadrao) {
-      return false;
-    }
-
-    return getMapeamentoEmpresaId(mapeamento) === this.empresaId;
+    return !mapeamento.isPadrao;
   }
 
   get isReadOnlySelectedMapeamento(): boolean {
@@ -221,18 +216,6 @@ export class MapeamentoHomeComponent implements OnInit {
     return mapeamento.isPadrao ? 'Padrão' : 'Minha Empresa';
   }
 
-  isMapeamentoVisible(mapeamento: Mapeamento): boolean {
-    if (this.isAdministrator) {
-      return true;
-    }
-
-    if (mapeamento.isPadrao) {
-      return true;
-    }
-
-    return getMapeamentoEmpresaId(mapeamento) === this.empresaId;
-  }
-
   getCampoQuantidadeLabel(mapeamento: Mapeamento): string {
     const quantidade = mapeamento.quantidadeCampos ?? 0;
     return quantidade === 1 ? '1 campo' : `${quantidade} campos`;
@@ -266,7 +249,7 @@ export class MapeamentoHomeComponent implements OnInit {
       )
       .subscribe({
         next: (mapeamentos) => {
-          const visiveis = orderMapeamentos(mapeamentos.filter((item) => this.isMapeamentoVisible(item)));
+          const visiveis = orderMapeamentos(mapeamentos);
           this.mapeamentos = visiveis;
 
           if (!visiveis.length) {

@@ -398,7 +398,7 @@ export class PerfilFormComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (mapeamentos) => {
-          option.mapeamentos = mapeamentos.filter((mapeamento) => this.isMapeamentoVisible(mapeamento));
+          option.mapeamentos = mapeamentos.filter((mapeamento) => this.isMapeamentoVisible());
           option.isLoadingMapeamentos = false;
 
           if (this.headerColecaoControl.value === option.colecao.id) {
@@ -417,7 +417,7 @@ export class PerfilFormComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (mapeamentos) => {
-          group.mapeamentos = mapeamentos.filter((mapeamento) => this.isMapeamentoVisible(mapeamento));
+          group.mapeamentos = mapeamentos.filter((mapeamento) => this.isMapeamentoVisible());
           group.isLoadingMapeamentos = false;
 
           if (group.initialMapeamentoId && group.mapeamentos.some((mapeamento) => mapeamento.id === group.initialMapeamentoId)) {
@@ -461,9 +461,7 @@ export class PerfilFormComponent implements OnInit {
     return mapeamentos.find((mapeamento) => mapeamento.isPadrao)?.id ?? mapeamentos[0]?.id ?? null;
   }
 
-  private isMapeamentoVisible(mapeamento: Mapeamento): boolean {
-    if (this.isAdministrator) return true;
-    if (mapeamento.isPadrao) return true;
-    return mapeamento.fk_IdEmpresa === this.empresaId;
+  private isMapeamentoVisible(): boolean {
+    return true;
   }
 }
