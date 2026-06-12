@@ -32,6 +32,7 @@ namespace ExcelDoc.Server.IoC
             services.AddScoped<IArquivoStorageService, ArquivoStorageService>();
             services.AddScoped<IExcelReaderService, ExcelReaderService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUsuarioService, UsuarioService>();
             services.AddScoped<IUsuarioAcessoService, UsuarioAcessoService>();
             services.AddScoped<IEmpresaService, EmpresaService>();
             services.AddScoped<IDocumentoService, DocumentoService>();
