@@ -52,5 +52,91 @@
     "submitSaveChanges": "Save changes",
     "submitCreate": "Create configuration",
     "successSaved": "Configuration saved successfully."
+  },
+  "usuarios": {
+    "usuariosComponent": {
+      "header": {
+        "title": "Users",
+        "description": "View registered users, create new access, and link users to companies."
+      },
+      "loading": {
+        "companies": "Loading companies...",
+        "users": "Loading users..."
+      },
+      "createForm": {
+        "title": "Create user",
+        "description": "Register a new user already linked to a company, if needed.",
+        "fields": {
+          "user": "User",
+          "email": "Email",
+          "password": "Password",
+          "confirmPassword": "Confirm password",
+          "company": "Company"
+        },
+        "options": {
+          "noCompany": "No linked company"
+        },
+        "actions": {
+          "create": "Create user",
+          "creating": "Creating..."
+        },
+        "errors": {
+          "userRequired": "Enter the user's name.",
+          "emailRequired": "Enter a valid email address.",
+          "passwordRequired": "Enter a password with at least 6 characters.",
+          "confirmPasswordRequired": "Confirm the entered password."
+        }
+      },
+      "list": {
+        "title": "Registered users",
+        "description": "Manage user links to registered companies.",
+        "search": {
+          "label": "Search user",
+          "placeholder": "Name, email, or company",
+          "button": "Search"
+        }
+      },
+      "table": {
+        "header": {
+          "user": "User",
+          "email": "Email",
+          "profile": "Profile",
+          "currentCompany": "Current company",
+          "status": "Status",
+          "linkCompany": "Link company"
+        },
+        "values": {
+          "notLinked": "Not linked",
+          "active": "Active",
+          "inactive": "Inactive",
+          "notApplicable": "Not applicable"
+        },
+        "actions": {
+          "link": "Link",
+          "saving": "Saving..."
+        },
+        "paginationAriaLabel": "Users list pagination"
+      },
+      "empty": {
+        "noUsers": "No users found."
+      },
+      "feedback": {
+        "success": {
+          "createdPrefix": "User",
+          "createdSuffix": "created successfully.",
+          "linkedPrefix": "User",
+          "linkedSuffix": "linked successfully."
+        },
+        "errors": {
+          "passwordMismatch": "Password confirmation does not match.",
+          "createUser": "Could not create the user.",
+          "adminLinkNotAllowed": "Administrator users cannot be linked through this feature.",
+          "selectCompany": "Select a company to link the user.",
+          "linkUser": "Could not link the user to the company.",
+          "loadCompanies": "Could not load the available companies.",
+          "loadUsers": "Could not load users."
+        }
+      }
+    }
   }
 }

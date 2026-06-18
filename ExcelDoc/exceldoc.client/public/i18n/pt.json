@@ -52,5 +52,91 @@
     "submitSaveChanges": "Salvar alterações",
     "submitCreate": "Criar configuração",
     "successSaved": "Configuração salva com sucesso."
+  },
+  "usuarios": {
+    "usuariosComponent": {
+      "header": {
+        "title": "Usuários",
+        "description": "Visualize os usuários cadastrados, crie novos acessos e vincule usuários a empresas."
+      },
+      "loading": {
+        "companies": "Carregando empresas...",
+        "users": "Carregando usuários..."
+      },
+      "createForm": {
+        "title": "Criar usuário",
+        "description": "Cadastre um novo usuário já com empresa vinculada, se necessário.",
+        "fields": {
+          "user": "Usuário",
+          "email": "E-mail",
+          "password": "Senha",
+          "confirmPassword": "Confirmar senha",
+          "company": "Empresa"
+        },
+        "options": {
+          "noCompany": "Sem empresa vinculada"
+        },
+        "actions": {
+          "create": "Criar usuário",
+          "creating": "Criando..."
+        },
+        "errors": {
+          "userRequired": "Informe o nome do usuário.",
+          "emailRequired": "Informe um e-mail válido.",
+          "passwordRequired": "Informe uma senha com pelo menos 6 caracteres.",
+          "confirmPasswordRequired": "Confirme a senha informada."
+        }
+      },
+      "list": {
+        "title": "Usuários cadastrados",
+        "description": "Gerencie a vinculação dos usuários às empresas cadastradas.",
+        "search": {
+          "label": "Buscar usuário",
+          "placeholder": "Nome, e-mail ou empresa",
+          "button": "Buscar"
+        }
+      },
+      "table": {
+        "header": {
+          "user": "Usuário",
+          "email": "E-mail",
+          "profile": "Perfil",
+          "currentCompany": "Empresa atual",
+          "status": "Status",
+          "linkCompany": "Vincular empresa"
+        },
+        "values": {
+          "notLinked": "Não vinculada",
+          "active": "Ativo",
+          "inactive": "Inativo",
+          "notApplicable": "Não aplicável"
+        },
+        "actions": {
+          "link": "Vincular",
+          "saving": "Salvando..."
+        },
+        "paginationAriaLabel": "Paginação da lista de usuários"
+      },
+      "empty": {
+        "noUsers": "Nenhum usuário encontrado."
+      },
+      "feedback": {
+        "success": {
+          "createdPrefix": "Usuário",
+          "createdSuffix": "criado com sucesso.",
+          "linkedPrefix": "Usuário",
+          "linkedSuffix": "vinculado com sucesso."
+        },
+        "errors": {
+          "passwordMismatch": "A confirmação da senha não confere.",
+          "createUser": "Não foi possível criar o usuário.",
+          "adminLinkNotAllowed": "Usuários administradores não podem ser vinculados por esta funcionalidade.",
+          "selectCompany": "Selecione uma empresa para vincular o usuário.",
+          "linkUser": "Não foi possível vincular o usuário à empresa.",
+          "loadCompanies": "Não foi possível carregar as empresas disponíveis.",
+          "loadUsers": "Não foi possível carregar os usuários."
+        }
+      }
+    }
   }
 }

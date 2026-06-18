@@ -73,7 +73,7 @@ import { TranslatePipe } from './pipes/translate.pipe';
     LoadingSpinnerComponent,
     ConfirmDialogComponent,
     CloneNameDialogComponent,
-    LanguageSelectorComponent
+    LanguageSelectorComponent,
     SideMenuComponent,
     TranslatePipe
   ]

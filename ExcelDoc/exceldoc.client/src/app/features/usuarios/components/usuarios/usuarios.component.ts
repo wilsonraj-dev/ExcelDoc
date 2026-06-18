@@ -5,6 +5,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { finalize } from 'rxjs';
 import { CompanySettingsService, EmpresaResponse } from '../../../../core/services/company-settings.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { Usuario } from '../../models/usuario.models';
 import { UsuariosService } from '../../services/usuarios.service';
 
@@ -44,6 +45,7 @@ export class UsuariosComponent implements OnInit {
 
   constructor(
     private readonly companySettingsService: CompanySettingsService,
+    private readonly translate: TranslateService,
     private readonly usuariosService: UsuariosService
   ) { }
 
@@ -53,6 +55,20 @@ export class UsuariosComponent implements OnInit {
 
   get isBusy(): boolean {
     return this.isLoadingEmpresas || this.isLoadingUsuarios || this.isSubmitting || this.linkingUsuarioId !== null;
+  }
+
+  get linkLabel(): string {
+    return this.translate.instant('usuarios.usuariosComponent.table.actions.link');
+  }
+
+  get linkingLabel(): string {
+    return this.translate.instant('usuarios.usuariosComponent.table.actions.saving');
+  }
+
+  get submitLabel(): string {
+    return this.isSubmitting
+      ? this.translate.instant('usuarios.usuariosComponent.createForm.actions.creating')
+      : this.translate.instant('usuarios.usuariosComponent.createForm.actions.create');
   }
 
   ngOnInit(): void {
@@ -86,7 +102,7 @@ export class UsuariosComponent implements OnInit {
 
     const { confirmacaoSenha, email, empresaId, nomeUsuario, senha } = this.form.getRawValue();
     if (senha !== confirmacaoSenha) {
-      this.errorMessage = 'A confirmação da senha não confere.';
+      this.errorMessage = this.translate.instant('usuarios.usuariosComponent.feedback.errors.passwordMismatch');
       return;
     }
 
@@ -105,7 +121,7 @@ export class UsuariosComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          this.successMessage = `Usuário ${response.nomeUsuario} criado com sucesso.`;
+          this.successMessage = `${this.translate.instant('usuarios.usuariosComponent.feedback.success.createdPrefix')} ${response.nomeUsuario} ${this.translate.instant('usuarios.usuariosComponent.feedback.success.createdSuffix')}`;
           this.form.reset({
             nomeUsuario: '',
             email: '',
@@ -117,7 +133,7 @@ export class UsuariosComponent implements OnInit {
           this.loadUsuarios(1, this.pageSize);
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? 'Não foi possível criar o usuário.';
+          this.errorMessage = error.error?.detail ?? this.translate.instant('usuarios.usuariosComponent.feedback.errors.createUser');
         }
       });
   }
@@ -130,13 +146,13 @@ export class UsuariosComponent implements OnInit {
     this.clearFeedback();
 
     if (!this.podeVincular(usuario)) {
-      this.errorMessage = 'Usuários administradores não podem ser vinculados por esta funcionalidade.';
+      this.errorMessage = this.translate.instant('usuarios.usuariosComponent.feedback.errors.adminLinkNotAllowed');
       return;
     }
 
     const empresaId = this.selectedEmpresaIds[usuario.id];
     if (!empresaId) {
-      this.errorMessage = 'Selecione uma empresa para vincular o usuário.';
+      this.errorMessage = this.translate.instant('usuarios.usuariosComponent.feedback.errors.selectCompany');
       return;
     }
 
@@ -150,11 +166,11 @@ export class UsuariosComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          this.successMessage = `Usuário ${response.nomeUsuario} vinculado com sucesso.`;
+          this.successMessage = `${this.translate.instant('usuarios.usuariosComponent.feedback.success.linkedPrefix')} ${response.nomeUsuario} ${this.translate.instant('usuarios.usuariosComponent.feedback.success.linkedSuffix')}`;
           this.loadUsuarios(this.pageNumber, this.pageSize);
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? 'Não foi possível vincular o usuário à empresa.';
+          this.errorMessage = error.error?.detail ?? this.translate.instant('usuarios.usuariosComponent.feedback.errors.linkUser');
         }
       });
   }
@@ -190,7 +206,7 @@ export class UsuariosComponent implements OnInit {
           this.empresas = empresas;
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? 'Não foi possível carregar as empresas disponíveis.';
+          this.errorMessage = error.error?.detail ?? this.translate.instant('usuarios.usuariosComponent.feedback.errors.loadCompanies');
         }
       });
   }
@@ -220,7 +236,7 @@ export class UsuariosComponent implements OnInit {
           this.bindSelectedEmpresas();
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? 'Não foi possível carregar os usuários.';
+          this.errorMessage = error.error?.detail ?? this.translate.instant('usuarios.usuariosComponent.feedback.errors.loadUsers');
         }
       });
   }
