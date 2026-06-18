@@ -20,10 +20,13 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 import { CloneNameDialogComponent } from './components/clone-name-dialog/clone-name-dialog.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { LanguageSelectorComponent } from './components/language-selector/language-selector.component';
 import { LoadingSpinnerComponent } from './components/loading-spinner/loading-spinner.component';
+import { SideMenuComponent } from '../layout/side-menu/side-menu.component';
+import { TranslatePipe } from './pipes/translate.pipe';
 
 @NgModule({
-  declarations: [LoadingSpinnerComponent, ConfirmDialogComponent, CloneNameDialogComponent],
+  declarations: [LoadingSpinnerComponent, ConfirmDialogComponent, CloneNameDialogComponent, LanguageSelectorComponent, SideMenuComponent, TranslatePipe],
   imports: [
     CommonModule,
     FormsModule,
@@ -69,7 +72,10 @@ import { LoadingSpinnerComponent } from './components/loading-spinner/loading-sp
     MatTooltipModule,
     LoadingSpinnerComponent,
     ConfirmDialogComponent,
-    CloneNameDialogComponent
+    CloneNameDialogComponent,
+    LanguageSelectorComponent
+    SideMenuComponent,
+    TranslatePipe
   ]
 })
 export class SharedModule {}

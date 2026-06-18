@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService, LoginResponse } from './core/services/auth.service';
+import { LanguageService } from './core/services/language.service';
 
 @Component({
   selector: 'app-root',
@@ -12,8 +13,14 @@ export class AppComponent {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly languageService: LanguageService
   ) {}
+
+  ngOnInit(): void {
+    const session = this.authService.getSession();
+    this.languageService.inicializar(session?.idioma ?? undefined);
+  }
 
   get session(): LoginResponse | null {
     return this.authService.getSession();

@@ -9,5 +9,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\app\core\models\" />
+    <Folder Include="src\assets\i18n\" />
   </ItemGroup>
 </Project>

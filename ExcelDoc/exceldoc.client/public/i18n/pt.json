@@ -1,0 +1,56 @@
+{
+  "companySettings": {
+    "table": {
+      "header": {
+        "company": "Empresa",
+        "actions": "Ação"
+      },
+      "columns": {
+        "database": "Banco de dados",
+        "sapUser": "Usuário SAP",
+        "viewConfig": "Visualizar configuração"
+      }
+    },
+    "pageTitle": "Configurações da Empresa",
+    "createOrUpdate": "Crie ou atualize os dados de integração da empresa selecionada.",
+    "visualizeList": "Visualize as empresas cadastradas e abra a configuração desejada.",
+    "manageLinked": "Gerencie a configuração da empresa vinculada ao seu usuário.",
+    "registerCompany": "Cadastrar empresa",
+    "backToCompanies": "Voltar para empresas",
+    "loadingCompanies": "Carregando empresas...",
+    "loadingConfiguration": "Carregando configuração...",
+    "noCompanies": "Nenhuma empresa disponível para configuração.",
+    "tableCompany": "Empresa",
+    "tableDatabase": "Banco de dados",
+    "tableSapUser": "Usuário SAP",
+    "tableActions": "Ações",
+    "linkServiceLayer": "Link Service Layer",
+    "database": "Database",
+    "usuarioSAP": "Usuário SAP",
+    "senhaSAP": "Senha SAP",
+    "submit": "Salvar configuração",
+
+    "errors": {
+      "loadCompanies": "Erro ao carregar empresas.",
+      "loadConfiguration": "Erro ao carregar configuração da empresa.",
+      "saveConfiguration": "Erro ao salvar configuração da empresa.",
+      "selectCompany": "Selecione uma empresa para configurar.",
+      "noLinkedCompany": "O usuário atual não está vinculado a uma empresa.",
+      "selectedUnavailable": "A empresa selecionada não está disponível para o usuário atual."
+    }
+    ,
+    "error": {
+      "invalidCompany": "Empresa inválida para visualização da configuração."
+    },
+    "info": {
+      "noConfig": "Nenhuma configuração cadastrada para esta empresa. Preencha os campos para criar uma nova configuração."
+    },
+    "pageTitleAdmin": "Configurações das empresas",
+    "pageTitleUser": "Configuração da empresa",
+    "pageTitleSelectedPrefix": "Configuração da empresa",
+    "saving": "Salvando...",
+    "submitSaveChanges": "Salvar alterações",
+    "submitCreate": "Criar configuração",
+    "successSaved": "Configuração salva com sucesso."
+  }
+}

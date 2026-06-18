@@ -1,0 +1,13 @@
+<div class="lang-flags">
+  <button class="flag-btn" title="Português" (click)="trocar('pt')" [attr.aria-pressed]="langService.idiomaAtual === 'pt'">
+    <img src="/flags/pt.svg" alt="Português" />
+  </button>
+
+  <button class="flag-btn" title="English" (click)="trocar('en')" [attr.aria-pressed]="langService.idiomaAtual === 'en'">
+    <img src="/flags/en.svg" alt="English" />
+  </button>
+
+  <button class="flag-btn" title="Español" (click)="trocar('es')" [attr.aria-pressed]="langService.idiomaAtual === 'es'">
+    <img src="/flags/es.svg" alt="Español" />
+  </button>
+</div>

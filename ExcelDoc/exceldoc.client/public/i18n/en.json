@@ -1,0 +1,56 @@
+{
+  "companySettings": {
+    "table": {
+      "header": {
+        "company": "Company",
+        "actions": "Action"
+      },
+      "columns": {
+        "database": "Database",
+        "sapUser": "SAP User",
+        "viewConfig": "View configuration"
+      }
+    },
+    "pageTitle": "Company Settings",
+    "createOrUpdate": "Create or update integration data for the selected company.",
+    "visualizeList": "View registered companies and open the desired configuration.",
+    "manageLinked": "Manage the configuration of the company linked to your user.",
+    "registerCompany": "Register company",
+    "backToCompanies": "Back to companies",
+    "loadingCompanies": "Loading companies...",
+    "noCompanies": "No companies available for configuration.",
+    "linkServiceLayer": "Service Layer URL",
+    "database": "Database",
+    "usuarioSAP": "SAP User",
+    "senhaSAP": "SAP Password",
+    "submit": "Save configuration",
+    "viewConfig": "View configuration",
+    "loadingConfiguration": "Loading configuration...",
+    "tableCompany": "Company",
+    "tableDatabase": "Database",
+    "tableSapUser": "SAP User",
+    "tableActions": "Actions",
+    "errors": {
+      "loadCompanies": "Failed to load companies.",
+      "loadConfiguration": "Failed to load company configuration.",
+      "saveConfiguration": "Failed to save company configuration.",
+      "selectCompany": "Select a company to configure.",
+      "noLinkedCompany": "The current user is not linked to a company.",
+      "selectedUnavailable": "The selected company is not available for the current user."
+    }
+    ,
+    "error": {
+      "invalidCompany": "Invalid company for viewing configuration."
+    },
+    "info": {
+      "noConfig": "No configuration registered for this company. Fill the fields to create a new configuration."
+    },
+    "pageTitleAdmin": "Company settings list",
+    "pageTitleUser": "Company settings",
+    "pageTitleSelectedPrefix": "Company settings",
+    "saving": "Saving...",
+    "submitSaveChanges": "Save changes",
+    "submitCreate": "Create configuration",
+    "successSaved": "Configuration saved successfully."
+  }
+}

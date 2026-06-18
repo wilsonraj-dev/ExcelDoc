@@ -16,6 +16,7 @@ export interface LoginResponse {
   tipoUsuario: string;
   nomeEmpresa?: string | null;
   empresaId?: number | null;
+  idioma?: string | null;
 }
 
 export interface RegisterRequest {

@@ -1,0 +1,56 @@
+{
+  "companySettings": {
+    "table": {
+      "header": {
+        "company": "Empresa",
+        "actions": "Acción"
+      },
+      "columns": {
+        "database": "Base de datos",
+        "sapUser": "Usuario de SAP",
+        "viewConfig": "Ver configuración"
+      }
+    },
+    "pageTitle": "Configuración de la Empresa",
+    "createOrUpdate": "Cree o actualice los datos de integración de la empresa seleccionada.",
+    "visualizeList": "Visualice las empresas registradas y abra la configuración deseada.",
+    "manageLinked": "Administre la configuración de la empresa vinculada a su usuario.",
+    "registerCompany": "Registrar empresa",
+    "backToCompanies": "Volver a empresas",
+    "loadingCompanies": "Cargando empresas...",
+    "noCompanies": "No hay empresas disponibles para configurar.",
+    "linkServiceLayer": "URL del Service Layer",
+    "database": "Base de datos",
+    "usuarioSAP": "Usuario SAP",
+    "senhaSAP": "Contraseña SAP",
+    "submit": "Guardar configuración",
+    "viewConfig": "Ver configuración",
+    "loadingConfiguration": "Cargando configuración...",
+    "tableCompany": "Empresa",
+    "tableDatabase": "Base de datos",
+    "tableSapUser": "Usuario SAP",
+    "tableActions": "Acciones",
+    "errors": {
+      "loadCompanies": "Error al cargar empresas.",
+      "loadConfiguration": "Error al cargar la configuración de la empresa.",
+      "saveConfiguration": "Error al guardar la configuración de la empresa.",
+      "selectCompany": "Seleccione una empresa para configurar.",
+      "noLinkedCompany": "El usuario actual no está vinculado a una empresa.",
+      "selectedUnavailable": "La empresa seleccionada no está disponible para el usuario actual."
+    }
+    ,
+    "error": {
+      "invalidCompany": "Empresa inválida para la visualización de la configuración."
+    },
+    "info": {
+      "noConfig": "No hay configuración registrada para esta empresa. Complete los campos para crear una nueva configuración."
+    },
+    "pageTitleAdmin": "Configuración de empresas",
+    "pageTitleUser": "Configuración de la empresa",
+    "pageTitleSelectedPrefix": "Configuración de la empresa",
+    "saving": "Guardando...",
+    "submitSaveChanges": "Guardar cambios",
+    "submitCreate": "Crear configuración",
+    "successSaved": "Configuración guardada con éxito."
+  }
+}

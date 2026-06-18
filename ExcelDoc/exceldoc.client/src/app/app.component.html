@@ -20,6 +20,10 @@
             <strong>{{ currentSession.tipoUsuario }}</strong>
           </div>
 
+          <div class="topbar__session-item">
+            <app-language-selector></app-language-selector>
+          </div>
+
           <button type="button" mat-stroked-button color="primary" class="topbar__logout" (click)="logout()">
             Logout
           </button>
