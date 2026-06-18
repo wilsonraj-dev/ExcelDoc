@@ -138,5 +138,89 @@
         }
       }
     }
+  },
+  "documentos": {
+    "documentoForm": {
+      "title": {
+        "create": "Nuevo documento",
+        "edit": "Editar documento"
+      },
+      "subtitle": "Complete los datos del documento para mantener el registro actualizado.",
+      "loading": {
+        "document": "Cargando documento..."
+      },
+      "fields": {
+        "documentName": "Nombre del documento",
+        "endpoint": "Endpoint"
+      },
+      "placeholders": {
+        "documentName": "Ej.: Factura de entrada",
+        "endpoint": "Ej.: /PurchaseInvoices"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "saveChanges": "Guardar cambios",
+        "saveDocument": "Guardar documento"
+      },
+      "validation": {
+        "documentNameRequired": "Informe el nombre del documento.",
+        "endpointRequired": "Informe el endpoint del documento.",
+        "invalidField": "Campo inválido."
+      },
+      "feedback": {
+        "success": {
+          "created": "Documento creado con éxito.",
+          "updated": "Documento actualizado con éxito."
+        },
+        "errors": {
+          "invalidDocument": "Documento inválido para edición.",
+          "saveDocument": "No fue posible guardar el documento.",
+          "loadDocument": "No fue posible cargar el documento."
+        }
+      }
+    },
+    "documentoList": {
+      "header": {
+        "title": "Registro de documentos",
+        "description": "Administre los documentos disponibles para procesamiento."
+      },
+      "loading": {
+        "documents": "Cargando documentos..."
+      },
+      "actions": {
+        "newDocument": "Nuevo documento",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "deleting": "Eliminando..."
+      },
+      "table": {
+        "header": {
+          "documentName": "Nombre del Documento",
+          "endpoint": "Endpoint",
+          "actions": "Acciones"
+        },
+        "paginationAriaLabel": "Paginación de la lista de documentos"
+      },
+      "empty": {
+        "title": "Ningún documento registrado",
+        "description": "Registre el primer documento para disponibilizar nuevos endpoints en el sistema."
+      },
+      "confirmDelete": {
+        "title": "Eliminar documento",
+        "messagePrefix": "¿Realmente desea eliminar el documento",
+        "confirmLabel": "Eliminar",
+        "cancelLabel": "Cancelar"
+      },
+      "feedback": {
+        "success": {
+          "deleted": "Documento eliminado con éxito."
+        },
+        "errors": {
+          "deleteDocument": "No fue posible eliminar el documento.",
+          "loadDocuments": "No fue posible cargar los documentos."
+        }
+      }
+    }
   }
 }

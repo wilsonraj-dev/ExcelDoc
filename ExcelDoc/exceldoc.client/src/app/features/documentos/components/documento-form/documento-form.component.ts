@@ -5,6 +5,7 @@ import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators }
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { DocumentoPayload } from '../../models/documento.model';
 import { DocumentoService } from '../../services/documento.service';
 
@@ -30,7 +31,8 @@ export class DocumentoFormComponent implements OnInit {
     private readonly activatedRoute: ActivatedRoute,
     private readonly documentoService: DocumentoService,
     private readonly notificationService: NotificationService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly translate: TranslateService
   ) { }
 
   get isEditMode(): boolean {
@@ -38,15 +40,19 @@ export class DocumentoFormComponent implements OnInit {
   }
 
   get pageTitle(): string {
-    return this.isEditMode ? 'Editar documento' : 'Novo documento';
+    return this.isEditMode
+      ? this.translate.instant('documentos.documentoForm.title.edit')
+      : this.translate.instant('documentos.documentoForm.title.create');
   }
 
   get submitLabel(): string {
     if (this.isSaving) {
-      return 'Salvando...';
+      return this.translate.instant('documentos.documentoForm.actions.saving');
     }
 
-    return this.isEditMode ? 'Salvar alterações' : 'Salvar documento';
+    return this.isEditMode
+      ? this.translate.instant('documentos.documentoForm.actions.saveChanges')
+      : this.translate.instant('documentos.documentoForm.actions.saveDocument');
   }
 
   ngOnInit(): void {
@@ -58,7 +64,7 @@ export class DocumentoFormComponent implements OnInit {
 
     const documentoId = Number(rawId);
     if (!Number.isInteger(documentoId) || documentoId <= 0) {
-      this.notificationService.showError('Documento inválido para edição.');
+      this.notificationService.showError(this.translate.instant('documentos.documentoForm.feedback.errors.invalidDocument'));
       void this.router.navigate(['/documentos']);
       return;
     }
@@ -77,11 +83,11 @@ export class DocumentoFormComponent implements OnInit {
 
     if (control.hasError('required')) {
       return controlName === 'nomeDocumento'
-        ? 'Informe o nome do documento.'
-        : 'Informe o endpoint do documento.';
+        ? this.translate.instant('documentos.documentoForm.validation.documentNameRequired')
+        : this.translate.instant('documentos.documentoForm.validation.endpointRequired');
     }
 
-    return 'Campo inválido.';
+    return this.translate.instant('documentos.documentoForm.validation.invalidField');
   }
 
   cancel(): void {
@@ -116,12 +122,14 @@ export class DocumentoFormComponent implements OnInit {
       .subscribe({
         next: () => {
           this.notificationService.showSuccess(
-            this.isEditMode ? 'Documento atualizado com sucesso.' : 'Documento criado com sucesso.'
+            this.isEditMode
+              ? this.translate.instant('documentos.documentoForm.feedback.success.updated')
+              : this.translate.instant('documentos.documentoForm.feedback.success.created')
           );
           void this.router.navigate(['/documentos']);
         },
         error: (error: HttpErrorResponse) => {
-          this.apiError = error.error?.detail ?? 'Não foi possível salvar o documento.';
+          this.apiError = error.error?.detail ?? this.translate.instant('documentos.documentoForm.feedback.errors.saveDocument');
           this.notificationService.showError(this.apiError);
         }
       });
@@ -146,7 +154,7 @@ export class DocumentoFormComponent implements OnInit {
           });
         },
         error: (error: HttpErrorResponse) => {
-          this.apiError = error.error?.detail ?? 'Não foi possível carregar o documento.';
+          this.apiError = error.error?.detail ?? this.translate.instant('documentos.documentoForm.feedback.errors.loadDocument');
           this.notificationService.showError(this.apiError);
         }
       });

@@ -138,5 +138,89 @@
         }
       }
     }
+  },
+  "documentos": {
+    "documentoForm": {
+      "title": {
+        "create": "New document",
+        "edit": "Edit document"
+      },
+      "subtitle": "Fill in the document details to keep the record up to date.",
+      "loading": {
+        "document": "Loading document..."
+      },
+      "fields": {
+        "documentName": "Document name",
+        "endpoint": "Endpoint"
+      },
+      "placeholders": {
+        "documentName": "E.g.: Incoming Invoice",
+        "endpoint": "E.g.: /PurchaseInvoices"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "saveChanges": "Save changes",
+        "saveDocument": "Save document"
+      },
+      "validation": {
+        "documentNameRequired": "Enter the document name.",
+        "endpointRequired": "Enter the document endpoint.",
+        "invalidField": "Invalid field."
+      },
+      "feedback": {
+        "success": {
+          "created": "Document created successfully.",
+          "updated": "Document updated successfully."
+        },
+        "errors": {
+          "invalidDocument": "Invalid document for editing.",
+          "saveDocument": "Could not save the document.",
+          "loadDocument": "Could not load the document."
+        }
+      }
+    },
+    "documentoList": {
+      "header": {
+        "title": "Document registry",
+        "description": "Manage the documents available for processing."
+      },
+      "loading": {
+        "documents": "Loading documents..."
+      },
+      "actions": {
+        "newDocument": "New document",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleting": "Deleting..."
+      },
+      "table": {
+        "header": {
+          "documentName": "Document Name",
+          "endpoint": "Endpoint",
+          "actions": "Actions"
+        },
+        "paginationAriaLabel": "Documents list pagination"
+      },
+      "empty": {
+        "title": "No documents registered",
+        "description": "Register the first document to make new endpoints available in the system."
+      },
+      "confirmDelete": {
+        "title": "Delete document",
+        "messagePrefix": "Do you really want to delete the document",
+        "confirmLabel": "Delete",
+        "cancelLabel": "Cancel"
+      },
+      "feedback": {
+        "success": {
+          "deleted": "Document deleted successfully."
+        },
+        "errors": {
+          "deleteDocument": "Could not delete the document.",
+          "loadDocuments": "Could not load documents."
+        }
+      }
+    }
   }
 }

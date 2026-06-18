@@ -1,32 +1,36 @@
 <mat-card class="documento-form" appearance="outlined">
   <mat-card-header>
     <mat-card-title>{{ pageTitle }}</mat-card-title>
-    <mat-card-subtitle>Preencha os dados do documento para manter o cadastro atualizado.</mat-card-subtitle>
+    <mat-card-subtitle>{{ 'documentos.documentoForm.subtitle' | translate }}</mat-card-subtitle>
   </mat-card-header>
 
   <mat-card-content class="documento-form__content">
     <div class="documento-form__loading" *ngIf="isLoading">
-      <app-loading-spinner message="Carregando documento..."></app-loading-spinner>
+      <app-loading-spinner [message]="'documentos.documentoForm.loading.document' | translate"></app-loading-spinner>
     </div>
 
     <form class="documento-form__fields" [formGroup]="form" (ngSubmit)="submit()" *ngIf="!isLoading">
       <p class="documento-form__error" *ngIf="apiError">{{ apiError }}</p>
 
       <mat-form-field appearance="outline">
-        <mat-label>Nome do documento</mat-label>
-        <input matInput formControlName="nomeDocumento" placeholder="Ex.: Nota Fiscal de Entrada" />
+        <mat-label>{{ 'documentos.documentoForm.fields.documentName' | translate }}</mat-label>
+        <input matInput
+               formControlName="nomeDocumento"
+               [placeholder]="'documentos.documentoForm.placeholders.documentName' | translate" />
         <mat-error *ngIf="isInvalid('nomeDocumento')">{{ getErrorMessage('nomeDocumento') }}</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Endpoint</mat-label>
-        <input matInput formControlName="endpoint" placeholder="Ex.: /PurchaseInvoices" />
+        <mat-label>{{ 'documentos.documentoForm.fields.endpoint' | translate }}</mat-label>
+        <input matInput
+               formControlName="endpoint"
+               [placeholder]="'documentos.documentoForm.placeholders.endpoint' | translate" />
         <mat-error *ngIf="isInvalid('endpoint')">{{ getErrorMessage('endpoint') }}</mat-error>
       </mat-form-field>
 
       <div class="documento-form__actions">
         <button type="button" mat-stroked-button (click)="cancel()" [disabled]="isSaving">
-          Cancelar
+          {{ 'documentos.documentoForm.actions.cancel' | translate }}
         </button>
         <button type="submit" mat-flat-button color="primary" [disabled]="isSaving">
           {{ submitLabel }}

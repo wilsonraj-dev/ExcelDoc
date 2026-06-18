@@ -138,5 +138,89 @@
         }
       }
     }
+  },
+  "documentos": {
+    "documentoForm": {
+      "title": {
+        "create": "Novo documento",
+        "edit": "Editar documento"
+      },
+      "subtitle": "Preencha os dados do documento para manter o cadastro atualizado.",
+      "loading": {
+        "document": "Carregando documento..."
+      },
+      "fields": {
+        "documentName": "Nome do documento",
+        "endpoint": "Endpoint"
+      },
+      "placeholders": {
+        "documentName": "Ex.: Nota Fiscal de Entrada",
+        "endpoint": "Ex.: /PurchaseInvoices"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "saving": "Salvando...",
+        "saveChanges": "Salvar alterações",
+        "saveDocument": "Salvar documento"
+      },
+      "validation": {
+        "documentNameRequired": "Informe o nome do documento.",
+        "endpointRequired": "Informe o endpoint do documento.",
+        "invalidField": "Campo inválido."
+      },
+      "feedback": {
+        "success": {
+          "created": "Documento criado com sucesso.",
+          "updated": "Documento atualizado com sucesso."
+        },
+        "errors": {
+          "invalidDocument": "Documento inválido para edição.",
+          "saveDocument": "Não foi possível salvar o documento.",
+          "loadDocument": "Não foi possível carregar o documento."
+        }
+      }
+    },
+    "documentoList": {
+      "header": {
+        "title": "Cadastro de documentos",
+        "description": "Gerencie os documentos disponíveis para processamento."
+      },
+      "loading": {
+        "documents": "Carregando documentos..."
+      },
+      "actions": {
+        "newDocument": "Novo documento",
+        "edit": "Editar",
+        "delete": "Excluir",
+        "deleting": "Excluindo..."
+      },
+      "table": {
+        "header": {
+          "documentName": "Nome do Documento",
+          "endpoint": "Endpoint",
+          "actions": "Ações"
+        },
+        "paginationAriaLabel": "Paginação da lista de documentos"
+      },
+      "empty": {
+        "title": "Nenhum documento cadastrado",
+        "description": "Cadastre o primeiro documento para disponibilizar novos endpoints no sistema."
+      },
+      "confirmDelete": {
+        "title": "Excluir documento",
+        "messagePrefix": "Deseja realmente excluir o documento",
+        "confirmLabel": "Excluir",
+        "cancelLabel": "Cancelar"
+      },
+      "feedback": {
+        "success": {
+          "deleted": "Documento excluído com sucesso."
+        },
+        "errors": {
+          "deleteDocument": "Não foi possível excluir o documento.",
+          "loadDocuments": "Não foi possível carregar os documentos."
+        }
+      }
+    }
   }
 }

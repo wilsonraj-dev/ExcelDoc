@@ -7,6 +7,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { Documento } from '../../models/documento.model';
 import { DocumentoService } from '../../services/documento.service';
@@ -39,11 +40,20 @@ export class DocumentoListComponent implements OnInit {
     private readonly dialog: MatDialog,
     private readonly documentoService: DocumentoService,
     private readonly notificationService: NotificationService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly translate: TranslateService
   ) { }
 
   get hasDocumentos(): boolean {
     return this.dataSource.data.length > 0;
+  }
+
+  get deleteLabel(): string {
+    return this.translate.instant('documentos.documentoList.actions.delete');
+  }
+
+  get deletingLabel(): string {
+    return this.translate.instant('documentos.documentoList.actions.deleting');
   }
 
   ngOnInit(): void {
@@ -62,10 +72,10 @@ export class DocumentoListComponent implements OnInit {
     this.dialog.open(ConfirmDialogComponent, {
       width: '420px',
       data: {
-        title: 'Excluir documento',
-        message: `Deseja realmente excluir o documento "${documento.nomeDocumento}"?`,
-        confirmLabel: 'Excluir',
-        cancelLabel: 'Cancelar'
+        title: this.translate.instant('documentos.documentoList.confirmDelete.title'),
+        message: `${this.translate.instant('documentos.documentoList.confirmDelete.messagePrefix')} "${documento.nomeDocumento}"?`,
+        confirmLabel: this.translate.instant('documentos.documentoList.confirmDelete.confirmLabel'),
+        cancelLabel: this.translate.instant('documentos.documentoList.confirmDelete.cancelLabel')
       }
     }).afterClosed()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -92,10 +102,10 @@ export class DocumentoListComponent implements OnInit {
       .subscribe({
         next: () => {
           this.dataSource.data = this.dataSource.data.filter((item) => item.id !== documento.id);
-          this.notificationService.showSuccess('Documento excluído com sucesso.');
+          this.notificationService.showSuccess(this.translate.instant('documentos.documentoList.feedback.success.deleted'));
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? 'Não foi possível excluir o documento.';
+          this.errorMessage = error.error?.detail ?? this.translate.instant('documentos.documentoList.feedback.errors.deleteDocument');
           this.notificationService.showError(this.errorMessage);
         }
       });
@@ -117,7 +127,7 @@ export class DocumentoListComponent implements OnInit {
           this.dataSource.data = [...documentos].sort((left, right) => left.nomeDocumento.localeCompare(right.nomeDocumento));
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? 'Não foi possível carregar os documentos.';
+          this.errorMessage = error.error?.detail ?? this.translate.instant('documentos.documentoList.feedback.errors.loadDocuments');
           this.notificationService.showError(this.errorMessage);
         }
       });

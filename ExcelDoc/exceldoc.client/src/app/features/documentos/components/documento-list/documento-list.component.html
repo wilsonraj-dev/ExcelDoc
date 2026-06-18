@@ -1,14 +1,14 @@
 <div class="settings-page">
   <div class="settings-header">
     <div>
-      <h2>Cadastro de documentos</h2>
-      <p>Gerencie os documentos disponíveis para processamento.</p>
+      <h2>{{ 'documentos.documentoList.header.title' | translate }}</h2>
+      <p>{{ 'documentos.documentoList.header.description' | translate }}</p>
     </div>
 
     <div class="settings-header__actions">
       <button type="button" mat-flat-button color="primary" (click)="novoDocumento()">
         <mat-icon>add</mat-icon>
-        Novo documento
+        {{ 'documentos.documentoList.actions.newDocument' | translate }}
       </button>
     </div>
   </div>
@@ -18,7 +18,7 @@
       <p class="documento-page__error" *ngIf="errorMessage">{{ errorMessage }}</p>
 
       <div class="loading-state loading-state--inline" *ngIf="isLoading">
-        <app-loading-spinner message="Carregando documentos..."></app-loading-spinner>
+        <app-loading-spinner [message]="'documentos.documentoList.loading.documents' | translate"></app-loading-spinner>
       </div>
 
       <ng-container *ngIf="!isLoading">
@@ -26,17 +26,17 @@
           <div class="table-wrapper">
             <table mat-table [dataSource]="dataSource" class="documento-page__table-content">
               <ng-container matColumnDef="nomeDocumento">
-                <th mat-header-cell *matHeaderCellDef>Nome do Documento</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'documentos.documentoList.table.header.documentName' | translate }}</th>
                 <td mat-cell *matCellDef="let documento">{{ documento.nomeDocumento }}</td>
               </ng-container>
 
               <ng-container matColumnDef="endpoint">
-                <th mat-header-cell *matHeaderCellDef>Endpoint</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'documentos.documentoList.table.header.endpoint' | translate }}</th>
                 <td mat-cell *matCellDef="let documento">{{ documento.endpoint }}</td>
               </ng-container>
 
               <ng-container matColumnDef="acoes">
-                <th mat-header-cell *matHeaderCellDef>Ações</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'documentos.documentoList.table.header.actions' | translate }}</th>
                 <td mat-cell *matCellDef="let documento" class="documento-page__actions-cell">
                   <div class="documento-page__actions">
                     <button type="button"
@@ -44,7 +44,7 @@
                             color="primary"
                             (click)="editar(documento)">
                       <mat-icon>edit</mat-icon>
-                      Editar
+                      {{ 'documentos.documentoList.actions.edit' | translate }}
                     </button>
 
                     <button type="button"
@@ -53,7 +53,7 @@
                             [disabled]="deletingDocumentoId === documento.id"
                             (click)="excluir(documento)">
                       <mat-icon>delete</mat-icon>
-                      {{ deletingDocumentoId === documento.id ? 'Excluindo...' : 'Excluir' }}
+                      {{ deletingDocumentoId === documento.id ? deletingLabel : deleteLabel }}
                     </button>
                   </div>
                 </td>
@@ -64,15 +64,18 @@
             </table>
           </div>
 
-          <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons></mat-paginator>
+          <mat-paginator [pageSizeOptions]="pageSizeOptions"
+                         showFirstLastButtons
+                         [attr.aria-label]="'documentos.documentoList.table.paginationAriaLabel' | translate">
+          </mat-paginator>
         </div>
       </ng-container>
 
       <ng-template #emptyState>
         <section class="documento-page__empty-state">
           <mat-icon>description</mat-icon>
-          <h3>Nenhum documento cadastrado</h3>
-          <p>Cadastre o primeiro documento para disponibilizar novos endpoints no sistema.</p>
+          <h3>{{ 'documentos.documentoList.empty.title' | translate }}</h3>
+          <p>{{ 'documentos.documentoList.empty.description' | translate }}</p>
         </section>
       </ng-template>
     </mat-card-content>
