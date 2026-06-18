@@ -120,6 +120,21 @@ namespace ExcelDoc.Server.Services
             return Map(usuario);
         }
 
+        public async Task AtualizarIdioma(int usuarioId, string idioma, CancellationToken cancellationToken = default)
+        {
+            var valid = new[] { "pt", "en", "es" };
+            if (!valid.Contains(idioma))
+            {
+                throw new FormatException("Idioma inválido.");
+            }
+
+            var usuario = await _usuarioRepository.GetTrackedByIdAsync(usuarioId, cancellationToken)
+                ?? throw new KeyNotFoundException("Usuário não encontrado.");
+
+            usuario.Idioma = idioma;
+            await _usuarioRepository.SaveChangesAsync(cancellationToken);
+        }
+
         private UsuarioResponseDto Map(Usuario usuario)
         {
             return new UsuarioResponseDto
@@ -130,7 +145,8 @@ namespace ExcelDoc.Server.Services
                 TipoUsuario = usuario.TipoUsuario.ToString(),
                 Ativo = usuario.Ativo,
                 EmpresaId = usuario.FK_IdEmpresa,
-                NomeEmpresa = usuario.Empresa?.NomeEmpresa
+                NomeEmpresa = usuario.Empresa?.NomeEmpresa,                 
+                Idioma = usuario.Idioma
             };
         }
 

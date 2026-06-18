@@ -31,5 +31,9 @@ namespace ExcelDoc.Server.Models
         public Empresa? Empresa { get; set; }
 
         public ICollection<Processamento> Processamentos { get; set; } = new List<Processamento>();
+
+        [Required]
+        [MaxLength(5)]
+        public string Idioma { get; set; } = "pt";
     }
 }

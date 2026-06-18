@@ -15,5 +15,7 @@ namespace ExcelDoc.Server.DTOs.Auth
         public string? NomeEmpresa { get; set; }
 
         public int? EmpresaId { get; set; }
+
+        public string Idioma { get; set; } = "pt";
     }
 }

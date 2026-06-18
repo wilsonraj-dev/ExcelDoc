@@ -15,5 +15,7 @@ namespace ExcelDoc.Server.DTOs.Usuarios
         public int? EmpresaId { get; set; }
 
         public string? NomeEmpresa { get; set; }
+
+        public string Idioma { get; set; } = "pt";
     }
 }

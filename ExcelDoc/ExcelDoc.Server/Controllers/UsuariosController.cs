@@ -12,6 +12,7 @@ namespace ExcelDoc.Server.Controllers
     public class UsuariosController : ControllerBase
     {
         private readonly IUsuarioService _usuarioService;
+        private readonly ILogger<UsuariosController> _logger;
 
         public UsuariosController(IUsuarioService usuarioService)
         {
@@ -70,6 +71,27 @@ namespace ExcelDoc.Server.Controllers
                 FormatException => BadRequest(new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status400BadRequest }),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status500InternalServerError })
             };
+        }
+
+        [HttpPut("idioma")]
+        [Authorize]
+        public async Task<IActionResult> PutIdioma([FromBody] DTOs.Usuarios.AtualizarIdiomaDto dto, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrWhiteSpace(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+                {
+                    return StatusCode(StatusCodes.Status401Unauthorized);
+                }
+
+                await _usuarioService.AtualizarIdioma(userId, dto.Idioma, cancellationToken);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return ToActionResult(ex);
+            }
         }
     }
 }

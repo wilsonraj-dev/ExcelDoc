@@ -11,5 +11,7 @@ namespace ExcelDoc.Server.Services.Interfaces
         Task<RegisterUserResponseDto> CriarAsync(UsuarioCreateRequestDto request, CancellationToken cancellationToken = default);
 
         Task<UsuarioResponseDto> VincularEmpresaAsync(int usuarioId, UsuarioEmpresaVinculoRequestDto request, CancellationToken cancellationToken = default);
+
+        Task AtualizarIdioma(int usuarioId, string idioma, CancellationToken cancellationToken = default);
     }
 }
