@@ -8,6 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService, LoginResponse } from '../../../../core/services/auth.service';
 import { CompanySettingsService, ConfiguracaoRequest, ConfiguracaoResponse, EmpresaResponse } from '../../../../core/services/company-settings.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 
 interface CompanySettingsFormValue {
   linkServiceLayer: string;
@@ -63,7 +64,8 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
     private readonly activatedRoute: ActivatedRoute,
     private readonly authService: AuthService,
     private readonly companySettingsService: CompanySettingsService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly translate: TranslateService
   ) {
     this.session = this.authService.getSession();
     this.isAdministrator = this.authService.isAdministrator(this.session);
@@ -79,18 +81,22 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
 
   get pageTitle(): string {
     if (!this.selectedEmpresa) {
-      return this.isAdministrator ? 'Configurações das empresas' : 'Configuração da empresa';
+      return this.isAdministrator
+        ? this.translate.instant('companySettings.pageTitleAdmin')
+        : this.translate.instant('companySettings.pageTitleUser');
     }
 
-    return `Configuração da empresa ${this.selectedEmpresa.nomeEmpresa}`;
+    return `${this.translate.instant('companySettings.pageTitleSelectedPrefix')} ${this.selectedEmpresa.nomeEmpresa}`;
   }
 
   get submitLabel(): string {
     if (this.saving) {
-      return 'Salvando...';
+      return this.translate.instant('companySettings.saving');
     }
 
-    return this.hasExistingConfiguration ? 'Salvar alterações' : 'Criar configuração';
+    return this.hasExistingConfiguration
+      ? this.translate.instant('companySettings.submitSaveChanges')
+      : this.translate.instant('companySettings.submitCreate');
   }
 
   ngAfterViewInit(): void {
@@ -117,7 +123,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
     }
 
     if (!this.session.empresaId) {
-      this.errorMessage = 'O usuário atual não está vinculado a uma empresa.';
+      this.errorMessage = this.translate.instant('companySettings.errors.noLinkedCompany');
       return;
     }
 
@@ -134,7 +140,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
     this.clearFeedback(true);
 
     if (!this.selectedEmpresaId) {
-      this.errorMessage = 'Selecione uma empresa para configurar.';
+      this.errorMessage = this.translate.instant('companySettings.errors.selectCompany');
       return;
     }
 
@@ -160,7 +166,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
         next: (response: ConfiguracaoResponse) => {
           this.loadedEmpresaId = response.empresaId;
           this.hasExistingConfiguration = true;
-          this.successMessage = 'Configuração salva com sucesso.';
+          this.successMessage = this.translate.instant('companySettings.successSaved');
           this.form.reset({
             linkServiceLayer: response.linkServiceLayer,
             database: response.database,
@@ -169,7 +175,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
           });
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? 'Não foi possível salvar a configuração da empresa.';
+          this.errorMessage = error.error?.detail ?? this.translate.instant('companySettings.errors.saveConfiguration');
         }
       });
   }
@@ -210,7 +216,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
       this.loadedEmpresaId = null;
       this.hasExistingConfiguration = false;
       this.form.reset(this.createEmptyFormValue());
-      this.errorMessage = 'Empresa inválida para visualização da configuração.';
+      this.errorMessage = this.translate.instant('companySettings.error.invalidCompany');
       return;
     }
 
@@ -269,11 +275,11 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
         error: (error: HttpErrorResponse) => {
           if (error.status === 404) {
             this.loadedEmpresaId = empresaId;
-            this.infoMessage = 'Nenhuma configuração cadastrada para esta empresa. Preencha os campos para criar uma nova configuração.';
+            this.infoMessage = this.translate.instant('companySettings.info.noConfig');
             return;
           }
 
-          this.errorMessage = error.error?.detail ?? 'Não foi possível carregar a configuração da empresa.';
+          this.errorMessage = error.error?.detail ?? this.translate.instant('companySettings.errors.loadConfiguration');
         }
       });
   }
@@ -294,7 +300,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
           this.syncSelectedEmpresa();
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? 'Não foi possível carregar as empresas disponíveis.';
+          this.errorMessage = error.error?.detail ?? this.translate.instant('companySettings.errors.loadCompanies');
         }
       });
   }
@@ -309,7 +315,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
 
     if (!empresa) {
       if (!this.loadingEmpresas && this.empresas.length > 0) {
-        this.errorMessage = 'A empresa selecionada não está disponível para o usuário atual.';
+        this.errorMessage = this.translate.instant('companySettings.errors.selectedUnavailable');
       }
       return;
     }

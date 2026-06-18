@@ -3,14 +3,14 @@
     <div>
       <h2>{{ pageTitle }}</h2>
       <p *ngIf="selectedEmpresa; else defaultDescription">
-        Crie ou atualize os dados de integração da empresa selecionada.
+        {{ 'companySettings.createOrUpdate' | translate }}
       </p>
       <ng-template #defaultDescription>
         <p *ngIf="isAdministrator; else commonUserDescription">
-          Visualize as empresas cadastradas e abra a configuração desejada.
+          {{ 'companySettings.visualizeList' | translate }}
         </p>
         <ng-template #commonUserDescription>
-          Gerencie a configuração da empresa vinculada ao seu usuário.
+          {{ 'companySettings.manageLinked' | translate }}
         </ng-template>
       </ng-template>
     </div>
@@ -21,7 +21,7 @@
               color="primary"
               routerLink="/empresa/criar">
         <mat-icon>add</mat-icon>
-        Cadastrar empresa
+        {{ 'companySettings.registerCompany' | translate }}
       </button>
 
       <button *ngIf="selectedEmpresa"
@@ -29,7 +29,7 @@
               mat-stroked-button
               color="primary"
               (click)="voltarParaEmpresas()">
-        Voltar para empresas
+        {{ 'companySettings.backToCompanies' | translate }}
       </button>
     </div>
   </div>
@@ -40,7 +40,7 @@
 
   <div class="loading-state" *ngIf="loadingEmpresas && !empresas.length">
     <mat-spinner diameter="36"></mat-spinner>
-    <span>Carregando empresas...</span>
+    <span>{{ 'companySettings.loadingCompanies' | translate }}</span>
   </div>
 
   <mat-card *ngIf="isAdministrator && !selectedEmpresa" class="settings-card">
@@ -48,18 +48,18 @@
       <div class="table-wrapper" *ngIf="empresas.length; else noCompaniesTemplate">
         <table mat-table [dataSource]="empresasDataSource" class="settings-table">
           <ng-container matColumnDef="nomeEmpresa">
-            <th mat-header-cell *matHeaderCellDef>Empresa</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'companySettings.table.header.company' | translate }}</th>
             <td mat-cell *matCellDef="let empresa">{{ empresa.nomeEmpresa }}</td>
           </ng-container>
 
           <ng-container matColumnDef="acoes">
-            <th mat-header-cell *matHeaderCellDef>Ações</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'companySettings.table.header.actions' | translate }}</th>
             <td mat-cell *matCellDef="let empresa">
               <button type="button"
                       mat-flat-button
                       color="primary"
                       (click)="visualizarConfiguracao(empresa)">
-                Visualizar configuração
+                {{ 'companySettings.table.columns.viewConfig' | translate }}
               </button>
             </td>
           </ng-container>
@@ -78,44 +78,44 @@
   </mat-card>
 
   <ng-template #noCompaniesTemplate>
-    <p class="empty-state">Nenhuma empresa disponível para configuração.</p>
+    <p class="empty-state">{{ 'companySettings.noCompanies' | translate }}</p>
   </ng-template>
 
   <mat-card *ngIf="canShowForm" class="settings-card">
     <mat-card-content>
       <div class="loading-state loading-state--inline" *ngIf="loadingConfiguration">
-        <app-loading-spinner message="Carregando configuração..."></app-loading-spinner>
+        <app-loading-spinner [message]="'companySettings.loadingConfiguration' | translate"></app-loading-spinner>
       </div>
 
       <form class="settings-form" [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingConfiguration">
         <div class="settings-form__company">
-          <span class="settings-form__label">Empresa</span>
+          <span class="settings-form__label">{{ 'companySettings.label.company' | translate }}</span>
           <strong>{{ selectedEmpresa?.nomeEmpresa }}</strong>
         </div>
 
         <div class="settings-form__grid">
           <mat-form-field appearance="outline">
-            <mat-label>Link Service Layer</mat-label>
+            <mat-label>{{ 'companySettings.linkServiceLayer' | translate }}</mat-label>
             <input matInput formControlName="linkServiceLayer" maxlength="500" />
-            <mat-error *ngIf="isInvalid('linkServiceLayer')">Informe o link do Service Layer.</mat-error>
+            <mat-error *ngIf="isInvalid('linkServiceLayer')">{{ 'companySettings.errors.linkServiceLayer' | translate }}</mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Database</mat-label>
+            <mat-label>{{ 'companySettings.database' | translate }}</mat-label>
             <input matInput formControlName="database" maxlength="150" />
-            <mat-error *ngIf="isInvalid('database')">Informe o database.</mat-error>
+            <mat-error *ngIf="isInvalid('database')">{{ 'companySettings.errors.database' | translate }}</mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Usuário SAP</mat-label>
+            <mat-label>{{ 'companySettings.usuarioSAP' | translate }}</mat-label>
             <input matInput formControlName="usuarioSAP" maxlength="500" />
-            <mat-error *ngIf="isInvalid('usuarioSAP')">Informe o usuário SAP.</mat-error>
+            <mat-error *ngIf="isInvalid('usuarioSAP')">{{ 'companySettings.errors.usuarioSAP' | translate }}</mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Senha SAP</mat-label>
+            <mat-label>{{ 'companySettings.senhaSAP' | translate }}</mat-label>
             <input matInput type="password" formControlName="senhaSAP" maxlength="500" />
-            <mat-error *ngIf="isInvalid('senhaSAP')">Informe a senha SAP.</mat-error>
+            <mat-error *ngIf="isInvalid('senhaSAP')">{{ 'companySettings.errors.senhaSAP' | translate }}</mat-error>
           </mat-form-field>
         </div>
 
