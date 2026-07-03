@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { Colecao, TipoColecao, resolveTipoColecao } from '../../../colecoes/models/colecao.model';
 import { ColecaoService } from '../../../colecoes/services/colecao.service';
 import { Documento } from '../../../documentos/models/documento.model';
@@ -64,7 +65,8 @@ export class PerfilFormComponent implements OnInit {
     private readonly colecaoService: ColecaoService,
     private readonly mapeamentoService: MapeamentoService,
     private readonly notificationService: NotificationService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly translate: TranslateService
   ) { }
 
   get isAdministrator(): boolean {
@@ -120,8 +122,10 @@ export class PerfilFormComponent implements OnInit {
   }
 
   get pageTitle(): string {
-    if (this.isReadonly) return 'Visualizar Perfil de Mapeamento';
-    return this.isEditMode ? 'Editar Perfil de Mapeamento' : 'Novo Perfil de Mapeamento';
+    if (this.isReadonly) return this.translate.instant('perfilMapeamento.perfilForm.title.view');
+    return this.isEditMode
+      ? this.translate.instant('perfilMapeamento.perfilForm.title.edit')
+      : this.translate.instant('perfilMapeamento.perfilForm.title.create');
   }
 
   ngOnInit(): void {
@@ -170,11 +174,15 @@ export class PerfilFormComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.notificationService.showSuccess(this.isEditMode ? 'Perfil atualizado com sucesso.' : 'Perfil criado com sucesso.');
+          this.notificationService.showSuccess(
+            this.isEditMode
+              ? this.translate.instant('perfilMapeamento.perfilForm.feedback.success.updated')
+              : this.translate.instant('perfilMapeamento.perfilForm.feedback.success.created')
+          );
           void this.router.navigate(['/perfil-mapeamento']);
         },
         error: (err: HttpErrorResponse) => {
-          this.notificationService.showError(err.error?.detail ?? 'Erro ao salvar perfil.');
+          this.notificationService.showError(err.error?.detail ?? this.translate.instant('perfilMapeamento.perfilForm.feedback.errors.saveProfile'));
         }
       });
   }
@@ -184,7 +192,8 @@ export class PerfilFormComponent implements OnInit {
   }
 
   getTipoColecaoLabel(colecao: Colecao): string {
-    return resolveTipoColecao(colecao.tipoColecao);
+    const key = resolveTipoColecao(colecao.tipoColecao) === TipoColecao.Line ? 'line' : 'header';
+    return this.translate.instant(`perfilMapeamento.collectionTypes.${key}`);
   }
 
   getMapeamentoBadgeClass(mapeamento: Mapeamento): string {
@@ -192,7 +201,9 @@ export class PerfilFormComponent implements OnInit {
   }
 
   getMapeamentoBadgeLabel(mapeamento: Mapeamento): string {
-    return mapeamento.isPadrao ? 'Padrão' : 'Empresa';
+    return mapeamento.isPadrao
+      ? this.translate.instant('perfilMapeamento.common.scope.default')
+      : this.translate.instant('perfilMapeamento.common.scope.company');
   }
 
   onLineColecaoSelectionChange(group: LineColecaoMapeamentoGroup): void {
@@ -254,7 +265,7 @@ export class PerfilFormComponent implements OnInit {
           this.checkEditMode();
         },
         error: () => {
-          this.notificationService.showError('Erro ao carregar documentos.');
+          this.notificationService.showError(this.translate.instant('perfilMapeamento.perfilForm.feedback.errors.loadDocuments'));
         }
       });
   }
@@ -291,7 +302,7 @@ export class PerfilFormComponent implements OnInit {
           this.loadColecoesForDocumento(perfil.fk_IdDocumento, perfil);
         },
         error: () => {
-          this.notificationService.showError('Erro ao carregar perfil.');
+          this.notificationService.showError(this.translate.instant('perfilMapeamento.perfilForm.feedback.errors.loadProfile'));
           void this.router.navigate(['/perfil-mapeamento']);
         }
       });
@@ -319,7 +330,7 @@ export class PerfilFormComponent implements OnInit {
           this.configureLineColecoes(colecoesDoDocumento, perfil);
         },
         error: () => {
-          this.notificationService.showError('Erro ao carregar coleções.');
+          this.notificationService.showError(this.translate.instant('perfilMapeamento.perfilForm.feedback.errors.loadCollections'));
         }
       });
   }
@@ -407,7 +418,7 @@ export class PerfilFormComponent implements OnInit {
         },
         error: () => {
           option.isLoadingMapeamentos = false;
-          this.notificationService.showError(`Erro ao carregar mapeamentos da coleção ${option.colecao.nomeColecao}.`);
+          this.notificationService.showError(`${this.translate.instant('perfilMapeamento.perfilForm.feedback.errors.loadCollectionMappingsPrefix')} ${option.colecao.nomeColecao}.`);
         }
       });
   }
@@ -430,7 +441,7 @@ export class PerfilFormComponent implements OnInit {
         },
         error: () => {
           group.isLoadingMapeamentos = false;
-          this.notificationService.showError(`Erro ao carregar mapeamentos da coleção ${group.colecao.nomeColecao}.`);
+          this.notificationService.showError(`${this.translate.instant('perfilMapeamento.perfilForm.feedback.errors.loadCollectionMappingsPrefix')} ${group.colecao.nomeColecao}.`);
         }
       });
   }

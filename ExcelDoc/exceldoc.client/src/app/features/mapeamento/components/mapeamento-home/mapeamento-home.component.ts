@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { ColecaoService } from '../../../colecoes/services/colecao.service';
 import {
   Mapeamento,
@@ -48,14 +49,15 @@ export class MapeamentoHomeComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly colecaoService: ColecaoService,
     private readonly mapeamentoService: MapeamentoService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly translate: TranslateService
   ) { }
 
   ngOnInit(): void {
     this.colecaoId = Number(this.route.snapshot.paramMap.get('colecaoId'));
 
     if (!Number.isInteger(this.colecaoId) || this.colecaoId <= 0) {
-      this.notificationService.showError('Coleção inválida.');
+      this.notificationService.showError(this.translate.instant('mapeamento.mapeamentoHome.feedback.errors.invalidCollection'));
       void this.router.navigate(['/mapeamento']);
       return;
     }
@@ -107,7 +109,9 @@ export class MapeamentoHomeComponent implements OnInit {
   }
 
   get selectedMapeamentoTipoLabel(): string {
-    return this.selectedMapeamento?.isPadrao ? 'Padrão' : 'Minha Empresa';
+    return this.selectedMapeamento?.isPadrao
+      ? this.translate.instant('mapeamento.common.scope.default')
+      : this.translate.instant('mapeamento.common.scope.myCompany');
   }
 
   onMapeamentoSelectionChange(mapeamentoId: number | null): void {
@@ -116,7 +120,7 @@ export class MapeamentoHomeComponent implements OnInit {
 
   openNovoMapeamentoDialog(): void {
     if (!this.canCreateMapeamento || this.empresaId === null) {
-      this.notificationService.showError('Não foi possível identificar a empresa do usuário para criar o mapeamento.');
+      this.notificationService.showError(this.translate.instant('mapeamento.mapeamentoHome.feedback.errors.identifyCompany'));
       return;
     }
 
@@ -146,10 +150,10 @@ export class MapeamentoHomeComponent implements OnInit {
     this.dialog.open(CloneNameDialogComponent, {
       width: '360px',
       data: {
-        title: 'Clonar mapeamento',
-        label: 'Nome do novo mapeamento',
+        title: this.translate.instant('mapeamento.mapeamentoHome.cloneDialog.title'),
+        label: this.translate.instant('mapeamento.mapeamentoHome.cloneDialog.label'),
         initialValue: `${mapeamento.nome}`,
-        confirmLabel: 'Clonar'
+        confirmLabel: this.translate.instant('mapeamento.mapeamentoHome.actions.clone')
       }
     }).afterClosed()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -168,11 +172,11 @@ export class MapeamentoHomeComponent implements OnInit {
           )
           .subscribe({
             next: (novoMapeamento) => {
-              this.notificationService.showSuccess('Mapeamento clonado com sucesso.');
+              this.notificationService.showSuccess(this.translate.instant('mapeamento.mapeamentoHome.feedback.success.cloned'));
               this.mergeAndSelectMapeamento(novoMapeamento.id);
             },
             error: (error: HttpErrorResponse) => {
-              this.notificationService.showError(error.error?.detail ?? 'Falha ao clonar o mapeamento.');
+              this.notificationService.showError(error.error?.detail ?? this.translate.instant('mapeamento.mapeamentoHome.feedback.errors.cloneMapping'));
             }
           });
       });
@@ -188,10 +192,10 @@ export class MapeamentoHomeComponent implements OnInit {
     this.dialog.open(ConfirmDialogComponent, {
       width: '420px',
       data: {
-        title: 'Excluir mapeamento',
-        message: `Deseja realmente excluir o mapeamento "${mapeamento.nome}"?`,
-        confirmLabel: 'Excluir',
-        cancelLabel: 'Cancelar'
+        title: this.translate.instant('mapeamento.mapeamentoHome.confirmDelete.title'),
+        message: `${this.translate.instant('mapeamento.mapeamentoHome.confirmDelete.messagePrefix')} "${mapeamento.nome}"?`,
+        confirmLabel: this.translate.instant('mapeamento.mapeamentoHome.actions.delete'),
+        cancelLabel: this.translate.instant('mapeamento.mapeamentoHome.actions.cancel')
       }
     }).afterClosed()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -213,12 +217,16 @@ export class MapeamentoHomeComponent implements OnInit {
   }
 
   getMapeamentoBadgeLabel(mapeamento: Mapeamento): string {
-    return mapeamento.isPadrao ? 'Padrão' : 'Minha Empresa';
+    return mapeamento.isPadrao
+      ? this.translate.instant('mapeamento.common.scope.default')
+      : this.translate.instant('mapeamento.common.scope.myCompany');
   }
 
   getCampoQuantidadeLabel(mapeamento: Mapeamento): string {
     const quantidade = mapeamento.quantidadeCampos ?? 0;
-    return quantidade === 1 ? '1 campo' : `${quantidade} campos`;
+    return quantidade === 1
+      ? this.translate.instant('mapeamento.mapeamentoHome.summary.oneField')
+      : `${quantidade} ${this.translate.instant('mapeamento.mapeamentoHome.summary.fieldsSuffix')}`;
   }
 
   private loadColecao(): void {
@@ -233,7 +241,7 @@ export class MapeamentoHomeComponent implements OnInit {
           this.colecaoNome = colecao.nomeColecao;
         },
         error: () => {
-          this.colecaoNome = `Coleção #${this.colecaoId}`;
+          this.colecaoNome = '';
         }
       });
   }
@@ -263,7 +271,7 @@ export class MapeamentoHomeComponent implements OnInit {
         error: (error: HttpErrorResponse) => {
           this.mapeamentos = [];
           this.selectedMapeamentoId = null;
-          this.loadError = error.error?.detail ?? 'Falha ao carregar os mapeamentos da coleção.';
+          this.loadError = error.error?.detail ?? this.translate.instant('mapeamento.mapeamentoHome.feedback.errors.loadMappings');
           this.notificationService.showError(this.loadError);
         }
       });
@@ -285,11 +293,11 @@ export class MapeamentoHomeComponent implements OnInit {
       )
       .subscribe({
         next: (mapeamento) => {
-          this.notificationService.showSuccess('Mapeamento criado com sucesso.');
+          this.notificationService.showSuccess(this.translate.instant('mapeamento.mapeamentoHome.feedback.success.created'));
           this.mergeAndSelectMapeamento(mapeamento.id);
         },
         error: (error: HttpErrorResponse) => {
-          this.notificationService.showError(error.error?.detail ?? 'Falha ao criar o mapeamento.');
+          this.notificationService.showError(error.error?.detail ?? this.translate.instant('mapeamento.mapeamentoHome.feedback.errors.createMapping'));
         }
       });
   }
@@ -303,11 +311,11 @@ export class MapeamentoHomeComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.notificationService.showSuccess('Mapeamento excluído com sucesso.');
+          this.notificationService.showSuccess(this.translate.instant('mapeamento.mapeamentoHome.feedback.success.deleted'));
           this.loadMapeamentos();
         },
         error: (error: HttpErrorResponse) => {
-          this.notificationService.showError(error.error?.detail ?? 'Falha ao excluir o mapeamento.');
+          this.notificationService.showError(error.error?.detail ?? this.translate.instant('mapeamento.mapeamentoHome.feedback.errors.deleteMapping'));
         }
       });
   }

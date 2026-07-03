@@ -2,53 +2,53 @@
   <h2>{{ pageTitle }}</h2>
 
   <div class="loading-state" *ngIf="isLoading">
-    <app-loading-spinner message="Carregando perfil..."></app-loading-spinner>
+    <app-loading-spinner [message]="'perfilMapeamento.perfilForm.loading.profile' | translate"></app-loading-spinner>
   </div>
 
   <mat-card *ngIf="!isLoading" appearance="outlined">
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="salvar()">
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nome do Perfil</mat-label>
-          <input matInput formControlName="nome" placeholder="Ex.: Perfil padrão de importação" />
-          <mat-error>Nome é obrigatório (máx. 150 caracteres).</mat-error>
+          <mat-label>{{ 'perfilMapeamento.perfilForm.fields.profileName' | translate }}</mat-label>
+          <input matInput formControlName="nome" [placeholder]="'perfilMapeamento.perfilForm.placeholders.profileName' | translate" />
+          <mat-error>{{ 'perfilMapeamento.perfilForm.validation.profileNameRequired' | translate }}</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Documento</mat-label>
+          <mat-label>{{ 'perfilMapeamento.common.document' | translate }}</mat-label>
           <mat-select formControlName="documentoId" [disabled]="isEditMode">
             <mat-option *ngFor="let doc of documentos" [value]="doc.id">
               {{ doc.nomeDocumento }}
             </mat-option>
           </mat-select>
-          <mat-hint *ngIf="isLoadingDocumentos">Carregando documentos...</mat-hint>
-          <mat-error>Selecione um documento.</mat-error>
+          <mat-hint *ngIf="isLoadingDocumentos">{{ 'perfilMapeamento.common.loading.documents' | translate }}</mat-hint>
+          <mat-error>{{ 'perfilMapeamento.perfilForm.validation.documentRequired' | translate }}</mat-error>
         </mat-form-field>
 
         <div class="colecao-groups" *ngIf="hasHeaderColecoes || hasLineColecoes">
-          <h3>Mapeamentos por Coleção</h3>
+          <h3>{{ 'perfilMapeamento.perfilForm.sections.mappingsByCollection' | translate }}</h3>
 
           <section class="colecao-section" *ngIf="hasHeaderColecoes">
             <div class="colecao-section__heading">
-              <span class="colecao-group__tipo colecao-group__tipo--header">Header</span>
+              <span class="colecao-group__tipo colecao-group__tipo--header">{{ 'perfilMapeamento.collectionTypes.header' | translate }}</span>
               <div>
-                <h4>Coleção de Cabeçalho</h4>
-                <p>Selecione qual coleção do tipo cabeçalho deve compor o perfil.</p>
+                <h4>{{ 'perfilMapeamento.perfilForm.sections.headerCollection' | translate }}</h4>
+                <p>{{ 'perfilMapeamento.perfilForm.sections.headerCollectionDescription' | translate }}</p>
               </div>
             </div>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Coleção de Cabeçalho</mat-label>
+              <mat-label>{{ 'perfilMapeamento.perfilForm.fields.headerCollection' | translate }}</mat-label>
               <mat-select [formControl]="headerColecaoControl" [disabled]="isReadonly">
                 <mat-option *ngFor="let option of headerColecoes" [value]="option.colecao.id">
                   {{ option.colecao.nomeColecao }}
                 </mat-option>
               </mat-select>
-              <mat-error>Selecione uma coleção de cabeçalho.</mat-error>
+              <mat-error>{{ 'perfilMapeamento.perfilForm.validation.headerCollectionRequired' | translate }}</mat-error>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Mapeamento do Cabeçalho</mat-label>
+              <mat-label>{{ 'perfilMapeamento.perfilForm.fields.headerMapping' | translate }}</mat-label>
               <mat-select [formControl]="headerMapeamentoControl"
                           [disabled]="selectedHeaderColecao?.isLoadingMapeamentos || isReadonly || !selectedHeaderColecao">
                 <mat-option *ngFor="let mapeamento of selectedHeaderMapeamentos" [value]="mapeamento.id">
@@ -57,17 +57,17 @@
                   </div>
                 </mat-option>
               </mat-select>
-              <mat-hint *ngIf="selectedHeaderColecao?.isLoadingMapeamentos">Carregando mapeamentos...</mat-hint>
-              <mat-error>Selecione um mapeamento para o cabeçalho.</mat-error>
+              <mat-hint *ngIf="selectedHeaderColecao?.isLoadingMapeamentos">{{ 'perfilMapeamento.common.loading.mappings' | translate }}</mat-hint>
+              <mat-error>{{ 'perfilMapeamento.perfilForm.validation.headerMappingRequired' | translate }}</mat-error>
             </mat-form-field>
           </section>
 
           <section class="colecao-section" *ngIf="hasLineColecoes">
             <div class="colecao-section__heading">
-              <span class="colecao-group__tipo">Line</span>
+              <span class="colecao-group__tipo">{{ 'perfilMapeamento.collectionTypes.line' | translate }}</span>
               <div>
-                <h4>Coleções de Linha</h4>
-                <p>Marque as coleções line que deseja utilizar e defina um mapeamento para cada uma.</p>
+                <h4>{{ 'perfilMapeamento.perfilForm.sections.lineCollections' | translate }}</h4>
+                <p>{{ 'perfilMapeamento.perfilForm.sections.lineCollectionsDescription' | translate }}</p>
               </div>
             </div>
 
@@ -86,13 +86,13 @@
                       {{ getTipoColecaoLabel(group.colecao) }}
                     </span>
                     <span class="colecao-group__description">
-                      {{ group.selectedControl.value ? 'Coleção incluída no perfil.' : 'Coleção opcional.' }}
+                      {{ group.selectedControl.value ? ('perfilMapeamento.perfilForm.lineCollection.included' | translate) : ('perfilMapeamento.perfilForm.lineCollection.optional' | translate) }}
                     </span>
                   </div>
                 </div>
 
                 <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Mapeamento</mat-label>
+                  <mat-label>{{ 'perfilMapeamento.perfilForm.fields.mapping' | translate }}</mat-label>
                   <mat-select [formControl]="group.mapeamentoControl"
                               [disabled]="group.isLoadingMapeamentos || !group.selectedControl.value || isReadonly">
                     <mat-option *ngFor="let mapeamento of group.mapeamentos" [value]="mapeamento.id">
@@ -101,9 +101,9 @@
                       </div>
                     </mat-option>
                   </mat-select>
-                  <mat-hint *ngIf="group.isLoadingMapeamentos">Carregando mapeamentos...</mat-hint>
-                  <mat-hint *ngIf="!group.isLoadingMapeamentos && !group.selectedControl.value">Selecione a coleção para habilitar o mapeamento.</mat-hint>
-                  <mat-error>Selecione um mapeamento para esta coleção.</mat-error>
+                  <mat-hint *ngIf="group.isLoadingMapeamentos">{{ 'perfilMapeamento.common.loading.mappings' | translate }}</mat-hint>
+                  <mat-hint *ngIf="!group.isLoadingMapeamentos && !group.selectedControl.value">{{ 'perfilMapeamento.perfilForm.lineCollection.enableMappingHint' | translate }}</mat-hint>
+                  <mat-error>{{ 'perfilMapeamento.perfilForm.validation.lineMappingRequired' | translate }}</mat-error>
                 </mat-form-field>
               </div>
             </div>
@@ -111,17 +111,17 @@
         </div>
 
         <div class="loading-state loading-state--inline" *ngIf="isLoadingColecoes">
-          <app-loading-spinner message="Carregando coleções..."></app-loading-spinner>
+          <app-loading-spinner [message]="'perfilMapeamento.common.loading.collections' | translate"></app-loading-spinner>
         </div>
 
         <div class="actions">
           <button mat-raised-button color="primary" type="submit"
                   [disabled]="!isFormValid || isSaving || isReadonly">
             <mat-icon>save</mat-icon>
-            {{ isSaving ? 'Salvando...' : 'Salvar' }}
+            {{ isSaving ? ('perfilMapeamento.common.actions.saving' | translate) : ('perfilMapeamento.common.actions.save' | translate) }}
           </button>
           <button mat-stroked-button type="button" (click)="cancelar()">
-            Cancelar
+            {{ 'perfilMapeamento.common.actions.cancel' | translate }}
           </button>
           <mat-spinner *ngIf="isSaving" diameter="24"></mat-spinner>
         </div>

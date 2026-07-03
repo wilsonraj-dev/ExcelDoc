@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { Colecao } from '../../../colecoes/models/colecao.model';
 import { ColecaoService } from '../../../colecoes/services/colecao.service';
 
@@ -24,7 +25,8 @@ export class MapeamentoListComponent implements OnInit {
     private readonly router: Router,
     private readonly authService: AuthService,
     private readonly colecaoService: ColecaoService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -46,7 +48,7 @@ export class MapeamentoListComponent implements OnInit {
         next: (colecoes) => this.colecoes = colecoes,
         error: (err: HttpErrorResponse) => {
           this.notificationService.showError(
-            err.error?.message ?? 'Erro ao carregar coleções.'
+            err.error?.message ?? this.translate.instant('mapeamento.mapeamentoList.feedback.errors.loadCollections')
           );
         }
       });

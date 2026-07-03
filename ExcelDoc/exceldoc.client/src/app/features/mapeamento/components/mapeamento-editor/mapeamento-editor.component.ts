@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, forkJoin, of } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import {
   Mapeamento,
   MapeamentoCampo,
@@ -41,7 +42,8 @@ export class MapeamentoEditorComponent implements OnChanges {
 
   constructor(
     private readonly mapeamentoService: MapeamentoService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly translate: TranslateService
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -122,7 +124,7 @@ export class MapeamentoEditorComponent implements OnChanges {
         if (row.errors.formato) messages.push(`${label}: ${row.errors.formato}`);
       }
 
-      this.notificationService.showError(messages.length ? messages.join(' | ') : 'Corrija os erros antes de salvar.');
+      this.notificationService.showError(messages.length ? messages.join(' | ') : this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.fixErrors'));
       return;
     }
 
@@ -141,7 +143,7 @@ export class MapeamentoEditorComponent implements OnChanges {
     const operations = [...deletes$, ...creates$, ...updates$];
 
     if (!operations.length) {
-      this.notificationService.showInfo('Nenhuma alteração para salvar.');
+      this.notificationService.showInfo(this.translate.instant('mapeamento.mapeamentoEditor.feedback.info.noChanges'));
       return;
     }
 
@@ -153,12 +155,12 @@ export class MapeamentoEditorComponent implements OnChanges {
       )
       .subscribe({
         next: () => {
-          this.notificationService.showSuccess('Campos do mapeamento salvos com sucesso.');
+          this.notificationService.showSuccess(this.translate.instant('mapeamento.mapeamentoEditor.feedback.success.saved'));
           this.loadCampos(true);
           this.camposChanged.emit();
         },
         error: (error: HttpErrorResponse) => {
-          this.notificationService.showError(error.error?.detail ?? 'Falha ao salvar os campos do mapeamento.');
+          this.notificationService.showError(error.error?.detail ?? this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.saveFields'));
         }
       });
   }
@@ -187,12 +189,12 @@ export class MapeamentoEditorComponent implements OnChanges {
         if (jsonData.length > 0) {
           this.excelPreviewData = (jsonData[0] as unknown[]).map((value) => value !== null && value !== undefined ? String(value) : '');
           this.refreshPreview();
-          this.notificationService.showSuccess(`Preview carregado: ${this.excelPreviewData.length} colunas detectadas.`);
+          this.notificationService.showSuccess(`${this.translate.instant('mapeamento.mapeamentoEditor.feedback.success.previewLoadedPrefix')} ${this.excelPreviewData.length} ${this.translate.instant('mapeamento.mapeamentoEditor.feedback.success.previewLoadedSuffix')}`);
         } else {
-          this.notificationService.showError('O arquivo Excel está vazio.');
+          this.notificationService.showError(this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.emptyExcel'));
         }
       } catch {
-        this.notificationService.showError('Erro ao ler o arquivo Excel.');
+        this.notificationService.showError(this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.readExcel'));
       }
 
       input.value = '';
@@ -225,13 +227,13 @@ export class MapeamentoEditorComponent implements OnChanges {
           this.refreshPreview();
 
           if (showSuccess) {
-            this.notificationService.showSuccess('Editor atualizado com os campos mais recentes.');
+            this.notificationService.showSuccess(this.translate.instant('mapeamento.mapeamentoEditor.feedback.success.updated'));
           }
         },
         error: (error: HttpErrorResponse) => {
           this.rows = [];
           this.originalRows = [];
-          this.notificationService.showError(error.error?.detail ?? 'Falha ao carregar os campos do mapeamento.');
+          this.notificationService.showError(error.error?.detail ?? this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.loadFields'));
         }
       });
   }
@@ -240,24 +242,24 @@ export class MapeamentoEditorComponent implements OnChanges {
     const errors = this.emptyErrors();
 
     if (!row.nomeCampo?.trim()) {
-      errors.nomeCampo = 'Nome do campo é obrigatório';
+      errors.nomeCampo = this.translate.instant('mapeamento.mapeamentoEditor.validation.fieldNameRequired');
     }
 
     if (row.indiceColuna === null || row.indiceColuna === undefined || row.indiceColuna < 1) {
-      errors.indiceColuna = 'Índice deve ser um número positivo';
+      errors.indiceColuna = this.translate.instant('mapeamento.mapeamentoEditor.validation.columnIndexPositive');
     } else {
       const duplicate = this.rows.find((current) => current !== row && current.indiceColuna === row.indiceColuna);
       if (duplicate) {
-        errors.indiceColuna = 'Índice duplicado neste mapeamento';
+        errors.indiceColuna = this.translate.instant('mapeamento.mapeamentoEditor.validation.duplicateColumnIndex');
       }
     }
 
     if (!row.tipoCampo) {
-      errors.tipoCampo = 'Tipo do campo é obrigatório';
+      errors.tipoCampo = this.translate.instant('mapeamento.mapeamentoEditor.validation.fieldTypeRequired');
     }
 
     if (row.tipoCampo === TipoCampo.DateTime && !row.formato?.trim()) {
-      errors.formato = 'Formato é obrigatório para DateTime';
+      errors.formato = this.translate.instant('mapeamento.mapeamentoEditor.validation.formatRequired');
     }
 
     row.errors = errors;
@@ -271,7 +273,9 @@ export class MapeamentoEditorComponent implements OnChanges {
     for (const row of this.rows) {
       if (row.indiceColuna !== null && row.indiceColuna > 0 && this.excelPreviewData.length > 0) {
         const index = row.indiceColuna - 1;
-        row.previewValue = index < this.excelPreviewData.length ? this.excelPreviewData[index] : '(coluna vazia)';
+        row.previewValue = index < this.excelPreviewData.length
+          ? this.excelPreviewData[index]
+          : this.translate.instant('mapeamento.mapeamentoEditor.preview.emptyColumn');
       } else {
         row.previewValue = '';
       }

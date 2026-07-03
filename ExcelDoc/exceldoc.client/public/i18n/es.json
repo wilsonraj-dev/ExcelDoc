@@ -222,5 +222,170 @@
         }
       }
     }
+  },
+  "colecoes": {
+    "collectionTypes": {
+      "header": "Encabezado",
+      "line": "Línea"
+    },
+    "colecaoList": {
+      "header": {
+        "title": "Registro de colecciones",
+        "description": "Administre colecciones globales y personalizadas por empresa."
+      },
+      "filters": {
+        "nameLabel": "Filtrar por nombre",
+        "namePlaceholder": "Ej.: Elementos del documento",
+        "collectionTypeLabel": "Tipo de colección",
+        "allTypes": "Todos los tipos"
+      },
+      "loading": {
+        "collections": "Cargando colecciones..."
+      },
+      "actions": {
+        "newCollection": "Nueva colección",
+        "configureFields": "Configurar campos",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "deleting": "Eliminando..."
+      },
+      "table": {
+        "header": {
+          "collectionName": "Nombre de la colección",
+          "collectionType": "Tipo de colección",
+          "type": "Tipo",
+          "mappings": "Mapeos",
+          "actions": "Acciones"
+        },
+        "paginationAriaLabel": "Paginación de la lista de colecciones"
+      },
+      "scope": {
+        "default": "Predeterminada",
+        "myCompany": "Mi empresa"
+      },
+      "empty": {
+        "title": "No se encontraron colecciones",
+        "description": "Registre colecciones predeterminadas o personalizadas para reutilizar estructuras de integración."
+      },
+      "confirmDelete": {
+        "title": "Eliminar colección",
+        "messagePrefix": "¿Realmente desea eliminar la colección",
+        "confirmLabel": "Eliminar",
+        "cancelLabel": "Cancelar"
+      },
+      "feedback": {
+        "success": {
+          "deleted": "Colección eliminada con éxito."
+        },
+        "errors": {
+          "editDefaultCollection": "No puede editar colecciones predeterminadas del sistema.",
+          "deleteDefaultCollection": "No puede eliminar colecciones predeterminadas del sistema.",
+          "deleteCollection": "No fue posible eliminar la colección.",
+          "loadCollections": "No fue posible cargar las colecciones."
+        }
+      }
+    },
+    "colecaoForm": {
+      "title": {
+        "create": "Nueva colección",
+        "edit": "Editar colección"
+      },
+      "subtitle": {
+        "create": "Registre una nueva colección para reutilizar estructuras JSON de SAP.",
+        "edit": "Actualice los datos de la colección y los documentos vinculados."
+      },
+      "loading": {
+        "collection": "Cargando colección..."
+      },
+      "fields": {
+        "collectionName": "Nombre de la colección",
+        "collectionType": "Tipo de colección",
+        "linkedDocuments": "Documentos vinculados"
+      },
+      "placeholders": {
+        "collectionName": "Ej.: Elementos estándar de la factura"
+      },
+      "documentsHint": {
+        "noneAvailable": "No hay documentos disponibles para vincular.",
+        "available": "Seleccione uno o más documentos que podrán usar esta colección."
+      },
+      "selectedDocuments": {
+        "none": "Ningún documento seleccionado",
+        "countSuffix": "documento(s) seleccionado(s)"
+      },
+      "scope": {
+        "title": "Alcance de la colección",
+        "default": "Predeterminada",
+        "myCompany": "Mi empresa",
+        "defaultDescription": "Colección global disponible para todas las empresas.",
+        "customCompanyDescriptionPrefix": "Colección personalizada de la empresa",
+        "customCompanyDescription": "Colección personalizada vinculada a la empresa del usuario.",
+        "companyUnavailableWarning": "El usuario actual no tiene una empresa vinculada para guardar una colección personalizada.",
+        "createAsDefault": "Crear como colección predeterminada"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "saveChanges": "Guardar cambios",
+        "saveCollection": "Guardar colección"
+      },
+      "validation": {
+        "collectionNameRequired": "Informe el nombre de la colección.",
+        "collectionTypeRequired": "Seleccione el tipo de colección.",
+        "collectionNameMaxLength": "El nombre de la colección debe tener como máximo 150 caracteres.",
+        "invalidField": "Campo inválido."
+      },
+      "feedback": {
+        "success": {
+          "created": "Colección creada con éxito.",
+          "updated": "Colección actualizada con éxito."
+        },
+        "errors": {
+          "invalidCollection": "Colección inválida para edición.",
+          "identifyCompany": "No fue posible identificar la empresa del usuario para crear una colección personalizada.",
+          "saveCollection": "No fue posible guardar la colección.",
+          "userWithoutCompany": "El usuario actual no está vinculado a una empresa para crear colecciones personalizadas.",
+          "loadDocuments": "No fue posible cargar la lista de documentos.",
+          "editDefaultCollection": "Las colecciones predeterminadas del sistema no pueden ser modificadas por usuarios comunes.",
+          "loadCollection": "No fue posible cargar la colección."
+        }
+      }
+    }
+  },
+  "mapeamento": {
+    "common": { "collectionNumberPrefix": "Colección #", "company": "Empresa", "readOnly": "Solo lectura", "scope": { "default": "Predeterminado", "myCompany": "Mi empresa" }, "actions": { "cancel": "Cancelar", "create": "Crear" } },
+    "mapeamentoHome": {
+      "header": { "eyebrow": "Mapeo de campos", "description": "Seleccione un mapeo de la colección para editar los campos o usarlo como base para clonarlo." },
+      "fields": { "mapping": "Mapeo" }, "actions": { "newMapping": "Nuevo mapeo", "clone": "Clonar", "delete": "Eliminar", "cancel": "Cancelar", "createFirstMapping": "Crear primer mapeo" },
+      "tooltips": { "defaultMapping": "Mapeo predeterminado disponible para toda la colección.", "companyMapping": "Mapeo personalizado de su empresa." }, "summary": { "oneField": "1 campo", "fieldsSuffix": "campos" }, "empty": { "noMappings": "No hay mapeos disponibles para esta colección." },
+      "cloneDialog": { "title": "Clonar mapeo", "label": "Nombre del nuevo mapeo" }, "confirmDelete": { "title": "Eliminar mapeo", "messagePrefix": "¿Realmente desea eliminar el mapeo" },
+      "feedback": { "success": { "cloned": "Mapeo clonado con éxito.", "created": "Mapeo creado con éxito.", "deleted": "Mapeo eliminado con éxito." }, "errors": { "invalidCollection": "Colección inválida.", "identifyCompany": "No fue posible identificar la empresa del usuario para crear el mapeo.", "cloneMapping": "No fue posible clonar el mapeo.", "loadMappings": "No fue posible cargar los mapeos de la colección.", "createMapping": "No fue posible crear el mapeo.", "deleteMapping": "No fue posible eliminar el mapeo." } }
+    },
+    "mapeamentoList": { "feedback": { "errors": { "loadCollections": "No fue posible cargar las colecciones." } } },
+    "novoMapeamentoDialog": { "title": "Nuevo mapeo", "fields": { "name": "Nombre del mapeo", "defaultMapping": "Mapeo predeterminado" }, "placeholders": { "name": "Ej.: Mapeo financiero" }, "validation": { "nameRequired": "Informe el nombre del mapeo.", "nameMaxLength": "El nombre debe tener como máximo 120 caracteres." } },
+    "mapeamentoEditor": {
+      "actions": { "excelPreview": "Vista previa de Excel", "addField": "Agregar campo", "cancelChanges": "Cancelar cambios", "saveAll": "Guardar todo" }, "tooltips": { "uploadExcel": "Cargar un archivo Excel para ver valores", "removeField": "Eliminar campo" },
+      "table": { "header": { "fieldName": "Nombre del campo", "excelColumn": "Columna Excel", "type": "Tipo", "format": "Formato", "preview": "Vista previa", "actions": "Acciones" } }, "placeholders": { "fieldName": "Ej.: CardCode", "excelColumn": "Ej.: 1", "select": "Seleccione", "format": "Ej.: yyyy-MM-dd" },
+      "fieldTypes": { "string": "Texto", "int": "Entero", "double": "Decimal", "datetime": "Fecha y hora", "boolean": "Booleano" }, "empty": { "noFields": "No hay campos registrados para este mapeo." }, "preview": { "emptyColumn": "(columna vacía)" },
+      "validation": { "fieldNameRequired": "El nombre del campo es obligatorio", "columnIndexPositive": "El índice debe ser un número positivo", "duplicateColumnIndex": "Índice duplicado en este mapeo", "fieldTypeRequired": "El tipo de campo es obligatorio", "formatRequired": "El formato es obligatorio para DateTime" },
+      "feedback": { "info": { "noChanges": "No hay cambios para guardar." }, "success": { "saved": "Campos del mapeo guardados con éxito.", "previewLoadedPrefix": "Vista previa cargada:", "previewLoadedSuffix": "columnas detectadas.", "updated": "Editor actualizado con los campos más recientes." }, "errors": { "fixErrors": "Corrija los errores antes de guardar.", "saveFields": "No fue posible guardar los campos del mapeo.", "emptyExcel": "El archivo Excel está vacío.", "readExcel": "No fue posible leer el archivo Excel.", "loadFields": "No fue posible cargar los campos del mapeo." } }
+    }
+  },
+  "perfilMapeamento": {
+    "common": { "document": "Documento", "scope": { "default": "Predeterminado", "myCompany": "Mi empresa", "company": "Empresa" }, "loading": { "documents": "Cargando documentos...", "mappings": "Cargando mapeos...", "collections": "Cargando colecciones..." }, "actions": { "save": "Guardar", "saving": "Guardando...", "cancel": "Cancelar" } },
+    "collectionTypes": { "header": "Encabezado", "line": "Línea" },
+    "perfilList": {
+      "header": { "title": "Perfiles de mapeo", "description": "Administre perfiles que agrupan mapeos por colección para cada documento." }, "loading": { "profiles": "Cargando perfiles..." },
+      "actions": { "newProfile": "Nuevo perfil", "edit": "Editar", "view": "Visualizar", "clone": "Clonar", "delete": "Eliminar", "deleting": "Eliminando...", "cancel": "Cancelar" }, "table": { "header": { "name": "Nombre", "type": "Tipo", "collections": "Colecciones", "actions": "Acciones" }, "paginationAriaLabel": "Paginación de la lista de perfiles de mapeo" }, "tooltips": { "defaultProfile": "El perfil predeterminado no se puede editar" }, "empty": { "noProfiles": "No se encontró ningún perfil de mapeo para este documento." },
+      "cloneDialog": { "title": "Clonar perfil", "label": "Nombre del nuevo perfil" }, "confirmDelete": { "title": "Eliminar perfil", "messagePrefix": "¿Realmente desea eliminar el perfil" },
+      "feedback": { "success": { "cloned": "Perfil clonado con éxito.", "deleted": "Perfil eliminado con éxito." }, "errors": { "cloneProfile": "No fue posible clonar el perfil.", "deleteProfile": "No fue posible eliminar el perfil.", "loadDocuments": "No fue posible cargar los documentos.", "loadProfiles": "No fue posible cargar los perfiles de mapeo." } }
+    },
+    "perfilForm": {
+      "title": { "create": "Nuevo perfil de mapeo", "edit": "Editar perfil de mapeo", "view": "Visualizar perfil de mapeo" }, "loading": { "profile": "Cargando perfil..." },
+      "fields": { "profileName": "Nombre del perfil", "headerCollection": "Colección de encabezado", "headerMapping": "Mapeo de encabezado", "mapping": "Mapeo" }, "placeholders": { "profileName": "Ej.: Perfil predeterminado de importación" },
+      "sections": { "mappingsByCollection": "Mapeos por colección", "headerCollection": "Colección de encabezado", "headerCollectionDescription": "Seleccione qué colección de tipo encabezado debe componer el perfil.", "lineCollections": "Colecciones de línea", "lineCollectionsDescription": "Marque las colecciones de línea que desea utilizar y defina un mapeo para cada una." }, "lineCollection": { "included": "Colección incluida en el perfil.", "optional": "Colección opcional.", "enableMappingHint": "Seleccione la colección para habilitar el mapeo." },
+      "validation": { "profileNameRequired": "El nombre es obligatorio (máx. 150 caracteres).", "documentRequired": "Seleccione un documento.", "headerCollectionRequired": "Seleccione una colección de encabezado.", "headerMappingRequired": "Seleccione un mapeo para el encabezado.", "lineMappingRequired": "Seleccione un mapeo para esta colección." },
+      "feedback": { "success": { "created": "Perfil creado con éxito.", "updated": "Perfil actualizado con éxito." }, "errors": { "saveProfile": "No fue posible guardar el perfil.", "loadDocuments": "No fue posible cargar los documentos.", "loadProfile": "No fue posible cargar el perfil.", "loadCollections": "No fue posible cargar las colecciones.", "loadCollectionMappingsPrefix": "No fue posible cargar los mapeos de la colección" } }
+    }
   }
 }

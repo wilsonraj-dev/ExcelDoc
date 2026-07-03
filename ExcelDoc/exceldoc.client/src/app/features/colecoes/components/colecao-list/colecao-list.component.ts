@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import {
   Colecao,
@@ -38,11 +39,10 @@ export class ColecaoListComponent implements OnInit {
     termo: new FormControl('', { nonNullable: true }),
     tipoColecao: new FormControl('', { nonNullable: true })
   });
-  readonly tipoColecaoOptions = [
-    { label: 'Todos os tipos', value: '' },
+  readonly tipoColecaoOptions: ReadonlyArray<{ value: TipoColecao | '' }> = [
+    { value: '' },
     ...TIPO_COLECAO_OPTIONS
   ];
-
   errorMessage = '';
   isLoading = false;
   deletingColecaoId: number | null = null;
@@ -63,7 +63,8 @@ export class ColecaoListComponent implements OnInit {
     private readonly colecaoService: ColecaoService,
     private readonly dialog: MatDialog,
     private readonly notificationService: NotificationService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly translate: TranslateService
   ) {
     this.isAdministrator = this.authService.isAdministrator();
     this.configureFiltering();
@@ -71,6 +72,14 @@ export class ColecaoListComponent implements OnInit {
 
   get hasColecoes(): boolean {
     return this.dataSource.filteredData.length > 0;
+  }
+
+  get deleteLabel(): string {
+    return this.translate.instant('colecoes.colecaoList.actions.delete');
+  }
+
+  get deletingLabel(): string {
+    return this.translate.instant('colecoes.colecaoList.actions.deleting');
   }
 
   ngOnInit(): void {
@@ -89,7 +98,7 @@ export class ColecaoListComponent implements OnInit {
 
   editar(colecao: Colecao): void {
     if (!this.canManageColecao(colecao)) {
-      this.notificationService.showError('Você não pode editar coleções padrão do sistema.');
+      this.notificationService.showError(this.translate.instant('colecoes.colecaoList.feedback.errors.editDefaultCollection'));
       return;
     }
 
@@ -102,17 +111,17 @@ export class ColecaoListComponent implements OnInit {
 
   excluir(colecao: Colecao): void {
     if (!this.canManageColecao(colecao)) {
-      this.notificationService.showError('Você não pode excluir coleções padrão do sistema.');
+      this.notificationService.showError(this.translate.instant('colecoes.colecaoList.feedback.errors.deleteDefaultCollection'));
       return;
     }
 
     this.dialog.open(ConfirmDialogComponent, {
       width: '420px',
       data: {
-        title: 'Excluir coleção',
-        message: `Deseja realmente excluir a coleção "${colecao.nomeColecao}"?`,
-        confirmLabel: 'Excluir',
-        cancelLabel: 'Cancelar'
+        title: this.translate.instant('colecoes.colecaoList.confirmDelete.title'),
+        message: `${this.translate.instant('colecoes.colecaoList.confirmDelete.messagePrefix')} "${colecao.nomeColecao}"?`,
+        confirmLabel: this.translate.instant('colecoes.colecaoList.confirmDelete.confirmLabel'),
+        cancelLabel: this.translate.instant('colecoes.colecaoList.confirmDelete.cancelLabel')
       }
     }).afterClosed()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -130,11 +139,13 @@ export class ColecaoListComponent implements OnInit {
   }
 
   getTipoColecaoLabel(colecao: Colecao): string {
-    return resolveTipoColecao(colecao.tipoColecao);
+    return this.getTipoColecaoOptionLabel(resolveTipoColecao(colecao.tipoColecao));
   }
 
   getEscopoLabel(colecao: Colecao): string {
-    return isColecaoPadrao(colecao) ? 'Padrão' : 'Minha Empresa';
+    return isColecaoPadrao(colecao)
+      ? this.translate.instant('colecoes.colecaoList.scope.default')
+      : this.translate.instant('colecoes.colecaoList.scope.myCompany');
   }
 
   isPadrao(colecao: Colecao): boolean {
@@ -186,10 +197,10 @@ export class ColecaoListComponent implements OnInit {
         next: () => {
           this.dataSource.data = this.dataSource.data.filter((item) => item.id !== colecao.id);
           this.applyFilter();
-          this.notificationService.showSuccess('Coleção excluída com sucesso.');
+          this.notificationService.showSuccess(this.translate.instant('colecoes.colecaoList.feedback.success.deleted'));
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? 'Não foi possível excluir a coleção.';
+          this.errorMessage = error.error?.detail ?? this.translate.instant('colecoes.colecaoList.feedback.errors.deleteCollection');
           this.notificationService.showError(this.errorMessage);
         }
       });
@@ -212,7 +223,7 @@ export class ColecaoListComponent implements OnInit {
           this.applyFilter();
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? 'Não foi possível carregar as coleções.';
+          this.errorMessage = error.error?.detail ?? this.translate.instant('colecoes.colecaoList.feedback.errors.loadCollections');
           this.notificationService.showError(this.errorMessage);
         }
       });
@@ -224,5 +235,10 @@ export class ColecaoListComponent implements OnInit {
       .replace(/\p{Diacritic}/gu, '')
       .toLowerCase()
       .trim();
+  }
+
+  private getTipoColecaoOptionLabel(tipoColecao: TipoColecao): string {
+    const key = tipoColecao === TipoColecao.Line ? 'line' : 'header';
+    return this.translate.instant(`colecoes.collectionTypes.${key}`);
   }
 }

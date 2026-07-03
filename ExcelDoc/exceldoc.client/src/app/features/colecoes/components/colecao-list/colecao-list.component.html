@@ -1,14 +1,14 @@
 <div class="settings-page">
   <div class="settings-header">
     <div>
-      <h2>Cadastro de coleções</h2>
-      <p>Gerencie coleções globais e customizadas por empresa.</p>
+      <h2>{{ 'colecoes.colecaoList.header.title' | translate }}</h2>
+      <p>{{ 'colecoes.colecaoList.header.description' | translate }}</p>
     </div>
 
     <div class="settings-header__actions">
       <button type="button" mat-flat-button color="primary" (click)="novaColecao()">
         <mat-icon>add</mat-icon>
-        Nova Coleção
+        {{ 'colecoes.colecaoList.actions.newCollection' | translate }}
       </button>
     </div>
   </div>
@@ -19,22 +19,22 @@
 
       <form class="colecao-page__filters" [formGroup]="filterForm">
         <mat-form-field appearance="outline">
-          <mat-label>Filtrar por nome</mat-label>
-          <input matInput formControlName="termo" placeholder="Ex.: Itens do documento" />
+          <mat-label>{{ 'colecoes.colecaoList.filters.nameLabel' | translate }}</mat-label>
+          <input matInput formControlName="termo" [placeholder]="'colecoes.colecaoList.filters.namePlaceholder' | translate" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Tipo da coleção</mat-label>
+          <mat-label>{{ 'colecoes.colecaoList.filters.collectionTypeLabel' | translate }}</mat-label>
           <mat-select formControlName="tipoColecao">
             <mat-option *ngFor="let option of tipoColecaoOptions" [value]="option.value">
-              {{ option.label }}
+              {{ option.value ? (('colecoes.collectionTypes.' + option.value.toLowerCase()) | translate) : ('colecoes.colecaoList.filters.allTypes' | translate) }}
             </mat-option>
           </mat-select>
         </mat-form-field>
       </form>
 
       <div class="loading-state loading-state--inline" *ngIf="isLoading">
-        <app-loading-spinner message="Carregando coleções..."></app-loading-spinner>
+        <app-loading-spinner [message]="'colecoes.colecaoList.loading.collections' | translate"></app-loading-spinner>
       </div>
 
       <ng-container *ngIf="!isLoading">
@@ -42,17 +42,17 @@
           <div class="table-wrapper">
             <table mat-table [dataSource]="dataSource" class="colecao-page__table-content">
               <ng-container matColumnDef="nomeColecao">
-                <th mat-header-cell *matHeaderCellDef>Nome da Coleção</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.collectionName' | translate }}</th>
                 <td mat-cell *matCellDef="let colecao">{{ colecao.nomeColecao }}</td>
               </ng-container>
 
               <ng-container matColumnDef="tipoColecao">
-                <th mat-header-cell *matHeaderCellDef>Tipo da Coleção</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.collectionType' | translate }}</th>
                 <td mat-cell *matCellDef="let colecao">{{ getTipoColecaoLabel(colecao) }}</td>
               </ng-container>
 
               <ng-container matColumnDef="tipo">
-                <th mat-header-cell *matHeaderCellDef>Tipo</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.type' | translate }}</th>
                 <td mat-cell *matCellDef="let colecao">
                   <div class="colecao-page__scope">
                     <mat-chip-set>
@@ -65,7 +65,7 @@
               </ng-container>
 
               <ng-container matColumnDef="mapeamentos">
-                <th mat-header-cell *matHeaderCellDef>Mapeamentos</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.mappings' | translate }}</th>
                 <td mat-cell *matCellDef="let colecao" class="colecao-page__actions-cell">
                   <div class="colecao-page__actions">
                     <button type="button"
@@ -73,14 +73,14 @@
                             color="primary"
                             (click)="abrirMapeamento(colecao)">
                       <mat-icon>settings</mat-icon>
-                      Configurar Campos
+                      {{ 'colecoes.colecaoList.actions.configureFields' | translate }}
                     </button>
                   </div>
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="acoes">
-                <th mat-header-cell *matHeaderCellDef>Ações</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.actions' | translate }}</th>
                 <td mat-cell *matCellDef="let colecao" class="colecao-page__actions-cell">
                   <div class="colecao-page__actions">
                     <button type="button"
@@ -89,7 +89,7 @@
                             [disabled]="!canManageColecao(colecao)"
                             (click)="editar(colecao)">
                       <mat-icon>edit</mat-icon>
-                      Editar
+                      {{ 'colecoes.colecaoList.actions.edit' | translate }}
                     </button>
 
                     <button type="button"
@@ -98,7 +98,7 @@
                             [disabled]="!canManageColecao(colecao) || deletingColecaoId === colecao.id"
                             (click)="excluir(colecao)">
                       <mat-icon>delete</mat-icon>
-                      {{ deletingColecaoId === colecao.id ? 'Excluindo...' : 'Excluir' }}
+                      {{ deletingColecaoId === colecao.id ? deletingLabel : deleteLabel }}
                     </button>
                   </div>
                 </td>
@@ -109,15 +109,18 @@
             </table>
           </div>
 
-          <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons></mat-paginator>
+          <mat-paginator [pageSizeOptions]="pageSizeOptions"
+                         showFirstLastButtons
+                         [attr.aria-label]="'colecoes.colecaoList.table.paginationAriaLabel' | translate">
+          </mat-paginator>
         </div>
       </ng-container>
 
       <ng-template #emptyState>
         <section class="colecao-page__empty-state">
           <mat-icon>folder_copy</mat-icon>
-          <h3>Nenhuma coleção encontrada</h3>
-          <p>Cadastre coleções padrão ou personalizadas para reutilizar estruturas de integração.</p>
+          <h3>{{ 'colecoes.colecaoList.empty.title' | translate }}</h3>
+          <p>{{ 'colecoes.colecaoList.empty.description' | translate }}</p>
         </section>
       </ng-template>
     </mat-card-content>

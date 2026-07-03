@@ -1,25 +1,25 @@
 <section class="mapeamento-home">
   <header class="page-header">
     <div>
-      <span class="page-header__eyebrow">Mapeamento de Campos</span>
-      <h2>{{ colecaoNome || ('Coleção #' + colecaoId) }}</h2>
-      <p>Selecione um mapeamento da coleção para editar os campos ou usar como base para clonagem.</p>
+      <span class="page-header__eyebrow">{{ 'mapeamento.mapeamentoHome.header.eyebrow' | translate }}</span>
+      <h2>{{ colecaoNome || (('mapeamento.common.collectionNumberPrefix' | translate) + colecaoId) }}</h2>
+      <p>{{ 'mapeamento.mapeamentoHome.header.description' | translate }}</p>
     </div>
 
     <div class="header-actions">
       <button mat-stroked-button type="button" [disabled]="isSubmitting || !canCreateMapeamento" (click)="openNovoMapeamentoDialog()">
         <mat-icon>add</mat-icon>
-        Novo Mapeamento
+        {{ 'mapeamento.mapeamentoHome.actions.newMapping' | translate }}
       </button>
 
       <button mat-stroked-button type="button" [disabled]="isSubmitting || !canCloneMapeamento" (click)="cloneSelectedMapeamento()">
         <mat-icon>content_copy</mat-icon>
-        Clonar
+        {{ 'mapeamento.mapeamentoHome.actions.clone' | translate }}
       </button>
 
       <button mat-stroked-button color="warn" type="button" [disabled]="isSubmitting || !canDeleteMapeamento" (click)="confirmDeleteSelectedMapeamento()">
         <mat-icon>delete</mat-icon>
-        Excluir
+        {{ 'mapeamento.mapeamentoHome.actions.delete' | translate }}
       </button>
     </div>
   </header>
@@ -28,7 +28,7 @@
     <mat-card-content>
       <div class="toolbar-row">
         <mat-form-field appearance="outline" class="toolbar-row__select">
-          <mat-label>Mapeamento</mat-label>
+          <mat-label>{{ 'mapeamento.mapeamentoHome.fields.mapping' | translate }}</mat-label>
           <mat-select [ngModel]="selectedMapeamentoId" (ngModelChange)="onMapeamentoSelectionChange($event)" [compareWith]="compareMapeamento">
             <mat-option *ngFor="let mapeamento of mapeamentos" [value]="mapeamento.id">
               {{ mapeamento.nome }}
@@ -37,12 +37,12 @@
         </mat-form-field>
 
         <div class="toolbar-row__summary" *ngIf="selectedMapeamento as mapeamento">
-          <span [class]="getMapeamentoBadgeClass(mapeamento)" [matTooltip]="mapeamento.isPadrao ? 'Mapeamento padrão disponível para toda a coleção.' : 'Mapeamento customizado da sua empresa.'">
+          <span [class]="getMapeamentoBadgeClass(mapeamento)" [matTooltip]="mapeamento.isPadrao ? ('mapeamento.mapeamentoHome.tooltips.defaultMapping' | translate) : ('mapeamento.mapeamentoHome.tooltips.companyMapping' | translate)">
             {{ selectedMapeamentoTipoLabel }}
           </span>
           <span class="summary-text">{{ getCampoQuantidadeLabel(mapeamento) }}</span>
-          <span class="summary-text" *ngIf="isMapeamentoEmpresa(mapeamento)">Empresa</span>
-          <span class="summary-text summary-text--readonly" *ngIf="isReadOnlySelectedMapeamento">Somente leitura</span>
+          <span class="summary-text" *ngIf="isMapeamentoEmpresa(mapeamento)">{{ 'mapeamento.common.company' | translate }}</span>
+          <span class="summary-text summary-text--readonly" *ngIf="isReadOnlySelectedMapeamento">{{ 'mapeamento.common.readOnly' | translate }}</span>
         </div>
       </div>
 
@@ -55,10 +55,10 @@
 
       <div class="empty-state" *ngIf="!isLoadingMapeamentos && !isLoading && !loadError && mapeamentos.length === 0">
         <mat-icon>schema</mat-icon>
-        <p>Nenhum mapeamento disponível para esta coleção.</p>
+        <p>{{ 'mapeamento.mapeamentoHome.empty.noMappings' | translate }}</p>
         <button mat-raised-button color="primary" type="button" [disabled]="isSubmitting || !canCreateMapeamento" (click)="openNovoMapeamentoDialog()">
           <mat-icon>add</mat-icon>
-          Criar primeiro mapeamento
+          {{ 'mapeamento.mapeamentoHome.actions.createFirstMapping' | translate }}
         </button>
       </div>
 

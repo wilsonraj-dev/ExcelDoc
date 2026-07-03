@@ -2,14 +2,14 @@
   <div class="header-bar">
     <div class="header-left">
       <h3>{{ mapeamento.nome }}</h3>
-      <span class="colecao-badge">{{ colecaoNome || ('Coleção #' + colecaoId) }}</span>
-      <span class="readonly-badge" *ngIf="readonly">Somente leitura</span>
+      <span class="colecao-badge">{{ colecaoNome || (('mapeamento.common.collectionNumberPrefix' | translate) + colecaoId) }}</span>
+      <span class="readonly-badge" *ngIf="readonly">{{ 'mapeamento.common.readOnly' | translate }}</span>
     </div>
 
     <div class="header-actions">
-      <button mat-stroked-button type="button" (click)="fileInput.click()" matTooltip="Carregar Excel para preview dos valores">
+      <button mat-stroked-button type="button" (click)="fileInput.click()" [matTooltip]="'mapeamento.mapeamentoEditor.tooltips.uploadExcel' | translate">
         <mat-icon>upload_file</mat-icon>
-        Preview Excel
+        {{ 'mapeamento.mapeamentoEditor.actions.excelPreview' | translate }}
       </button>
       <input #fileInput type="file" accept=".xlsx,.xls" hidden (change)="onExcelUpload($event)">
     </div>
@@ -21,11 +21,11 @@
     <table mat-table [dataSource]="rows" class="mapeamento-table">
       <ng-container matColumnDef="nomeCampo">
         <th mat-header-cell *matHeaderCellDef>
-          Nome do Campo <span class="required-marker">*</span>
+          {{ 'mapeamento.mapeamentoEditor.table.header.fieldName' | translate }} <span class="required-marker">*</span>
         </th>
         <td mat-cell *matCellDef="let row">
           <mat-form-field appearance="outline" class="inline-field">
-            <input matInput [(ngModel)]="row.nomeCampo" (ngModelChange)="onFieldChange(row)" [readonly]="readonly" placeholder="Ex: CardCode" [class.field-error]="row.errors.nomeCampo">
+            <input matInput [(ngModel)]="row.nomeCampo" (ngModelChange)="onFieldChange(row)" [readonly]="readonly" [placeholder]="'mapeamento.mapeamentoEditor.placeholders.fieldName' | translate" [class.field-error]="row.errors.nomeCampo">
             <mat-error *ngIf="row.errors.nomeCampo">{{ row.errors.nomeCampo }}</mat-error>
           </mat-form-field>
         </td>
@@ -33,11 +33,11 @@
 
       <ng-container matColumnDef="indiceColuna">
         <th mat-header-cell *matHeaderCellDef>
-          Coluna Excel <span class="required-marker">*</span>
+          {{ 'mapeamento.mapeamentoEditor.table.header.excelColumn' | translate }} <span class="required-marker">*</span>
         </th>
         <td mat-cell *matCellDef="let row">
           <mat-form-field appearance="outline" class="inline-field inline-field-sm">
-            <input matInput type="number" min="1" [(ngModel)]="row.indiceColuna" (ngModelChange)="onFieldChange(row)" [readonly]="readonly" placeholder="Ex: 1" [class.field-error]="row.errors.indiceColuna">
+            <input matInput type="number" min="1" [(ngModel)]="row.indiceColuna" (ngModelChange)="onFieldChange(row)" [readonly]="readonly" [placeholder]="'mapeamento.mapeamentoEditor.placeholders.excelColumn' | translate" [class.field-error]="row.errors.indiceColuna">
             <mat-error *ngIf="row.errors.indiceColuna">{{ row.errors.indiceColuna }}</mat-error>
           </mat-form-field>
         </td>
@@ -45,13 +45,13 @@
 
       <ng-container matColumnDef="tipoCampo">
         <th mat-header-cell *matHeaderCellDef>
-          Tipo <span class="required-marker">*</span>
+          {{ 'mapeamento.mapeamentoEditor.table.header.type' | translate }} <span class="required-marker">*</span>
         </th>
         <td mat-cell *matCellDef="let row">
           <mat-form-field appearance="outline" class="inline-field">
-            <mat-select [(ngModel)]="row.tipoCampo" (ngModelChange)="onFieldChange(row)" [disabled]="readonly" [class.field-error]="row.errors.tipoCampo" placeholder="Selecione">
+            <mat-select [(ngModel)]="row.tipoCampo" (ngModelChange)="onFieldChange(row)" [disabled]="readonly" [class.field-error]="row.errors.tipoCampo" [placeholder]="'mapeamento.mapeamentoEditor.placeholders.select' | translate">
               <mat-option *ngFor="let opt of tipoCampoOptions" [value]="opt.value">
-                {{ opt.label }}
+                {{ ('mapeamento.mapeamentoEditor.fieldTypes.' + opt.label.toLowerCase()) | translate }}
               </mat-option>
             </mat-select>
             <mat-error *ngIf="row.errors.tipoCampo">{{ row.errors.tipoCampo }}</mat-error>
@@ -60,17 +60,17 @@
       </ng-container>
 
       <ng-container matColumnDef="formato">
-        <th mat-header-cell *matHeaderCellDef>Formato</th>
+        <th mat-header-cell *matHeaderCellDef>{{ 'mapeamento.mapeamentoEditor.table.header.format' | translate }}</th>
         <td mat-cell *matCellDef="let row">
           <mat-form-field appearance="outline" class="inline-field">
-            <input matInput [(ngModel)]="row.formato" (ngModelChange)="onFieldChange(row)" [disabled]="!isFormatoEnabled(row)" placeholder="Ex: yyyy-MM-dd" [class.field-error]="row.errors.formato">
+            <input matInput [(ngModel)]="row.formato" (ngModelChange)="onFieldChange(row)" [disabled]="!isFormatoEnabled(row)" [placeholder]="'mapeamento.mapeamentoEditor.placeholders.format' | translate" [class.field-error]="row.errors.formato">
             <mat-error *ngIf="row.errors.formato">{{ row.errors.formato }}</mat-error>
           </mat-form-field>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="preview">
-        <th mat-header-cell *matHeaderCellDef>Preview</th>
+        <th mat-header-cell *matHeaderCellDef>{{ 'mapeamento.mapeamentoEditor.table.header.preview' | translate }}</th>
         <td mat-cell *matCellDef="let row">
           <span class="preview-value" *ngIf="row.previewValue">{{ row.previewValue }}</span>
           <span class="preview-empty" *ngIf="!row.previewValue && excelPreviewData.length > 0">—</span>
@@ -78,10 +78,10 @@
       </ng-container>
 
       <ng-container matColumnDef="acoes">
-        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <th mat-header-cell *matHeaderCellDef>{{ 'mapeamento.mapeamentoEditor.table.header.actions' | translate }}</th>
         <td mat-cell *matCellDef="let row; let i = index">
           <div class="table-action-wrapper">
-            <button mat-icon-button color="warn" type="button" (click)="removerCampo(i)" [disabled]="readonly" matTooltip="Remover campo">
+            <button mat-icon-button color="warn" type="button" (click)="removerCampo(i)" [disabled]="readonly" [matTooltip]="'mapeamento.mapeamentoEditor.tooltips.removeField' | translate">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
@@ -94,22 +94,22 @@
 
     <div class="empty-state" *ngIf="rows.length === 0">
       <mat-icon>table_chart</mat-icon>
-      <p>Nenhum campo cadastrado para este mapeamento.</p>
+      <p>{{ 'mapeamento.mapeamentoEditor.empty.noFields' | translate }}</p>
     </div>
   </div>
 
   <div class="action-bar" *ngIf="!isLoading">
     <button mat-raised-button color="primary" type="button" (click)="adicionarCampo()" [disabled]="readonly">
       <mat-icon>add</mat-icon>
-      Adicionar Campo
+      {{ 'mapeamento.mapeamentoEditor.actions.addField' | translate }}
     </button>
 
     <div class="action-bar-right">
       <button mat-stroked-button type="button" (click)="cancelar()" [disabled]="readonly || !hasChanges || isSaving">
-        Cancelar Alterações
+        {{ 'mapeamento.mapeamentoEditor.actions.cancelChanges' | translate }}
       </button>
       <button mat-raised-button color="accent" type="button" (click)="salvar()" [disabled]="readonly || isSaving || !hasChanges">
-        Salvar Tudo
+        {{ 'mapeamento.mapeamentoEditor.actions.saveAll' | translate }}
       </button>
     </div>
   </div>

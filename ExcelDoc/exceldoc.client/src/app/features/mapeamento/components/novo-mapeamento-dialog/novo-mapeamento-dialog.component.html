@@ -1,21 +1,21 @@
-<h2 mat-dialog-title>Novo Mapeamento</h2>
+<h2 mat-dialog-title>{{ 'mapeamento.novoMapeamentoDialog.title' | translate }}</h2>
 
 <mat-dialog-content>
   <form [formGroup]="form">
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Nome do mapeamento</mat-label>
-      <input matInput formControlName="nome" maxlength="120" placeholder="Ex: Mapeamento Financeiro" />
-      <mat-error *ngIf="form.controls.nome.hasError('required')">Informe o nome do mapeamento.</mat-error>
-      <mat-error *ngIf="form.controls.nome.hasError('maxlength')">O nome deve ter no máximo 120 caracteres.</mat-error>
+      <mat-label>{{ 'mapeamento.novoMapeamentoDialog.fields.name' | translate }}</mat-label>
+      <input matInput formControlName="nome" maxlength="120" [placeholder]="'mapeamento.novoMapeamentoDialog.placeholders.name' | translate" />
+      <mat-error *ngIf="form.controls.nome.hasError('required')">{{ 'mapeamento.novoMapeamentoDialog.validation.nameRequired' | translate }}</mat-error>
+      <mat-error *ngIf="form.controls.nome.hasError('maxlength')">{{ 'mapeamento.novoMapeamentoDialog.validation.nameMaxLength' | translate }}</mat-error>
     </mat-form-field>
 
     <mat-checkbox *ngIf="exibirCampoPadrao" formControlName="isPadrao">
-      Mapeamento padrão
+      {{ 'mapeamento.novoMapeamentoDialog.fields.defaultMapping' | translate }}
     </mat-checkbox>
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-stroked-button type="button" (click)="cancelar()">Cancelar</button>
-  <button mat-raised-button color="primary" type="button" (click)="confirmar()">Criar</button>
+  <button mat-stroked-button type="button" (click)="cancelar()">{{ 'mapeamento.common.actions.cancel' | translate }}</button>
+  <button mat-raised-button color="primary" type="button" (click)="confirmar()">{{ 'mapeamento.common.actions.create' | translate }}</button>
 </mat-dialog-actions>

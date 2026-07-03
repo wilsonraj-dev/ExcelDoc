@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { Documento } from '../../../documentos/models/documento.model';
 import {
   Colecao,
@@ -32,7 +33,6 @@ export class ColecaoFormComponent implements OnInit {
     criarComoPadrao: new FormControl(false, { nonNullable: true })
   });
   readonly tipoColecaoOptions = TIPO_COLECAO_OPTIONS;
-
   apiError = '';
   documentoError = '';
   permissionMessage = '';
@@ -53,7 +53,8 @@ export class ColecaoFormComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly colecaoService: ColecaoService,
     private readonly notificationService: NotificationService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly translate: TranslateService
   ) {
     const session = this.authService.getSession();
     this.isAdministrator = this.authService.isAdministrator(session);
@@ -66,21 +67,25 @@ export class ColecaoFormComponent implements OnInit {
   }
 
   get pageTitle(): string {
-    return this.isEditMode ? 'Editar coleção' : 'Nova coleção';
+    return this.isEditMode
+      ? this.translate.instant('colecoes.colecaoForm.title.edit')
+      : this.translate.instant('colecoes.colecaoForm.title.create');
   }
 
   get pageSubtitle(): string {
     return this.isEditMode
-      ? 'Atualize os dados da coleção e os documentos vinculados.'
-      : 'Cadastre uma nova coleção para reutilizar estruturas JSON do SAP.';
+      ? this.translate.instant('colecoes.colecaoForm.subtitle.edit')
+      : this.translate.instant('colecoes.colecaoForm.subtitle.create');
   }
 
   get submitLabel(): string {
     if (this.isSaving) {
-      return 'Salvando...';
+      return this.translate.instant('colecoes.colecaoForm.actions.saving');
     }
 
-    return this.isEditMode ? 'Salvar alterações' : 'Salvar coleção';
+    return this.isEditMode
+      ? this.translate.instant('colecoes.colecaoForm.actions.saveChanges')
+      : this.translate.instant('colecoes.colecaoForm.actions.saveCollection');
   }
 
   get canSubmit(): boolean {
@@ -89,17 +94,17 @@ export class ColecaoFormComponent implements OnInit {
 
   get documentosHint(): string {
     if (!this.documentos.length) {
-      return 'Nenhum documento disponível para vinculação.';
+      return this.translate.instant('colecoes.colecaoForm.documentsHint.noneAvailable');
     }
 
-    return 'Selecione um ou mais documentos que poderão usar esta coleção.';
+    return this.translate.instant('colecoes.colecaoForm.documentsHint.available');
   }
 
   get selectedDocumentosLabel(): string {
     const selectedIds = this.form.controls.documentoIds.getRawValue();
 
     if (!selectedIds.length) {
-      return 'Nenhum documento selecionado';
+      return this.translate.instant('colecoes.colecaoForm.selectedDocuments.none');
     }
 
     const selectedDocumentos = this.documentos
@@ -107,7 +112,7 @@ export class ColecaoFormComponent implements OnInit {
       .map((documento) => documento.nomeDocumento);
 
     if (!selectedDocumentos.length) {
-      return `${selectedIds.length} documento(s) selecionado(s)`;
+      return `${selectedIds.length} ${this.translate.instant('colecoes.colecaoForm.selectedDocuments.countSuffix')}`;
     }
 
     if (selectedDocumentos.length === 1) {
@@ -118,19 +123,21 @@ export class ColecaoFormComponent implements OnInit {
   }
 
   get escopoBadgeLabel(): string {
-    return this.isColecaoPadraoSelecionada ? 'Padrão' : 'Minha Empresa';
+    return this.isColecaoPadraoSelecionada
+      ? this.translate.instant('colecoes.colecaoForm.scope.default')
+      : this.translate.instant('colecoes.colecaoForm.scope.myCompany');
   }
 
   get escopoBadgeDescription(): string {
     if (this.isColecaoPadraoSelecionada) {
-      return 'Coleção global disponível para todas as empresas.';
+      return this.translate.instant('colecoes.colecaoForm.scope.defaultDescription');
     }
 
     if (this.empresaNome) {
-      return `Coleção customizada da empresa ${this.empresaNome}.`;
+      return `${this.translate.instant('colecoes.colecaoForm.scope.customCompanyDescriptionPrefix')} ${this.empresaNome}.`;
     }
 
-    return 'Coleção customizada vinculada à empresa do usuário.';
+    return this.translate.instant('colecoes.colecaoForm.scope.customCompanyDescription');
   }
 
   get isColecaoPadraoSelecionada(): boolean {
@@ -155,7 +162,7 @@ export class ColecaoFormComponent implements OnInit {
 
     const colecaoId = Number(rawId);
     if (!Number.isInteger(colecaoId) || colecaoId <= 0) {
-      this.notificationService.showError('Coleção inválida para edição.');
+      this.notificationService.showError(this.translate.instant('colecoes.colecaoForm.feedback.errors.invalidCollection'));
       void this.router.navigate(['/colecoes']);
       return;
     }
@@ -174,15 +181,15 @@ export class ColecaoFormComponent implements OnInit {
 
     if (control.hasError('required')) {
       return controlName === 'nomeColecao'
-        ? 'Informe o nome da coleção.'
-        : 'Selecione o tipo da coleção.';
+        ? this.translate.instant('colecoes.colecaoForm.validation.collectionNameRequired')
+        : this.translate.instant('colecoes.colecaoForm.validation.collectionTypeRequired');
     }
 
     if (control.hasError('maxlength')) {
-      return 'O nome da coleção deve ter no máximo 150 caracteres.';
+      return this.translate.instant('colecoes.colecaoForm.validation.collectionNameMaxLength');
     }
 
-    return 'Campo inválido.';
+    return this.translate.instant('colecoes.colecaoForm.validation.invalidField');
   }
 
   cancel(): void {
@@ -197,7 +204,7 @@ export class ColecaoFormComponent implements OnInit {
     }
 
     if (this.hasCompanyScopeUnavailable) {
-      this.apiError = 'Não foi possível identificar a empresa do usuário para criar uma coleção customizada.';
+      this.apiError = this.translate.instant('colecoes.colecaoForm.feedback.errors.identifyCompany');
       this.notificationService.showError(this.apiError);
       return;
     }
@@ -229,12 +236,14 @@ export class ColecaoFormComponent implements OnInit {
       .subscribe({
         next: () => {
           this.notificationService.showSuccess(
-            this.isEditMode ? 'Coleção atualizada com sucesso.' : 'Coleção criada com sucesso.'
+            this.isEditMode
+              ? this.translate.instant('colecoes.colecaoForm.feedback.success.updated')
+              : this.translate.instant('colecoes.colecaoForm.feedback.success.created')
           );
           void this.router.navigate(['/colecoes']);
         },
         error: (error: HttpErrorResponse) => {
-          this.apiError = error.error?.detail ?? 'Não foi possível salvar a coleção.';
+          this.apiError = error.error?.detail ?? this.translate.instant('colecoes.colecaoForm.feedback.errors.saveCollection');
           this.notificationService.showError(this.apiError);
         }
       });
@@ -248,7 +257,7 @@ export class ColecaoFormComponent implements OnInit {
 
   private loadCreateData(): void {
     if (!this.isAdministrator && !this.empresaId) {
-      this.applyReadOnlyMode('O usuário atual não está vinculado a uma empresa para criar coleções customizadas.');
+      this.applyReadOnlyMode(this.translate.instant('colecoes.colecaoForm.feedback.errors.userWithoutCompany'));
     }
 
     this.loadDocumentos();
@@ -271,7 +280,7 @@ export class ColecaoFormComponent implements OnInit {
           this.documentos = [...documentos].sort((left, right) => left.nomeDocumento.localeCompare(right.nomeDocumento));
         },
         error: (error: HttpErrorResponse) => {
-          this.documentoError = error.error?.detail ?? 'Não foi possível carregar a lista de documentos.';
+          this.documentoError = error.error?.detail ?? this.translate.instant('colecoes.colecaoForm.feedback.errors.loadDocuments');
           this.notificationService.showError(this.documentoError);
         }
       });
@@ -309,11 +318,11 @@ export class ColecaoFormComponent implements OnInit {
           }
 
           if (!this.canEditColecao(colecao)) {
-            this.applyReadOnlyMode('Coleções padrão do sistema não podem ser alteradas por usuários comuns.');
+            this.applyReadOnlyMode(this.translate.instant('colecoes.colecaoForm.feedback.errors.editDefaultCollection'));
           }
         },
         error: (error: HttpErrorResponse) => {
-          this.apiError = error.error?.detail ?? 'Não foi possível carregar a coleção.';
+          this.apiError = error.error?.detail ?? this.translate.instant('colecoes.colecaoForm.feedback.errors.loadCollection');
           this.notificationService.showError(this.apiError);
         }
       });
@@ -321,5 +330,10 @@ export class ColecaoFormComponent implements OnInit {
 
   private canEditColecao(colecao: Colecao): boolean {
     return this.isAdministrator || !isColecaoPadrao(colecao);
+  }
+
+  private getTipoColecaoOptionLabel(tipoColecao: TipoColecao): string {
+    const key = tipoColecao === TipoColecao.Line ? 'line' : 'header';
+    return this.translate.instant(`colecoes.collectionTypes.${key}`);
   }
 }

@@ -1,14 +1,14 @@
 <div class="settings-page">
   <div class="settings-header">
     <div>
-      <h2>Perfis de Mapeamento</h2>
-      <p>Gerencie perfis que agrupam mapeamentos por coleção para cada documento.</p>
+      <h2>{{ 'perfilMapeamento.perfilList.header.title' | translate }}</h2>
+      <p>{{ 'perfilMapeamento.perfilList.header.description' | translate }}</p>
     </div>
 
     <div class="settings-header__actions">
       <button type="button" mat-flat-button color="primary" (click)="novoPerfil()">
         <mat-icon>add</mat-icon>
-        Novo Perfil
+        {{ 'perfilMapeamento.perfilList.actions.newProfile' | translate }}
       </button>
     </div>
   </div>
@@ -17,18 +17,18 @@
     <mat-card-content class="perfil-page__content">
       <div class="perfil-page__filters">
         <mat-form-field appearance="outline">
-          <mat-label>Documento</mat-label>
+          <mat-label>{{ 'perfilMapeamento.common.document' | translate }}</mat-label>
           <mat-select [value]="selectedDocumentoId" (selectionChange)="onDocumentoChange($event.value)">
             <mat-option *ngFor="let doc of documentos" [value]="doc.id">
               {{ doc.nomeDocumento }}
             </mat-option>
           </mat-select>
-          <mat-hint *ngIf="isLoadingDocumentos">Carregando documentos...</mat-hint>
+          <mat-hint *ngIf="isLoadingDocumentos">{{ 'perfilMapeamento.common.loading.documents' | translate }}</mat-hint>
         </mat-form-field>
       </div>
 
       <div class="loading-state loading-state--inline" *ngIf="isLoading">
-        <app-loading-spinner message="Carregando perfis..."></app-loading-spinner>
+        <app-loading-spinner [message]="'perfilMapeamento.perfilList.loading.profiles' | translate"></app-loading-spinner>
       </div>
 
       <ng-container *ngIf="!isLoading">
@@ -36,21 +36,21 @@
           <div class="table-wrapper">
             <table mat-table [dataSource]="dataSource" class="perfil-page__table-content">
               <ng-container matColumnDef="nome">
-                <th mat-header-cell *matHeaderCellDef>Nome</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'perfilMapeamento.perfilList.table.header.name' | translate }}</th>
                 <td mat-cell *matCellDef="let perfil">{{ perfil.nome }}</td>
               </ng-container>
 
               <ng-container matColumnDef="documento">
-                <th mat-header-cell *matHeaderCellDef>Documento</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'perfilMapeamento.common.document' | translate }}</th>
                 <td mat-cell *matCellDef="let perfil">{{ getDocumentoNome(perfil) }}</td>
               </ng-container>
 
               <ng-container matColumnDef="tipo">
-                <th mat-header-cell *matHeaderCellDef>Tipo</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'perfilMapeamento.perfilList.table.header.type' | translate }}</th>
                 <td mat-cell *matCellDef="let perfil">
                   <mat-chip-set>
                     <mat-chip [class]="getTipoBadgeClass(perfil)"
-                              [matTooltip]="perfil.isPadrao ? 'Perfil padrão não pode ser editado' : ''">
+                              [matTooltip]="perfil.isPadrao ? ('perfilMapeamento.perfilList.tooltips.defaultProfile' | translate) : ''">
                       {{ getTipoLabel(perfil) }}
                     </mat-chip>
                   </mat-chip-set>
@@ -58,22 +58,22 @@
               </ng-container>
 
               <ng-container matColumnDef="itens">
-                <th mat-header-cell *matHeaderCellDef>Coleções</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'perfilMapeamento.perfilList.table.header.collections' | translate }}</th>
                 <td mat-cell *matCellDef="let perfil">{{ perfil.itens?.length ?? 0 }}</td>
               </ng-container>
 
               <ng-container matColumnDef="acoes">
-                <th mat-header-cell *matHeaderCellDef>Ações</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'perfilMapeamento.perfilList.table.header.actions' | translate }}</th>
                 <td mat-cell *matCellDef="let perfil">
                   <div class="perfil-page__actions">
                     <button type="button" mat-stroked-button color="primary" (click)="editar(perfil)">
                       <mat-icon>edit</mat-icon>
-                      {{ canEdit(perfil) ? 'Editar' : 'Visualizar' }}
+                      {{ canEdit(perfil) ? ('perfilMapeamento.perfilList.actions.edit' | translate) : ('perfilMapeamento.perfilList.actions.view' | translate) }}
                     </button>
 
                     <button type="button" mat-stroked-button (click)="clonar(perfil)">
                       <mat-icon>content_copy</mat-icon>
-                      Clonar
+                      {{ 'perfilMapeamento.perfilList.actions.clone' | translate }}
                     </button>
 
                     <button type="button"
@@ -83,7 +83,7 @@
                             [disabled]="deletingId === perfil.id"
                             (click)="excluir(perfil)">
                       <mat-icon>delete</mat-icon>
-                      {{ deletingId === perfil.id ? 'Excluindo...' : 'Excluir' }}
+                      {{ deletingId === perfil.id ? ('perfilMapeamento.perfilList.actions.deleting' | translate) : ('perfilMapeamento.perfilList.actions.delete' | translate) }}
                     </button>
                   </div>
                 </td>
@@ -94,12 +94,12 @@
             </table>
           </div>
 
-          <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons></mat-paginator>
+          <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons [attr.aria-label]="'perfilMapeamento.perfilList.table.paginationAriaLabel' | translate"></mat-paginator>
         </div>
       </ng-container>
 
       <ng-template #emptyState>
-        <p class="perfil-page__empty" *ngIf="selectedDocumentoId">Nenhum perfil de mapeamento encontrado para este documento.</p>
+        <p class="perfil-page__empty" *ngIf="selectedDocumentoId">{{ 'perfilMapeamento.perfilList.empty.noProfiles' | translate }}</p>
       </ng-template>
     </mat-card-content>
   </mat-card>

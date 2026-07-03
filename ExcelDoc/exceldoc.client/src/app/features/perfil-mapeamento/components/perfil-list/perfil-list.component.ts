@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import {
   CloneNameDialogComponent,
@@ -52,7 +53,8 @@ export class PerfilListComponent implements OnInit {
     private readonly documentoService: DocumentoService,
     private readonly dialog: MatDialog,
     private readonly notificationService: NotificationService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly translate: TranslateService
   ) {
     this.isAdministrator = this.authService.isAdministrator();
     this.empresaId = this.authService.getSession()?.empresaId ?? null;
@@ -83,10 +85,10 @@ export class PerfilListComponent implements OnInit {
     const dialogRef = this.dialog.open(CloneNameDialogComponent, {
       width: '360px',
       data: {
-        title: 'Clonar perfil',
-        label: 'Nome do novo perfil',
+        title: this.translate.instant('perfilMapeamento.perfilList.cloneDialog.title'),
+        label: this.translate.instant('perfilMapeamento.perfilList.cloneDialog.label'),
         initialValue: `${perfil.nome}`,
-        confirmLabel: 'Clonar'
+        confirmLabel: this.translate.instant('perfilMapeamento.perfilList.actions.clone')
       }
     });
 
@@ -103,11 +105,11 @@ export class PerfilListComponent implements OnInit {
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: (clone) => {
-              this.notificationService.showSuccess('Perfil clonado com sucesso.');
+              this.notificationService.showSuccess(this.translate.instant('perfilMapeamento.perfilList.feedback.success.cloned'));
               void this.router.navigate(['/perfil-mapeamento', clone.id]);
             },
             error: (err: HttpErrorResponse) => {
-              this.notificationService.showError(err.error?.detail ?? 'Erro ao clonar perfil.');
+              this.notificationService.showError(err.error?.detail ?? this.translate.instant('perfilMapeamento.perfilList.feedback.errors.cloneProfile'));
             }
           });
       });
@@ -116,8 +118,10 @@ export class PerfilListComponent implements OnInit {
   excluir(perfil: PerfilMapeamento): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
-        title: 'Excluir perfil',
-        message: `Deseja realmente excluir o perfil "${perfil.nome}"?`
+        title: this.translate.instant('perfilMapeamento.perfilList.confirmDelete.title'),
+        message: `${this.translate.instant('perfilMapeamento.perfilList.confirmDelete.messagePrefix')} "${perfil.nome}"?`,
+        confirmLabel: this.translate.instant('perfilMapeamento.perfilList.actions.delete'),
+        cancelLabel: this.translate.instant('perfilMapeamento.perfilList.actions.cancel')
       }
     });
 
@@ -134,13 +138,13 @@ export class PerfilListComponent implements OnInit {
           )
           .subscribe({
             next: () => {
-              this.notificationService.showSuccess('Perfil excluído com sucesso.');
+              this.notificationService.showSuccess(this.translate.instant('perfilMapeamento.perfilList.feedback.success.deleted'));
               if (this.selectedDocumentoId) {
                 this.loadPerfis(this.selectedDocumentoId);
               }
             },
             error: (err: HttpErrorResponse) => {
-              this.notificationService.showError(err.error?.detail ?? 'Erro ao excluir perfil.');
+              this.notificationService.showError(err.error?.detail ?? this.translate.instant('perfilMapeamento.perfilList.feedback.errors.deleteProfile'));
             }
           });
       });
@@ -158,7 +162,9 @@ export class PerfilListComponent implements OnInit {
   }
 
   getTipoLabel(perfil: PerfilMapeamento): string {
-    return perfil.isPadrao ? 'Padrão' : 'Minha Empresa';
+    return perfil.isPadrao
+      ? this.translate.instant('perfilMapeamento.common.scope.default')
+      : this.translate.instant('perfilMapeamento.common.scope.myCompany');
   }
 
   getTipoBadgeClass(perfil: PerfilMapeamento): string {
@@ -185,7 +191,7 @@ export class PerfilListComponent implements OnInit {
           }
         },
         error: () => {
-          this.notificationService.showError('Erro ao carregar documentos.');
+          this.notificationService.showError(this.translate.instant('perfilMapeamento.perfilList.feedback.errors.loadDocuments'));
         }
       });
   }
@@ -202,7 +208,7 @@ export class PerfilListComponent implements OnInit {
           this.dataSource.data = perfis;
         },
         error: () => {
-          this.notificationService.showError('Erro ao carregar perfis de mapeamento.');
+          this.notificationService.showError(this.translate.instant('perfilMapeamento.perfilList.feedback.errors.loadProfiles'));
         }
       });
   }
