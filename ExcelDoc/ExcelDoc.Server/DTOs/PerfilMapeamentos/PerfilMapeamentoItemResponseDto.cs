@@ -15,5 +15,13 @@ namespace ExcelDoc.Server.DTOs.PerfilMapeamentos
         public int FK_IdMapeamento { get; set; }
 
         public string NomeMapeamento { get; set; } = string.Empty;
+
+        [JsonPropertyName("fk_IdPerfilMapeamentoItemPai")]
+        public int? FK_IdPerfilMapeamentoItemPai { get; set; }
+
+        [JsonPropertyName("fk_IdColecaoPai")]
+        public int? FK_IdColecaoPai { get; set; }
+
+        public string? NomeColecaoPai { get; set; }
     }
 }

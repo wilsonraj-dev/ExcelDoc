@@ -21,19 +21,29 @@ namespace ExcelDoc.Server.Services
 
             var headerItems = perfil.Itens
                 .Where(i => i.Colecao.TipoColecao == TipoColecao.Header)
+                .OrderBy(i => i.Id)
                 .ToList();
 
             var lineItems = perfil.Itens
                 .Where(i => i.Colecao.TipoColecao == TipoColecao.Line)
+                .OrderBy(i => i.Id)
+                .ToList();
+
+            var lineChildrenByParentId = lineItems
+                .Where(i => i.FK_IdPerfilMapeamentoItemPai.HasValue)
+                .GroupBy(i => i.FK_IdPerfilMapeamentoItemPai!.Value)
+                .ToDictionary(g => g.Key, g => g.OrderBy(i => i.Id).ToList());
+
+            var rootLineItems = lineItems
+                .Where(i => !i.FK_IdPerfilMapeamentoItemPai.HasValue)
                 .ToList();
 
             var firstRow = groupRows[0];
 
             foreach (var headerItem in headerItems)
             {
-                var mapeamento = headerItem.Mapeamento;
                 var headerPayload = _payloadBuilder.BuildPayload(
-                    perfil.Documento, mapeamento, firstRow.Values);
+                    perfil.Documento, headerItem.Mapeamento, firstRow.Values);
 
                 foreach (var kvp in headerPayload)
                 {
@@ -41,25 +51,47 @@ namespace ExcelDoc.Server.Services
                 }
             }
 
-            foreach (var lineItem in lineItems)
+            foreach (var lineItem in rootLineItems)
             {
-                var mapeamento = lineItem.Mapeamento;
-                var collectionName = lineItem.Colecao.NomeColecao;
-                var lines = new List<IDictionary<string, object?>>();
-
-                foreach (var row in groupRows)
-                {
-                    var linePayload = _payloadBuilder.BuildPayload(
-                        perfil.Documento, mapeamento, row.Values);
-                    lines.Add(linePayload);
-                }
-
-                document[collectionName] = lines;
+                document[lineItem.Colecao.NomeColecao] = BuildLineCollection(
+                    perfil,
+                    lineItem,
+                    groupRows,
+                    lineChildrenByParentId);
             }
 
             return document;
         }
 
+        private List<IDictionary<string, object?>> BuildLineCollection(
+            PerfilMapeamento perfil,
+            PerfilMapeamentoItem lineItem,
+            IReadOnlyList<ExcelRowData> rows,
+            IReadOnlyDictionary<int, List<PerfilMapeamentoItem>> childrenByParentId)
+        {
+            var collection = new List<IDictionary<string, object?>>();
 
+            foreach (var row in rows)
+            {
+                var linePayload = _payloadBuilder.BuildPayload(
+                    perfil.Documento, lineItem.Mapeamento, row.Values);
+
+                if (childrenByParentId.TryGetValue(lineItem.Id, out var childItems))
+                {
+                    foreach (var childItem in childItems)
+                    {
+                        linePayload[childItem.Colecao.NomeColecao] = BuildLineCollection(
+                            perfil,
+                            childItem,
+                            [row],
+                            childrenByParentId);
+                    }
+                }
+
+                collection.Add(linePayload);
+            }
+
+            return collection;
+        }
     }
 }

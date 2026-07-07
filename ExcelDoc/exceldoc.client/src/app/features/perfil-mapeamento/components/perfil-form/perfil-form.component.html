@@ -105,6 +105,21 @@
                   <mat-hint *ngIf="!group.isLoadingMapeamentos && !group.selectedControl.value">{{ 'perfilMapeamento.perfilForm.lineCollection.enableMappingHint' | translate }}</mat-hint>
                   <mat-error>{{ 'perfilMapeamento.perfilForm.validation.lineMappingRequired' | translate }}</mat-error>
                 </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>{{ 'perfilMapeamento.perfilForm.fields.parentCollection' | translate }}</mat-label>
+                  <mat-select [formControl]="group.parentColecaoControl"
+                              [disabled]="!group.selectedControl.value || isReadonly"
+                              (selectionChange)="onLineParentSelectionChange(group)">
+                    <mat-option [value]="null">
+                      {{ 'perfilMapeamento.perfilForm.lineCollection.topLevel' | translate }}
+                    </mat-option>
+                    <mat-option *ngFor="let parentGroup of getParentOptions(group)" [value]="parentGroup.colecao.id">
+                      {{ parentGroup.colecao.nomeColecao }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-hint>{{ 'perfilMapeamento.perfilForm.lineCollection.parentHint' | translate }}</mat-hint>
+                </mat-form-field>
               </div>
             </div>
           </section>

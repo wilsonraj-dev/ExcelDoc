@@ -1,5 +1,6 @@
 using ExcelDoc.Server.Services.Interfaces;
 using ExcelDoc.Server.Models;
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExcelDoc.Server.Data
@@ -25,6 +26,7 @@ namespace ExcelDoc.Server.Data
             var logger = scopedProvider.GetRequiredService<ILoggerFactory>().CreateLogger("ApplicationDbInitializer");
 
             await dbContext.Database.MigrateAsync(cancellationToken);
+            await EnsurePerfilMapeamentoItemPaiSchemaAsync(dbContext, logger, cancellationToken);
 
             var empresa = await EnsureEmpresaAsync(dbContext, logger, cancellationToken);
             await EnsureConfiguracaoAsync(dbContext, encryptionService, empresa.Id, logger, cancellationToken);
@@ -38,6 +40,151 @@ namespace ExcelDoc.Server.Data
             await EnsurePerfilMapeamentoAsync(dbContext, empresa.Id, documentos, colecoes, mapeamentos, logger, cancellationToken);
 
             await EnsureUsuarioPadraoAsync(dbContext, passwordHasherService, empresa.Id, logger, cancellationToken);
+        }
+
+        private static async Task EnsurePerfilMapeamentoItemPaiSchemaAsync(
+            ExcelDocDbContext dbContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            const string tableName = "PerfilMapeamentoItem";
+            const string columnName = "FK_IdPerfilMapeamentoItemPai";
+            const string indexName = "IX_PerfilMapeamentoItem_FK_IdPerfilMapeamentoItemPai";
+            const string foreignKeyName = "FK_PerfilMapeamentoItem_PerfilMapeamentoItemPai";
+
+            if (!await ColumnExistsAsync(dbContext, tableName, columnName, cancellationToken))
+            {
+                await dbContext.Database.ExecuteSqlRawAsync(
+                    $"ALTER TABLE `{tableName}` ADD COLUMN `{columnName}` int NULL;",
+                    cancellationToken);
+
+                logger.LogWarning(
+                    "Coluna {ColumnName} criada em {TableName} porque a migration estava registrada sem alterar o schema.",
+                    columnName,
+                    tableName);
+            }
+
+            if (!await IndexExistsAsync(dbContext, tableName, indexName, cancellationToken))
+            {
+                await dbContext.Database.ExecuteSqlRawAsync(
+                    $"CREATE INDEX `{indexName}` ON `{tableName}` (`{columnName}`);",
+                    cancellationToken);
+            }
+
+            if (!await ForeignKeyExistsAsync(dbContext, tableName, foreignKeyName, cancellationToken))
+            {
+                await dbContext.Database.ExecuteSqlRawAsync(
+                    $"""
+                    ALTER TABLE `{tableName}`
+                    ADD CONSTRAINT `{foreignKeyName}`
+                    FOREIGN KEY (`{columnName}`) REFERENCES `{tableName}` (`Id`)
+                    ON DELETE RESTRICT;
+                    """,
+                    cancellationToken);
+            }
+        }
+
+        private static async Task<bool> ColumnExistsAsync(
+            ExcelDocDbContext dbContext,
+            string tableName,
+            string columnName,
+            CancellationToken cancellationToken)
+        {
+            return await SchemaObjectExistsAsync(
+                dbContext,
+                """
+                SELECT COUNT(*)
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = @tableName
+                  AND COLUMN_NAME = @objectName;
+                """,
+                tableName,
+                columnName,
+                cancellationToken);
+        }
+
+        private static async Task<bool> IndexExistsAsync(
+            ExcelDocDbContext dbContext,
+            string tableName,
+            string indexName,
+            CancellationToken cancellationToken)
+        {
+            return await SchemaObjectExistsAsync(
+                dbContext,
+                """
+                SELECT COUNT(*)
+                FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = @tableName
+                  AND INDEX_NAME = @objectName;
+                """,
+                tableName,
+                indexName,
+                cancellationToken);
+        }
+
+        private static async Task<bool> ForeignKeyExistsAsync(
+            ExcelDocDbContext dbContext,
+            string tableName,
+            string foreignKeyName,
+            CancellationToken cancellationToken)
+        {
+            return await SchemaObjectExistsAsync(
+                dbContext,
+                """
+                SELECT COUNT(*)
+                FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+                WHERE CONSTRAINT_SCHEMA = DATABASE()
+                  AND TABLE_NAME = @tableName
+                  AND CONSTRAINT_NAME = @objectName
+                  AND CONSTRAINT_TYPE = 'FOREIGN KEY';
+                """,
+                tableName,
+                foreignKeyName,
+                cancellationToken);
+        }
+
+        private static async Task<bool> SchemaObjectExistsAsync(
+            ExcelDocDbContext dbContext,
+            string commandText,
+            string tableName,
+            string objectName,
+            CancellationToken cancellationToken)
+        {
+            var connection = dbContext.Database.GetDbConnection();
+            var shouldCloseConnection = connection.State != ConnectionState.Open;
+
+            if (shouldCloseConnection)
+            {
+                await connection.OpenAsync(cancellationToken);
+            }
+
+            try
+            {
+                await using var command = connection.CreateCommand();
+                command.CommandText = commandText;
+
+                var tableParameter = command.CreateParameter();
+                tableParameter.ParameterName = "@tableName";
+                tableParameter.Value = tableName;
+                command.Parameters.Add(tableParameter);
+
+                var objectParameter = command.CreateParameter();
+                objectParameter.ParameterName = "@objectName";
+                objectParameter.Value = objectName;
+                command.Parameters.Add(objectParameter);
+
+                var result = await command.ExecuteScalarAsync(cancellationToken);
+                return Convert.ToInt32(result) > 0;
+            }
+            finally
+            {
+                if (shouldCloseConnection)
+                {
+                    await connection.CloseAsync();
+                }
+            }
         }
 
         private static async Task<Empresa> EnsureEmpresaAsync(

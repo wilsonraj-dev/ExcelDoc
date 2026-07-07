@@ -339,6 +339,9 @@ namespace ExcelDoc.Server.Data
                 entity.HasIndex(e => e.FK_IdMapeamento)
                     .HasDatabaseName("IX_PerfilMapeamentoItem_FK_IdMapeamento");
 
+                entity.HasIndex(e => e.FK_IdPerfilMapeamentoItemPai)
+                    .HasDatabaseName("IX_PerfilMapeamentoItem_FK_IdPerfilMapeamentoItemPai");
+
                 entity.HasOne(e => e.PerfilMapeamento)
                     .WithMany(e => e.Itens)
                     .HasForeignKey(e => e.FK_IdPerfilMapeamento)
@@ -356,6 +359,12 @@ namespace ExcelDoc.Server.Data
                     .HasForeignKey(e => e.FK_IdMapeamento)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_PerfilMapeamentoItem_Mapeamento_FK_IdMapeamento");
+
+                entity.HasOne(e => e.ItemPai)
+                    .WithMany(e => e.ItensFilhos)
+                    .HasForeignKey(e => e.FK_IdPerfilMapeamentoItemPai)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_PerfilMapeamentoItem_PerfilMapeamentoItemPai");
             });
 
             modelBuilder.Entity<ProcessamentoItem>(entity =>

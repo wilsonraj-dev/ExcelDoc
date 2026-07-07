@@ -421,10 +421,10 @@
     "perfilForm": {
       "title": { "create": "Novo perfil de mapeamento", "edit": "Editar perfil de mapeamento", "view": "Visualizar perfil de mapeamento" },
       "loading": { "profile": "Carregando perfil..." },
-      "fields": { "profileName": "Nome do perfil", "headerCollection": "Coleção de cabeçalho", "headerMapping": "Mapeamento do cabeçalho", "mapping": "Mapeamento" },
+      "fields": { "profileName": "Nome do perfil", "headerCollection": "Coleção de cabeçalho", "headerMapping": "Mapeamento do cabeçalho", "mapping": "Mapeamento", "parentCollection": "Coleção pai" },
       "placeholders": { "profileName": "Ex.: Perfil padrão de importação" },
       "sections": { "mappingsByCollection": "Mapeamentos por coleção", "headerCollection": "Coleção de cabeçalho", "headerCollectionDescription": "Selecione qual coleção do tipo cabeçalho deve compor o perfil.", "lineCollections": "Coleções de linha", "lineCollectionsDescription": "Marque as coleções de linha que deseja utilizar e defina um mapeamento para cada uma." },
-      "lineCollection": { "included": "Coleção incluída no perfil.", "optional": "Coleção opcional.", "enableMappingHint": "Selecione a coleção para habilitar o mapeamento." },
+      "lineCollection": { "included": "Coleção incluída no perfil.", "optional": "Coleção opcional.", "enableMappingHint": "Selecione a coleção para habilitar o mapeamento.", "topLevel": "No nível do documento", "parentHint": "Escolha outra linha selecionada para gerar esta coleção dentro dela." },
       "validation": { "profileNameRequired": "Nome é obrigatório (máx. 150 caracteres).", "documentRequired": "Selecione um documento.", "headerCollectionRequired": "Selecione uma coleção de cabeçalho.", "headerMappingRequired": "Selecione um mapeamento para o cabeçalho.", "lineMappingRequired": "Selecione um mapeamento para esta coleção." },
       "feedback": { "success": { "created": "Perfil criado com sucesso.", "updated": "Perfil atualizado com sucesso." }, "errors": { "saveProfile": "Erro ao salvar perfil.", "loadDocuments": "Erro ao carregar documentos.", "loadProfile": "Erro ao carregar perfil.", "loadCollections": "Erro ao carregar coleções.", "loadCollectionMappingsPrefix": "Erro ao carregar mapeamentos da coleção" } }
     }

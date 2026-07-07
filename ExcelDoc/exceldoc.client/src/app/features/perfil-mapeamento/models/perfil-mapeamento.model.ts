@@ -14,6 +14,9 @@ export interface PerfilMapeamentoItem {
   nomeColecao: string;
   fk_IdMapeamento: number;
   nomeMapeamento: string;
+  fk_IdPerfilMapeamentoItemPai: number | null;
+  fk_IdColecaoPai: number | null;
+  nomeColecaoPai: string | null;
 }
 
 export interface PerfilMapeamentoPayload {
@@ -27,4 +30,5 @@ export interface PerfilMapeamentoPayload {
 export interface PerfilMapeamentoItemPayload {
   fk_IdColecao: number;
   fk_IdMapeamento: number;
+  fk_IdColecaoPai?: number | null;
 }

@@ -34,6 +34,7 @@ interface LineColecaoMapeamentoGroup {
   initialMapeamentoId: number | null;
   selectedControl: FormControl<boolean>;
   mapeamentoControl: FormControl<number | null>;
+  parentColecaoControl: FormControl<number | null>;
 }
 
 @Component({
@@ -118,7 +119,10 @@ export class PerfilFormComponent implements OnInit {
       return false;
     }
 
-    return this.selectedLineGroups.every((group) => group.mapeamentoControl.value !== null);
+    return this.selectedLineGroups.every((group) =>
+      group.mapeamentoControl.value !== null
+      && this.isValidParentSelection(group)
+    ) && !this.hasParentCycle();
   }
 
   get pageTitle(): string {
@@ -213,15 +217,30 @@ export class PerfilFormComponent implements OnInit {
 
     if (group.selectedControl.value) {
       group.mapeamentoControl.enable({ emitEvent: false });
+      group.parentColecaoControl.enable({ emitEvent: false });
 
       if (!group.mapeamentoControl.value) {
         group.mapeamentoControl.setValue(this.getDefaultMapeamentoId(group.mapeamentos), { emitEvent: false });
       }
 
+      this.clearInvalidParentSelections();
       return;
     }
 
     group.mapeamentoControl.disable({ emitEvent: false });
+    group.parentColecaoControl.setValue(null, { emitEvent: false });
+    group.parentColecaoControl.disable({ emitEvent: false });
+    this.clearInvalidParentSelections();
+  }
+
+  onLineParentSelectionChange(group: LineColecaoMapeamentoGroup): void {
+    if (!this.isValidParentSelection(group) || this.hasParentCycle()) {
+      group.parentColecaoControl.setValue(null, { emitEvent: false });
+    }
+  }
+
+  getParentOptions(group: LineColecaoMapeamentoGroup): LineColecaoMapeamentoGroup[] {
+    return this.selectedLineGroups.filter((option) => option.colecao.id !== group.colecao.id);
   }
 
   private buildItensPayload(): PerfilMapeamentoItemPayload[] {
@@ -245,7 +264,8 @@ export class PerfilFormComponent implements OnInit {
 
       itens.push({
         fk_IdColecao: group.colecao.id,
-        fk_IdMapeamento: mapeamentoId
+        fk_IdMapeamento: mapeamentoId,
+        fk_IdColecaoPai: group.parentColecaoControl.value
       });
     });
 
@@ -389,19 +409,27 @@ export class PerfilFormComponent implements OnInit {
         disabled: this.isReadonly || !isSelected
       });
 
+      const parentColecaoControl = new FormControl<number | null>({
+        value: existingItem?.fk_IdColecaoPai ?? null,
+        disabled: this.isReadonly || !isSelected
+      });
+
       return {
         colecao,
         mapeamentos: [],
         isLoadingMapeamentos: true,
         initialMapeamentoId: existingItem?.fk_IdMapeamento ?? null,
         selectedControl,
-        mapeamentoControl
+        mapeamentoControl,
+        parentColecaoControl
       };
     });
 
     this.lineColecaoGroups.forEach((group) => {
       this.loadMapeamentosForLine(group, !perfil);
     });
+
+    this.clearInvalidParentSelections();
   }
 
   private loadMapeamentosForHeader(option: HeaderColecaoOption, shouldApplyDefaultSelection: boolean): void {
@@ -466,6 +494,58 @@ export class PerfilFormComponent implements OnInit {
       ?? (shouldApplyDefaultSelection ? this.getDefaultMapeamentoId(option.mapeamentos) : null);
 
     this.headerMapeamentoControl.setValue(nextValue, { emitEvent: false });
+  }
+
+  private clearInvalidParentSelections(): void {
+    this.lineColecaoGroups.forEach((group) => {
+      if (!this.isValidParentSelection(group) || this.hasParentCycle()) {
+        group.parentColecaoControl.setValue(null, { emitEvent: false });
+      }
+
+      if (group.selectedControl.value && !this.isReadonly) {
+        group.parentColecaoControl.enable({ emitEvent: false });
+      } else {
+        group.parentColecaoControl.disable({ emitEvent: false });
+      }
+    });
+  }
+
+  private isValidParentSelection(group: LineColecaoMapeamentoGroup): boolean {
+    const parentColecaoId = group.parentColecaoControl.value;
+
+    if (!parentColecaoId) {
+      return true;
+    }
+
+    if (parentColecaoId === group.colecao.id) {
+      return false;
+    }
+
+    return this.selectedLineGroups.some((selectedGroup) => selectedGroup.colecao.id === parentColecaoId);
+  }
+
+  private hasParentCycle(): boolean {
+    const selectedGroupsByColecaoId = new Map(
+      this.selectedLineGroups.map((group) => [group.colecao.id, group])
+    );
+
+    return this.selectedLineGroups.some((group) => {
+      const visited = new Set<number>();
+      let current: LineColecaoMapeamentoGroup | undefined = group;
+
+      while (current?.parentColecaoControl.value) {
+        const parentColecaoId = current.parentColecaoControl.value;
+
+        if (visited.has(parentColecaoId)) {
+          return true;
+        }
+
+        visited.add(parentColecaoId);
+        current = selectedGroupsByColecaoId.get(parentColecaoId);
+      }
+
+      return false;
+    });
   }
 
   private getDefaultMapeamentoId(mapeamentos: Mapeamento[]): number | null {

@@ -14,5 +14,8 @@ namespace ExcelDoc.Server.DTOs.PerfilMapeamentos
         [Range(1, int.MaxValue, ErrorMessage = "Mapeamento inválido.")]
         [JsonPropertyName("fk_IdMapeamento")]
         public int FK_IdMapeamento { get; set; }
+
+        [JsonPropertyName("fk_IdColecaoPai")]
+        public int? FK_IdColecaoPai { get; set; }
     }
 }
