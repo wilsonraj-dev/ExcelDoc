@@ -1,11 +1,11 @@
 <aside class="side-menu" *ngIf="isAuthenticated">
   <div class="side-menu__brand">
     <span class="side-menu__badge">ExcelDoc</span>
-    <h1>Menu principal</h1>
-    <p>Acesse rapidamente os formulários do sistema.</p>
+    <h1>{{ 'layout.sideMenu.header.title' | translate }}</h1>
+    <p>{{ 'layout.sideMenu.header.description' | translate }}</p>
   </div>
 
-  <mat-nav-list class="side-menu__nav" aria-label="Menu lateral">
+  <mat-nav-list class="side-menu__nav" [attr.aria-label]="'layout.sideMenu.navAriaLabel' | translate">
     <a class="side-menu__link"
        mat-list-item
        *ngFor="let item of availableMenuItems"
@@ -13,8 +13,8 @@
        routerLinkActive="is-active"
        [routerLinkActiveOptions]="{ exact: item.exact ?? false }">
       <mat-icon class="side-menu__icon" matListItemIcon>{{ item.icon }}</mat-icon>
-      <span matListItemTitle>{{ item.label }}</span>
-      <span matListItemLine>{{ item.description }}</span>
+      <span matListItemTitle>{{ item.labelKey | translate }}</span>
+      <span matListItemLine>{{ item.descriptionKey | translate }}</span>
     </a>
   </mat-nav-list>
 </aside>

@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { Subject, switchMap, timer } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { Processamento } from '../../models/processamento.model';
 import { ProcessamentoService } from '../../services/processamento.service';
 
@@ -40,7 +41,8 @@ export class ProcessamentoListComponent implements OnInit {
   constructor(
     private readonly router: Router,
     private readonly processamentoService: ProcessamentoService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -79,6 +81,11 @@ export class ProcessamentoListComponent implements OnInit {
     }
   }
 
+  getStatusLabel(status: string): string {
+    const key = status === 'Erro' ? 'error' : status === 'Sucesso' ? 'success' : 'processing';
+    return this.translate.instant(`processamento.common.status.${key}`);
+  }
+
   private loadProcessamentos(): void {
     this.isLoading = true;
     this.processamentoService.getAll()
@@ -89,7 +96,7 @@ export class ProcessamentoListComponent implements OnInit {
       .subscribe({
         next: (data) => { this.dataSource.data = data.items; },
         error: (error: HttpErrorResponse) => {
-          const msg = error.error?.detail ?? 'Erro ao carregar processamentos.';
+          const msg = error.error?.detail ?? this.translate.instant('processamento.processamentoList.feedback.errors.loadProcessings');
           this.notificationService.showError(msg);
         }
       });

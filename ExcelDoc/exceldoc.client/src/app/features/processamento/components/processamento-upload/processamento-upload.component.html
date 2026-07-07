@@ -1,21 +1,21 @@
 <section class="feature-page">
-  <h2>Importar Planilha</h2>
+  <h2>{{ 'processamento.processamentoUpload.title' | translate }}</h2>
 
   <mat-card>
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="processar()">
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Documento</mat-label>
+          <mat-label>{{ 'processamento.common.document' | translate }}</mat-label>
           <mat-select formControlName="documentoId">
             <mat-option *ngFor="let doc of documentos" [value]="doc.id">
               {{ doc.nomeDocumento }}
             </mat-option>
           </mat-select>
-          <mat-error>Selecione um documento.</mat-error>
+          <mat-error>{{ 'processamento.processamentoUpload.validation.documentRequired' | translate }}</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Perfil de Mapeamento</mat-label>
+          <mat-label>{{ 'processamento.processamentoUpload.fields.mappingProfile' | translate }}</mat-label>
           <mat-select formControlName="perfilMapeamentoId" [disabled]="isLoadingPerfis || !form.controls['documentoId'].value">
             <mat-select-trigger>
               {{ selectedPerfilNome }}
@@ -32,25 +32,25 @@
               </div>
             </mat-option>
           </mat-select>
-          <mat-hint *ngIf="isLoadingPerfis">Carregando perfis...</mat-hint>
-          <mat-hint *ngIf="!isLoadingPerfis && form.controls['documentoId'].value && !perfisDisponiveis.length">Nenhum perfil disponível para este documento.</mat-hint>
-          <mat-error>Selecione um perfil de mapeamento.</mat-error>
+          <mat-hint *ngIf="isLoadingPerfis">{{ 'processamento.processamentoUpload.loading.profiles' | translate }}</mat-hint>
+          <mat-hint *ngIf="!isLoadingPerfis && form.controls['documentoId'].value && !perfisDisponiveis.length">{{ 'processamento.processamentoUpload.empty.noProfilesForDocument' | translate }}</mat-hint>
+          <mat-error>{{ 'processamento.processamentoUpload.validation.profileRequired' | translate }}</mat-error>
         </mat-form-field>
 
         <div class="file-upload-area">
           <button type="button" mat-stroked-button (click)="fileInput.click()">
             <mat-icon>upload_file</mat-icon>
-            Selecionar arquivo .xlsx
+            {{ 'processamento.processamentoUpload.actions.selectFile' | translate }}
           </button>
           <input #fileInput type="file" accept=".xlsx" hidden (change)="onFileSelected($event)" />
           <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
-          <span class="file-name file-name--empty" *ngIf="!selectedFile">Nenhum arquivo selecionado</span>
+          <span class="file-name file-name--empty" *ngIf="!selectedFile">{{ 'processamento.processamentoUpload.empty.noFileSelected' | translate }}</span>
         </div>
 
         <div class="actions">
           <button mat-raised-button color="primary" type="submit" [disabled]="!isFormValid || isLoading || isLoadingPerfis">
             <mat-icon>play_arrow</mat-icon>
-            Processar
+            {{ 'processamento.processamentoUpload.actions.process' | translate }}
           </button>
           <mat-spinner *ngIf="isLoading" diameter="24"></mat-spinner>
         </div>

@@ -1,4 +1,9 @@
 {
+  "app-component": {
+    "user": "User",
+    "company": "Company",
+    "profile": "Profile"
+  },
   "companySettings": {
     "table": {
       "header": {
@@ -37,8 +42,7 @@
       "selectCompany": "Select a company to configure.",
       "noLinkedCompany": "The current user is not linked to a company.",
       "selectedUnavailable": "The selected company is not available for the current user."
-    }
-    ,
+    },
     "error": {
       "invalidCompany": "Invalid company for viewing configuration."
     },
@@ -353,39 +357,408 @@
     }
   },
   "mapeamento": {
-    "common": { "collectionNumberPrefix": "Collection #", "company": "Company", "readOnly": "Read-only", "scope": { "default": "Default", "myCompany": "My company" }, "actions": { "cancel": "Cancel", "create": "Create" } },
+    "common": {
+      "collectionNumberPrefix": "Collection #",
+      "company": "Company",
+      "readOnly": "Read-only",
+      "scope": {
+        "default": "Default",
+        "myCompany": "My company"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create"
+      }
+    },
     "mapeamentoHome": {
-      "header": { "eyebrow": "Field mapping", "description": "Select a collection mapping to edit fields or use as a base for cloning." },
-      "fields": { "mapping": "Mapping" }, "actions": { "newMapping": "New mapping", "clone": "Clone", "delete": "Delete", "cancel": "Cancel", "createFirstMapping": "Create first mapping" },
-      "tooltips": { "defaultMapping": "Default mapping available to the whole collection.", "companyMapping": "Custom mapping for your company." }, "summary": { "oneField": "1 field", "fieldsSuffix": "fields" }, "empty": { "noMappings": "No mappings available for this collection." },
-      "cloneDialog": { "title": "Clone mapping", "label": "New mapping name" }, "confirmDelete": { "title": "Delete mapping", "messagePrefix": "Do you really want to delete the mapping" },
-      "feedback": { "success": { "cloned": "Mapping cloned successfully.", "created": "Mapping created successfully.", "deleted": "Mapping deleted successfully." }, "errors": { "invalidCollection": "Invalid collection.", "identifyCompany": "Could not identify the user's company to create the mapping.", "cloneMapping": "Could not clone the mapping.", "loadMappings": "Could not load the collection mappings.", "createMapping": "Could not create the mapping.", "deleteMapping": "Could not delete the mapping." } }
+      "header": {
+        "eyebrow": "Field mapping",
+        "description": "Select a collection mapping to edit fields or use as a base for cloning."
+      },
+      "fields": { "mapping": "Mapping" },
+      "actions": {
+        "newMapping": "New mapping",
+        "clone": "Clone",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "createFirstMapping": "Create first mapping"
+      },
+      "tooltips": {
+        "defaultMapping": "Default mapping available to the whole collection.",
+        "companyMapping": "Custom mapping for your company."
+      },
+      "summary": {
+        "oneField": "1 field",
+        "fieldsSuffix": "fields"
+      },
+      "empty": { "noMappings": "No mappings available for this collection." },
+      "cloneDialog": {
+        "title": "Clone mapping",
+        "label": "New mapping name"
+      },
+      "confirmDelete": {
+        "title": "Delete mapping",
+        "messagePrefix": "Do you really want to delete the mapping"
+      },
+      "feedback": {
+        "success": {
+          "cloned": "Mapping cloned successfully.",
+          "created": "Mapping created successfully.",
+          "deleted": "Mapping deleted successfully."
+        },
+        "errors": {
+          "invalidCollection": "Invalid collection.",
+          "identifyCompany": "Could not identify the user's company to create the mapping.",
+          "cloneMapping": "Could not clone the mapping.",
+          "loadMappings": "Could not load the collection mappings.",
+          "createMapping": "Could not create the mapping.",
+          "deleteMapping": "Could not delete the mapping."
+        }
+      }
     },
     "mapeamentoList": { "feedback": { "errors": { "loadCollections": "Could not load collections." } } },
-    "novoMapeamentoDialog": { "title": "New mapping", "fields": { "name": "Mapping name", "defaultMapping": "Default mapping" }, "placeholders": { "name": "E.g.: Financial mapping" }, "validation": { "nameRequired": "Enter the mapping name.", "nameMaxLength": "The name must have at most 120 characters." } },
+    "novoMapeamentoDialog": {
+      "title": "New mapping",
+      "fields": {
+        "name": "Mapping name",
+        "defaultMapping": "Default mapping"
+      },
+      "placeholders": { "name": "E.g.: Financial mapping" },
+      "validation": {
+        "nameRequired": "Enter the mapping name.",
+        "nameMaxLength": "The name must have at most 120 characters."
+      }
+    },
     "mapeamentoEditor": {
-      "actions": { "excelPreview": "Excel preview", "addField": "Add field", "cancelChanges": "Cancel changes", "saveAll": "Save all" }, "tooltips": { "uploadExcel": "Upload an Excel file to preview values", "removeField": "Remove field" },
-      "table": { "header": { "fieldName": "Field Name", "excelColumn": "Excel Column", "type": "Type", "format": "Format", "preview": "Preview", "actions": "Actions" } }, "placeholders": { "fieldName": "E.g.: CardCode", "excelColumn": "E.g.: 1", "select": "Select", "format": "E.g.: yyyy-MM-dd" },
-      "fieldTypes": { "string": "Text", "int": "Integer", "double": "Decimal", "datetime": "Date and time", "boolean": "Boolean" }, "empty": { "noFields": "No fields registered for this mapping." }, "preview": { "emptyColumn": "(empty column)" },
-      "validation": { "fieldNameRequired": "Field name is required", "columnIndexPositive": "Index must be a positive number", "duplicateColumnIndex": "Duplicate index in this mapping", "fieldTypeRequired": "Field type is required", "formatRequired": "Format is required for DateTime" },
-      "feedback": { "info": { "noChanges": "No changes to save." }, "success": { "saved": "Mapping fields saved successfully.", "previewLoadedPrefix": "Preview loaded:", "previewLoadedSuffix": "columns detected.", "updated": "Editor updated with the latest fields." }, "errors": { "fixErrors": "Fix the errors before saving.", "saveFields": "Could not save mapping fields.", "emptyExcel": "The Excel file is empty.", "readExcel": "Could not read the Excel file.", "loadFields": "Could not load mapping fields." } }
+      "actions": {
+        "excelPreview": "Excel preview",
+        "addField": "Add field",
+        "cancelChanges": "Cancel changes",
+        "saveAll": "Save all"
+      },
+      "tooltips": {
+        "uploadExcel": "Upload an Excel file to preview values",
+        "removeField": "Remove field"
+      },
+      "table": {
+        "header": {
+          "fieldName": "Field Name",
+          "excelColumn": "Excel Column",
+          "type": "Type",
+          "format": "Format",
+          "preview": "Preview",
+          "actions": "Actions"
+        }
+      },
+      "placeholders": {
+        "fieldName": "E.g.: CardCode",
+        "excelColumn": "E.g.: 1",
+        "select": "Select",
+        "format": "E.g.: yyyy-MM-dd"
+      },
+      "fieldTypes": {
+        "string": "Text",
+        "int": "Integer",
+        "double": "Decimal",
+        "datetime": "Date and time",
+        "boolean": "Boolean"
+      },
+      "empty": { "noFields": "No fields registered for this mapping." },
+      "preview": { "emptyColumn": "(empty column)" },
+      "validation": {
+        "fieldNameRequired": "Field name is required",
+        "columnIndexPositive": "Index must be a positive number",
+        "duplicateColumnIndex": "Duplicate index in this mapping",
+        "fieldTypeRequired": "Field type is required",
+        "formatRequired": "Format is required for DateTime"
+      },
+      "feedback": {
+        "info": { "noChanges": "No changes to save." },
+        "success": {
+          "saved": "Mapping fields saved successfully.",
+          "previewLoadedPrefix": "Preview loaded:",
+          "previewLoadedSuffix": "columns detected.",
+          "updated": "Editor updated with the latest fields."
+        },
+        "errors": {
+          "fixErrors": "Fix the errors before saving.",
+          "saveFields": "Could not save mapping fields.",
+          "emptyExcel": "The Excel file is empty.",
+          "readExcel": "Could not read the Excel file.",
+          "loadFields": "Could not load mapping fields."
+        }
+      }
     }
   },
   "perfilMapeamento": {
-    "common": { "document": "Document", "scope": { "default": "Default", "myCompany": "My company", "company": "Company" }, "loading": { "documents": "Loading documents...", "mappings": "Loading mappings...", "collections": "Loading collections..." }, "actions": { "save": "Save", "saving": "Saving...", "cancel": "Cancel" } },
-    "collectionTypes": { "header": "Header", "line": "Line" },
+    "common": {
+      "document": "Document",
+      "scope": {
+        "default": "Default",
+        "myCompany": "My company",
+        "company": "Company"
+      },
+      "loading": {
+        "documents": "Loading documents...",
+        "mappings": "Loading mappings...",
+        "collections": "Loading collections..."
+      },
+      "actions": {
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel"
+      }
+    },
+    "collectionTypes": {
+      "header": "Header",
+      "line": "Line"
+    },
     "perfilList": {
-      "header": { "title": "Mapping profiles", "description": "Manage profiles that group collection mappings for each document." }, "loading": { "profiles": "Loading profiles..." },
-      "actions": { "newProfile": "New profile", "edit": "Edit", "view": "View", "clone": "Clone", "delete": "Delete", "deleting": "Deleting...", "cancel": "Cancel" }, "table": { "header": { "name": "Name", "type": "Type", "collections": "Collections", "actions": "Actions" }, "paginationAriaLabel": "Mapping profiles list pagination" }, "tooltips": { "defaultProfile": "Default profile cannot be edited" }, "empty": { "noProfiles": "No mapping profile found for this document." },
-      "cloneDialog": { "title": "Clone profile", "label": "New profile name" }, "confirmDelete": { "title": "Delete profile", "messagePrefix": "Do you really want to delete the profile" },
-      "feedback": { "success": { "cloned": "Profile cloned successfully.", "deleted": "Profile deleted successfully." }, "errors": { "cloneProfile": "Could not clone profile.", "deleteProfile": "Could not delete profile.", "loadDocuments": "Could not load documents.", "loadProfiles": "Could not load mapping profiles." } }
+      "header": {
+        "title": "Mapping profiles",
+        "description": "Manage profiles that group collection mappings for each document."
+      },
+      "loading": { "profiles": "Loading profiles..." },
+      "actions": {
+        "newProfile": "New profile",
+        "edit": "Edit",
+        "view": "View",
+        "clone": "Clone",
+        "delete": "Delete",
+        "deleting": "Deleting...",
+        "cancel": "Cancel"
+      },
+      "table": {
+        "header": {
+          "name": "Name",
+          "type": "Type",
+          "collections": "Collections",
+          "actions": "Actions"
+        },
+        "paginationAriaLabel": "Mapping profiles list pagination"
+      },
+      "tooltips": { "defaultProfile": "Default profile cannot be edited" },
+      "empty": { "noProfiles": "No mapping profile found for this document." },
+      "cloneDialog": {
+        "title": "Clone profile",
+        "label": "New profile name"
+      },
+      "confirmDelete": {
+        "title": "Delete profile",
+        "messagePrefix": "Do you really want to delete the profile"
+      },
+      "feedback": {
+        "success": {
+          "cloned": "Profile cloned successfully.",
+          "deleted": "Profile deleted successfully."
+        },
+        "errors": {
+          "cloneProfile": "Could not clone profile.",
+          "deleteProfile": "Could not delete profile.",
+          "loadDocuments": "Could not load documents.",
+          "loadProfiles": "Could not load mapping profiles."
+        }
+      }
     },
     "perfilForm": {
-      "title": { "create": "New mapping profile", "edit": "Edit mapping profile", "view": "View mapping profile" }, "loading": { "profile": "Loading profile..." },
-      "fields": { "profileName": "Profile name", "headerCollection": "Header collection", "headerMapping": "Header mapping", "mapping": "Mapping", "parentCollection": "Parent collection" }, "placeholders": { "profileName": "E.g.: Default import profile" },
-      "sections": { "mappingsByCollection": "Mappings by collection", "headerCollection": "Header collection", "headerCollectionDescription": "Select which header collection should make up the profile.", "lineCollections": "Line collections", "lineCollectionsDescription": "Select the line collections you want to use and set a mapping for each one." }, "lineCollection": { "included": "Collection included in the profile.", "optional": "Optional collection.", "enableMappingHint": "Select the collection to enable the mapping.", "topLevel": "At document level", "parentHint": "Choose another selected line to generate this collection inside it." },
-      "validation": { "profileNameRequired": "Name is required (max. 150 characters).", "documentRequired": "Select a document.", "headerCollectionRequired": "Select a header collection.", "headerMappingRequired": "Select a mapping for the header.", "lineMappingRequired": "Select a mapping for this collection." },
-      "feedback": { "success": { "created": "Profile created successfully.", "updated": "Profile updated successfully." }, "errors": { "saveProfile": "Could not save profile.", "loadDocuments": "Could not load documents.", "loadProfile": "Could not load profile.", "loadCollections": "Could not load collections.", "loadCollectionMappingsPrefix": "Could not load mappings for collection" } }
+      "title": {
+        "create": "New mapping profile",
+        "edit": "Edit mapping profile",
+        "view": "View mapping profile"
+      },
+      "loading": { "profile": "Loading profile..." },
+      "fields": {
+        "profileName": "Profile name",
+        "headerCollection": "Header collection",
+        "headerMapping": "Header mapping",
+        "mapping": "Mapping",
+        "parentCollection": "Parent collection"
+      },
+      "placeholders": { "profileName": "E.g.: Default import profile" },
+      "sections": {
+        "mappingsByCollection": "Mappings by collection",
+        "headerCollection": "Header collection",
+        "headerCollectionDescription": "Select which header collection should make up the profile.",
+        "lineCollections": "Line collections",
+        "lineCollectionsDescription": "Select the line collections you want to use and set a mapping for each one."
+      },
+      "lineCollection": {
+        "included": "Collection included in the profile.",
+        "optional": "Optional collection.",
+        "enableMappingHint": "Select the collection to enable the mapping.",
+        "topLevel": "At document level",
+        "parentHint": "Choose another selected line to generate this collection inside it."
+      },
+      "validation": {
+        "profileNameRequired": "Name is required (max. 150 characters).",
+        "documentRequired": "Select a document.",
+        "headerCollectionRequired": "Select a header collection.",
+        "headerMappingRequired": "Select a mapping for the header.",
+        "lineMappingRequired": "Select a mapping for this collection."
+      },
+      "feedback": {
+        "success": {
+          "created": "Profile created successfully.",
+          "updated": "Profile updated successfully."
+        },
+        "errors": {
+          "saveProfile": "Could not save profile.",
+          "loadDocuments": "Could not load documents.",
+          "loadProfile": "Could not load profile.",
+          "loadCollections": "Could not load collections.",
+          "loadCollectionMappingsPrefix": "Could not load mappings for collection"
+        }
+      }
+    }
+  },
+  "processamento": {
+    "common": {
+      "file": "File",
+      "date": "Date",
+      "document": "Document",
+      "statusLabel": "Status",
+      "total": "Total",
+      "success": "Success",
+      "errors": "Errors",
+      "ignored": "Ignored",
+      "actions": "Actions",
+      "scope": {
+        "default": "Default",
+        "company": "Company"
+      },
+      "status": {
+        "processing": "Processing",
+        "success": "Success",
+        "error": "Error",
+        "ignored": "Ignored"
+      }
+    },
+    "processamentoHome": {
+      "eyebrow": "Domain",
+      "title": "Processing",
+      "description": "Structure prepared for reusable components, services, and models in the processing domain."
+    },
+    "processamentoList": {
+      "header": { "title": "Processings" },
+      "filters": {
+        "status": "Filter by status",
+        "all": "All"
+      },
+      "actions": { "newImport": "New import" },
+      "tooltips": { "viewDetails": "View details" },
+      "empty": { "noProcessings": "No processing found." },
+      "table": { "paginationAriaLabel": "Processings list pagination" },
+      "feedback": { "errors": { "loadProcessings": "Could not load processings." } }
+    },
+    "processamentoUpload": {
+      "title": "Import spreadsheet",
+      "fields": { "mappingProfile": "Mapping profile" },
+      "loading": { "profiles": "Loading profiles..." },
+      "actions": {
+        "selectFile": "Select .xlsx file",
+        "process": "Process"
+      },
+      "empty": {
+        "noProfilesForDocument": "No profile available for this document.",
+        "noFileSelected": "No file selected"
+      },
+      "summary": {
+        "oneCollection": "1 collection",
+        "collectionsSuffix": "collections"
+      },
+      "tooltips": {
+        "defaultProfile": "Default profile available to all users.",
+        "companyProfile": "Custom profile for the company."
+      },
+      "validation": {
+        "documentRequired": "Select a document.",
+        "profileRequired": "Select a mapping profile."
+      },
+      "feedback": {
+        "success": { "uploaded": "File sent for processing." },
+        "info": { "noProfiles": "No mapping profile available for the selected document." },
+        "errors": {
+          "invalidFile": "Select a valid .xlsx file.",
+          "companyNotFound": "Company not identified in the session.",
+          "uploadFile": "Could not send file for processing.",
+          "loadDocuments": "Could not load documents.",
+          "loadProfiles": "Could not load mapping profiles."
+        }
+      }
+    },
+    "processamentoDetalhe": {
+      "header": { "title": "Processing details" },
+      "actions": {
+        "back": "Back",
+        "reprocess": "Reprocess",
+        "downloadErrors": "Download errors"
+      },
+      "info": {
+        "totalRecords": "Total records",
+        "progress": "Progress"
+      },
+      "itemsLog": { "title": "Items log" },
+      "table": {
+        "header": {
+          "line": "Line",
+          "message": "Message"
+        },
+        "paginationAriaLabel": "Processing items pagination"
+      },
+      "tooltips": { "viewJson": "View JSON" },
+      "empty": { "noItems": "No items found." },
+      "feedback": {
+        "info": { "noErrorRecords": "No records with errors." },
+        "errors": {
+          "loadProcessing": "Could not load processing.",
+          "loadItems": "Could not load items."
+        }
+      }
+    },
+    "jsonDialog": {
+      "line": "Line",
+      "sentJson": "Sent JSON",
+      "returnJson": "Return JSON",
+      "close": "Close"
+    }
+  },
+  "layout": {
+    "sideMenu": {
+      "header": {
+        "title": "Main menu",
+        "description": "Quickly access the system forms."
+      },
+      "navAriaLabel": "Side menu",
+      "items": {
+        "dashboard": {
+          "label": "Dashboard",
+          "description": "Initial overview"
+        },
+        "companies": {
+          "label": "Companies",
+          "description": "Manage records and settings."
+        },
+        "users": {
+          "label": "Users",
+          "description": "Manage access and company links."
+        },
+        "documents": {
+          "label": "Documents",
+          "description": "Centralize the document flow."
+        },
+        "collections": {
+          "label": "Collections",
+          "description": "Organize reusable sets."
+        },
+        "mappingProfile": {
+          "label": "Mapping profile",
+          "description": "Group mappings by document."
+        },
+        "processing": {
+          "label": "Processing",
+          "description": "Track executions and steps."
+        }
+      }
     }
   }
 }

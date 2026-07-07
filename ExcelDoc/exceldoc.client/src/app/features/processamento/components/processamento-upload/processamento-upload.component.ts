@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { Documento } from '../../../documentos/models/documento.model';
 import { DocumentoService } from '../../../documentos/services/documento.service';
 import { PerfilMapeamento } from '../../../perfil-mapeamento/models/perfil-mapeamento.model';
@@ -35,7 +36,8 @@ export class ProcessamentoUploadComponent implements OnInit {
     private readonly perfilService: PerfilMapeamentoService,
     private readonly processamentoService: ProcessamentoService,
     private readonly notificationService: NotificationService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -86,7 +88,7 @@ export class ProcessamentoUploadComponent implements OnInit {
       const file = input.files[0];
       const allowedTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
       if (!allowedTypes.includes(file.type)) {
-        this.notificationService.showError('Selecione um arquivo .xlsx válido.');
+        this.notificationService.showError(this.translate.instant('processamento.processamentoUpload.feedback.errors.invalidFile'));
         this.selectedFile = null;
         return;
       }
@@ -105,7 +107,7 @@ export class ProcessamentoUploadComponent implements OnInit {
     const empresaId = this.empresaId;
 
     if (!empresaId) {
-      this.notificationService.showError('Empresa não identificada na sessão.');
+      this.notificationService.showError(this.translate.instant('processamento.processamentoUpload.feedback.errors.companyNotFound'));
       return;
     }
 
@@ -117,11 +119,11 @@ export class ProcessamentoUploadComponent implements OnInit {
       )
       .subscribe({
         next: (result) => {
-          this.notificationService.showSuccess('Arquivo enviado para processamento.');
+          this.notificationService.showSuccess(this.translate.instant('processamento.processamentoUpload.feedback.success.uploaded'));
           void this.router.navigate(['/processamento', result.id]);
         },
         error: (error: HttpErrorResponse) => {
-          const message = error.error?.detail ?? 'Erro ao enviar arquivo para processamento.';
+          const message = error.error?.detail ?? this.translate.instant('processamento.processamentoUpload.feedback.errors.uploadFile');
           this.notificationService.showError(message);
         }
       });
@@ -132,18 +134,22 @@ export class ProcessamentoUploadComponent implements OnInit {
   }
 
   getPerfilBadgeLabel(perfil: PerfilMapeamento): string {
-    return perfil.isPadrao ? 'Padrão' : 'Empresa';
+    return perfil.isPadrao
+      ? this.translate.instant('processamento.common.scope.default')
+      : this.translate.instant('processamento.common.scope.company');
   }
 
   getPerfilTooltip(perfil: PerfilMapeamento): string {
     return perfil.isPadrao
-      ? 'Perfil padrão disponível para todos os usuários.'
-      : 'Perfil customizado para a empresa.';
+      ? this.translate.instant('processamento.processamentoUpload.tooltips.defaultProfile')
+      : this.translate.instant('processamento.processamentoUpload.tooltips.companyProfile');
   }
 
   getItensQuantidadeLabel(perfil: PerfilMapeamento): string {
     const quantidade = perfil.itens?.length ?? 0;
-    return quantidade === 1 ? '1 coleção' : `${quantidade} coleções`;
+    return quantidade === 1
+      ? this.translate.instant('processamento.processamentoUpload.summary.oneCollection')
+      : `${quantidade} ${this.translate.instant('processamento.processamentoUpload.summary.collectionsSuffix')}`;
   }
 
   private loadDocumentos(): void {
@@ -158,7 +164,7 @@ export class ProcessamentoUploadComponent implements OnInit {
           this.documentos = docs;
         },
         error: () => {
-          this.notificationService.showError('Erro ao carregar documentos.');
+          this.notificationService.showError(this.translate.instant('processamento.processamentoUpload.feedback.errors.loadDocuments'));
         }
       });
   }
@@ -174,11 +180,11 @@ export class ProcessamentoUploadComponent implements OnInit {
         next: (perfis) => {
           this.perfisDisponiveis = perfis;
           if (!perfis.length) {
-            this.notificationService.showInfo('Nenhum perfil de mapeamento disponível para o documento selecionado.');
+            this.notificationService.showInfo(this.translate.instant('processamento.processamentoUpload.feedback.info.noProfiles'));
           }
         },
         error: () => {
-          this.notificationService.showError('Falha ao carregar perfis de mapeamento.');
+          this.notificationService.showError(this.translate.instant('processamento.processamentoUpload.feedback.errors.loadProfiles'));
         }
       });
   }

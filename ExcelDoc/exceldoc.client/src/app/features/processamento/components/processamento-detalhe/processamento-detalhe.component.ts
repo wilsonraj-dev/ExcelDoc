@@ -8,6 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, switchMap, timer } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TranslateService } from '../../../../core/services/translate.service';
 import { Processamento, ProcessamentoItem } from '../../models/processamento.model';
 import { ProcessamentoService } from '../../services/processamento.service';
 import { JsonDialogComponent, JsonDialogData } from '../json-dialog/json-dialog.component';
@@ -61,7 +62,8 @@ export class ProcessamentoDetalheComponent implements OnInit {
     private readonly router: Router,
     private readonly dialog: MatDialog,
     private readonly processamentoService: ProcessamentoService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly translate: TranslateService
   ) { }
 
   ngOnInit(): void {
@@ -72,7 +74,7 @@ export class ProcessamentoDetalheComponent implements OnInit {
   }
 
   get isProcessando(): boolean {
-    return this.getProcessamentoStatusLabel(this.processamento?.status) === 'Processando';
+    return this.getProcessamentoStatusValue(this.processamento?.status) === 'Processando';
   }
 
   get progressoPercentual(): number {
@@ -103,9 +105,9 @@ export class ProcessamentoDetalheComponent implements OnInit {
   }
 
   baixarErros(): void {
-    const erros = this.itensDataSource.data.filter((i) => this.getItemStatusLabel(i.status) === 'Erro');
+    const erros = this.itensDataSource.data.filter((i) => this.getItemStatusValue(i.status) === 'Erro');
     if (erros.length === 0) {
-      this.notificationService.showInfo('Nenhum registro com erro.');
+      this.notificationService.showInfo(this.translate.instant('processamento.processamentoDetalhe.feedback.info.noErrorRecords'));
       return;
     }
 
@@ -123,13 +125,14 @@ export class ProcessamentoDetalheComponent implements OnInit {
       return '—';
     }
 
-    return ProcessamentoDetalheComponent.processamentoStatusMap[String(status)] ?? String(status);
+    const value = this.getProcessamentoStatusValue(status);
+    return this.translateStatus(value);
   }
 
   getProcessamentoStatusClass(status: string | number | undefined): string {
-    return this.getProcessamentoStatusLabel(status) === 'Erro'
+    return this.getProcessamentoStatusValue(status) === 'Erro'
       ? 'status-erro'
-      : this.getProcessamentoStatusLabel(status) === 'Sucesso'
+      : this.getProcessamentoStatusValue(status) === 'Sucesso'
         ? 'status-sucesso'
         : 'status-processando';
   }
@@ -139,16 +142,17 @@ export class ProcessamentoDetalheComponent implements OnInit {
       return '—';
     }
 
-    return ProcessamentoDetalheComponent.itemStatusMap[String(status)] ?? String(status);
+    const value = this.getItemStatusValue(status);
+    return this.translateStatus(value);
   }
 
   getItemStatusClass(status: string | number): string {
-    const label = this.getItemStatusLabel(status);
-    if (label === 'Erro') {
+    const value = this.getItemStatusValue(status);
+    if (value === 'Erro') {
       return 'status-erro';
     }
 
-    return label === 'Ignorado' ? 'status-ignorado' : 'status-sucesso';
+    return value === 'Ignorado' ? 'status-ignorado' : 'status-sucesso';
   }
 
   private loadProcessamento(): void {
@@ -161,7 +165,7 @@ export class ProcessamentoDetalheComponent implements OnInit {
       .subscribe({
         next: (data) => { this.processamento = data; },
         error: (error: HttpErrorResponse) => {
-          const msg = error.error?.detail ?? 'Erro ao carregar processamento.';
+          const msg = error.error?.detail ?? this.translate.instant('processamento.processamentoDetalhe.feedback.errors.loadProcessing');
           this.notificationService.showError(msg);
         }
       });
@@ -177,7 +181,7 @@ export class ProcessamentoDetalheComponent implements OnInit {
       .subscribe({
         next: (data) => { this.itensDataSource.data = data.items; },
         error: (error: HttpErrorResponse) => {
-          const msg = error.error?.detail ?? 'Erro ao carregar itens.';
+          const msg = error.error?.detail ?? this.translate.instant('processamento.processamentoDetalhe.feedback.errors.loadItems');
           this.notificationService.showError(msg);
         }
       });
@@ -191,11 +195,42 @@ export class ProcessamentoDetalheComponent implements OnInit {
     ).subscribe({
       next: (data) => {
         this.processamento = data;
-        if (this.getProcessamentoStatusLabel(data.status) !== 'Processando') {
+        if (this.getProcessamentoStatusValue(data.status) !== 'Processando') {
           this.stopPolling$.next();
           this.loadItens();
         }
       }
     });
+  }
+
+  private getProcessamentoStatusValue(status: string | number | undefined): string {
+    if (status === undefined || status === null) {
+      return '';
+    }
+
+    return ProcessamentoDetalheComponent.processamentoStatusMap[String(status)] ?? String(status);
+  }
+
+  private getItemStatusValue(status: string | number | undefined): string {
+    if (status === undefined || status === null) {
+      return '';
+    }
+
+    return ProcessamentoDetalheComponent.itemStatusMap[String(status)] ?? String(status);
+  }
+
+  private translateStatus(status: string): string {
+    switch (status) {
+      case 'Processando':
+        return this.translate.instant('processamento.common.status.processing');
+      case 'Sucesso':
+        return this.translate.instant('processamento.common.status.success');
+      case 'Erro':
+        return this.translate.instant('processamento.common.status.error');
+      case 'Ignorado':
+        return this.translate.instant('processamento.common.status.ignored');
+      default:
+        return status;
+    }
   }
 }

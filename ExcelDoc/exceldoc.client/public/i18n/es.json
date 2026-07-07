@@ -1,4 +1,9 @@
 {
+  "app-component": {
+    "user": "Usuario",
+    "company": "Empresa",
+    "profile": "Perfil"
+  },
   "companySettings": {
     "table": {
       "header": {
@@ -37,8 +42,7 @@
       "selectCompany": "Seleccione una empresa para configurar.",
       "noLinkedCompany": "El usuario actual no está vinculado a una empresa.",
       "selectedUnavailable": "La empresa seleccionada no está disponible para el usuario actual."
-    }
-    ,
+    },
     "error": {
       "invalidCompany": "Empresa inválida para la visualización de la configuración."
     },
@@ -353,39 +357,408 @@
     }
   },
   "mapeamento": {
-    "common": { "collectionNumberPrefix": "Colección #", "company": "Empresa", "readOnly": "Solo lectura", "scope": { "default": "Predeterminado", "myCompany": "Mi empresa" }, "actions": { "cancel": "Cancelar", "create": "Crear" } },
+    "common": {
+      "collectionNumberPrefix": "Colección #",
+      "company": "Empresa",
+      "readOnly": "Solo lectura",
+      "scope": {
+        "default": "Predeterminado",
+        "myCompany": "Mi empresa"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "create": "Crear"
+      }
+    },
     "mapeamentoHome": {
-      "header": { "eyebrow": "Mapeo de campos", "description": "Seleccione un mapeo de la colección para editar los campos o usarlo como base para clonarlo." },
-      "fields": { "mapping": "Mapeo" }, "actions": { "newMapping": "Nuevo mapeo", "clone": "Clonar", "delete": "Eliminar", "cancel": "Cancelar", "createFirstMapping": "Crear primer mapeo" },
-      "tooltips": { "defaultMapping": "Mapeo predeterminado disponible para toda la colección.", "companyMapping": "Mapeo personalizado de su empresa." }, "summary": { "oneField": "1 campo", "fieldsSuffix": "campos" }, "empty": { "noMappings": "No hay mapeos disponibles para esta colección." },
-      "cloneDialog": { "title": "Clonar mapeo", "label": "Nombre del nuevo mapeo" }, "confirmDelete": { "title": "Eliminar mapeo", "messagePrefix": "¿Realmente desea eliminar el mapeo" },
-      "feedback": { "success": { "cloned": "Mapeo clonado con éxito.", "created": "Mapeo creado con éxito.", "deleted": "Mapeo eliminado con éxito." }, "errors": { "invalidCollection": "Colección inválida.", "identifyCompany": "No fue posible identificar la empresa del usuario para crear el mapeo.", "cloneMapping": "No fue posible clonar el mapeo.", "loadMappings": "No fue posible cargar los mapeos de la colección.", "createMapping": "No fue posible crear el mapeo.", "deleteMapping": "No fue posible eliminar el mapeo." } }
+      "header": {
+        "eyebrow": "Mapeo de campos",
+        "description": "Seleccione un mapeo de la colección para editar los campos o usarlo como base para clonarlo."
+      },
+      "fields": { "mapping": "Mapeo" },
+      "actions": {
+        "newMapping": "Nuevo mapeo",
+        "clone": "Clonar",
+        "delete": "Eliminar",
+        "cancel": "Cancelar",
+        "createFirstMapping": "Crear primer mapeo"
+      },
+      "tooltips": {
+        "defaultMapping": "Mapeo predeterminado disponible para toda la colección.",
+        "companyMapping": "Mapeo personalizado de su empresa."
+      },
+      "summary": {
+        "oneField": "1 campo",
+        "fieldsSuffix": "campos"
+      },
+      "empty": { "noMappings": "No hay mapeos disponibles para esta colección." },
+      "cloneDialog": {
+        "title": "Clonar mapeo",
+        "label": "Nombre del nuevo mapeo"
+      },
+      "confirmDelete": {
+        "title": "Eliminar mapeo",
+        "messagePrefix": "¿Realmente desea eliminar el mapeo"
+      },
+      "feedback": {
+        "success": {
+          "cloned": "Mapeo clonado con éxito.",
+          "created": "Mapeo creado con éxito.",
+          "deleted": "Mapeo eliminado con éxito."
+        },
+        "errors": {
+          "invalidCollection": "Colección inválida.",
+          "identifyCompany": "No fue posible identificar la empresa del usuario para crear el mapeo.",
+          "cloneMapping": "No fue posible clonar el mapeo.",
+          "loadMappings": "No fue posible cargar los mapeos de la colección.",
+          "createMapping": "No fue posible crear el mapeo.",
+          "deleteMapping": "No fue posible eliminar el mapeo."
+        }
+      }
     },
     "mapeamentoList": { "feedback": { "errors": { "loadCollections": "No fue posible cargar las colecciones." } } },
-    "novoMapeamentoDialog": { "title": "Nuevo mapeo", "fields": { "name": "Nombre del mapeo", "defaultMapping": "Mapeo predeterminado" }, "placeholders": { "name": "Ej.: Mapeo financiero" }, "validation": { "nameRequired": "Informe el nombre del mapeo.", "nameMaxLength": "El nombre debe tener como máximo 120 caracteres." } },
+    "novoMapeamentoDialog": {
+      "title": "Nuevo mapeo",
+      "fields": {
+        "name": "Nombre del mapeo",
+        "defaultMapping": "Mapeo predeterminado"
+      },
+      "placeholders": { "name": "Ej.: Mapeo financiero" },
+      "validation": {
+        "nameRequired": "Informe el nombre del mapeo.",
+        "nameMaxLength": "El nombre debe tener como máximo 120 caracteres."
+      }
+    },
     "mapeamentoEditor": {
-      "actions": { "excelPreview": "Vista previa de Excel", "addField": "Agregar campo", "cancelChanges": "Cancelar cambios", "saveAll": "Guardar todo" }, "tooltips": { "uploadExcel": "Cargar un archivo Excel para ver valores", "removeField": "Eliminar campo" },
-      "table": { "header": { "fieldName": "Nombre del campo", "excelColumn": "Columna Excel", "type": "Tipo", "format": "Formato", "preview": "Vista previa", "actions": "Acciones" } }, "placeholders": { "fieldName": "Ej.: CardCode", "excelColumn": "Ej.: 1", "select": "Seleccione", "format": "Ej.: yyyy-MM-dd" },
-      "fieldTypes": { "string": "Texto", "int": "Entero", "double": "Decimal", "datetime": "Fecha y hora", "boolean": "Booleano" }, "empty": { "noFields": "No hay campos registrados para este mapeo." }, "preview": { "emptyColumn": "(columna vacía)" },
-      "validation": { "fieldNameRequired": "El nombre del campo es obligatorio", "columnIndexPositive": "El índice debe ser un número positivo", "duplicateColumnIndex": "Índice duplicado en este mapeo", "fieldTypeRequired": "El tipo de campo es obligatorio", "formatRequired": "El formato es obligatorio para DateTime" },
-      "feedback": { "info": { "noChanges": "No hay cambios para guardar." }, "success": { "saved": "Campos del mapeo guardados con éxito.", "previewLoadedPrefix": "Vista previa cargada:", "previewLoadedSuffix": "columnas detectadas.", "updated": "Editor actualizado con los campos más recientes." }, "errors": { "fixErrors": "Corrija los errores antes de guardar.", "saveFields": "No fue posible guardar los campos del mapeo.", "emptyExcel": "El archivo Excel está vacío.", "readExcel": "No fue posible leer el archivo Excel.", "loadFields": "No fue posible cargar los campos del mapeo." } }
+      "actions": {
+        "excelPreview": "Vista previa de Excel",
+        "addField": "Agregar campo",
+        "cancelChanges": "Cancelar cambios",
+        "saveAll": "Guardar todo"
+      },
+      "tooltips": {
+        "uploadExcel": "Cargar un archivo Excel para ver valores",
+        "removeField": "Eliminar campo"
+      },
+      "table": {
+        "header": {
+          "fieldName": "Nombre del campo",
+          "excelColumn": "Columna Excel",
+          "type": "Tipo",
+          "format": "Formato",
+          "preview": "Vista previa",
+          "actions": "Acciones"
+        }
+      },
+      "placeholders": {
+        "fieldName": "Ej.: CardCode",
+        "excelColumn": "Ej.: 1",
+        "select": "Seleccione",
+        "format": "Ej.: yyyy-MM-dd"
+      },
+      "fieldTypes": {
+        "string": "Texto",
+        "int": "Entero",
+        "double": "Decimal",
+        "datetime": "Fecha y hora",
+        "boolean": "Booleano"
+      },
+      "empty": { "noFields": "No hay campos registrados para este mapeo." },
+      "preview": { "emptyColumn": "(columna vacía)" },
+      "validation": {
+        "fieldNameRequired": "El nombre del campo es obligatorio",
+        "columnIndexPositive": "El índice debe ser un número positivo",
+        "duplicateColumnIndex": "Índice duplicado en este mapeo",
+        "fieldTypeRequired": "El tipo de campo es obligatorio",
+        "formatRequired": "El formato es obligatorio para DateTime"
+      },
+      "feedback": {
+        "info": { "noChanges": "No hay cambios para guardar." },
+        "success": {
+          "saved": "Campos del mapeo guardados con éxito.",
+          "previewLoadedPrefix": "Vista previa cargada:",
+          "previewLoadedSuffix": "columnas detectadas.",
+          "updated": "Editor actualizado con los campos más recientes."
+        },
+        "errors": {
+          "fixErrors": "Corrija los errores antes de guardar.",
+          "saveFields": "No fue posible guardar los campos del mapeo.",
+          "emptyExcel": "El archivo Excel está vacío.",
+          "readExcel": "No fue posible leer el archivo Excel.",
+          "loadFields": "No fue posible cargar los campos del mapeo."
+        }
+      }
     }
   },
   "perfilMapeamento": {
-    "common": { "document": "Documento", "scope": { "default": "Predeterminado", "myCompany": "Mi empresa", "company": "Empresa" }, "loading": { "documents": "Cargando documentos...", "mappings": "Cargando mapeos...", "collections": "Cargando colecciones..." }, "actions": { "save": "Guardar", "saving": "Guardando...", "cancel": "Cancelar" } },
-    "collectionTypes": { "header": "Encabezado", "line": "Línea" },
+    "common": {
+      "document": "Documento",
+      "scope": {
+        "default": "Predeterminado",
+        "myCompany": "Mi empresa",
+        "company": "Empresa"
+      },
+      "loading": {
+        "documents": "Cargando documentos...",
+        "mappings": "Cargando mapeos...",
+        "collections": "Cargando colecciones..."
+      },
+      "actions": {
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "cancel": "Cancelar"
+      }
+    },
+    "collectionTypes": {
+      "header": "Encabezado",
+      "line": "Línea"
+    },
     "perfilList": {
-      "header": { "title": "Perfiles de mapeo", "description": "Administre perfiles que agrupan mapeos por colección para cada documento." }, "loading": { "profiles": "Cargando perfiles..." },
-      "actions": { "newProfile": "Nuevo perfil", "edit": "Editar", "view": "Visualizar", "clone": "Clonar", "delete": "Eliminar", "deleting": "Eliminando...", "cancel": "Cancelar" }, "table": { "header": { "name": "Nombre", "type": "Tipo", "collections": "Colecciones", "actions": "Acciones" }, "paginationAriaLabel": "Paginación de la lista de perfiles de mapeo" }, "tooltips": { "defaultProfile": "El perfil predeterminado no se puede editar" }, "empty": { "noProfiles": "No se encontró ningún perfil de mapeo para este documento." },
-      "cloneDialog": { "title": "Clonar perfil", "label": "Nombre del nuevo perfil" }, "confirmDelete": { "title": "Eliminar perfil", "messagePrefix": "¿Realmente desea eliminar el perfil" },
-      "feedback": { "success": { "cloned": "Perfil clonado con éxito.", "deleted": "Perfil eliminado con éxito." }, "errors": { "cloneProfile": "No fue posible clonar el perfil.", "deleteProfile": "No fue posible eliminar el perfil.", "loadDocuments": "No fue posible cargar los documentos.", "loadProfiles": "No fue posible cargar los perfiles de mapeo." } }
+      "header": {
+        "title": "Perfiles de mapeo",
+        "description": "Administre perfiles que agrupan mapeos por colección para cada documento."
+      },
+      "loading": { "profiles": "Cargando perfiles..." },
+      "actions": {
+        "newProfile": "Nuevo perfil",
+        "edit": "Editar",
+        "view": "Visualizar",
+        "clone": "Clonar",
+        "delete": "Eliminar",
+        "deleting": "Eliminando...",
+        "cancel": "Cancelar"
+      },
+      "table": {
+        "header": {
+          "name": "Nombre",
+          "type": "Tipo",
+          "collections": "Colecciones",
+          "actions": "Acciones"
+        },
+        "paginationAriaLabel": "Paginación de la lista de perfiles de mapeo"
+      },
+      "tooltips": { "defaultProfile": "El perfil predeterminado no se puede editar" },
+      "empty": { "noProfiles": "No se encontró ningún perfil de mapeo para este documento." },
+      "cloneDialog": {
+        "title": "Clonar perfil",
+        "label": "Nombre del nuevo perfil"
+      },
+      "confirmDelete": {
+        "title": "Eliminar perfil",
+        "messagePrefix": "¿Realmente desea eliminar el perfil"
+      },
+      "feedback": {
+        "success": {
+          "cloned": "Perfil clonado con éxito.",
+          "deleted": "Perfil eliminado con éxito."
+        },
+        "errors": {
+          "cloneProfile": "No fue posible clonar el perfil.",
+          "deleteProfile": "No fue posible eliminar el perfil.",
+          "loadDocuments": "No fue posible cargar los documentos.",
+          "loadProfiles": "No fue posible cargar los perfiles de mapeo."
+        }
+      }
     },
     "perfilForm": {
-      "title": { "create": "Nuevo perfil de mapeo", "edit": "Editar perfil de mapeo", "view": "Visualizar perfil de mapeo" }, "loading": { "profile": "Cargando perfil..." },
-      "fields": { "profileName": "Nombre del perfil", "headerCollection": "Colección de encabezado", "headerMapping": "Mapeo de encabezado", "mapping": "Mapeo", "parentCollection": "Colección padre" }, "placeholders": { "profileName": "Ej.: Perfil predeterminado de importación" },
-      "sections": { "mappingsByCollection": "Mapeos por colección", "headerCollection": "Colección de encabezado", "headerCollectionDescription": "Seleccione qué colección de tipo encabezado debe componer el perfil.", "lineCollections": "Colecciones de línea", "lineCollectionsDescription": "Marque las colecciones de línea que desea utilizar y defina un mapeo para cada una." }, "lineCollection": { "included": "Colección incluida en el perfil.", "optional": "Colección opcional.", "enableMappingHint": "Seleccione la colección para habilitar el mapeo.", "topLevel": "En el nivel del documento", "parentHint": "Elija otra línea seleccionada para generar esta colección dentro de ella." },
-      "validation": { "profileNameRequired": "El nombre es obligatorio (máx. 150 caracteres).", "documentRequired": "Seleccione un documento.", "headerCollectionRequired": "Seleccione una colección de encabezado.", "headerMappingRequired": "Seleccione un mapeo para el encabezado.", "lineMappingRequired": "Seleccione un mapeo para esta colección." },
-      "feedback": { "success": { "created": "Perfil creado con éxito.", "updated": "Perfil actualizado con éxito." }, "errors": { "saveProfile": "No fue posible guardar el perfil.", "loadDocuments": "No fue posible cargar los documentos.", "loadProfile": "No fue posible cargar el perfil.", "loadCollections": "No fue posible cargar las colecciones.", "loadCollectionMappingsPrefix": "No fue posible cargar los mapeos de la colección" } }
+      "title": {
+        "create": "Nuevo perfil de mapeo",
+        "edit": "Editar perfil de mapeo",
+        "view": "Visualizar perfil de mapeo"
+      },
+      "loading": { "profile": "Cargando perfil..." },
+      "fields": {
+        "profileName": "Nombre del perfil",
+        "headerCollection": "Colección de encabezado",
+        "headerMapping": "Mapeo de encabezado",
+        "mapping": "Mapeo",
+        "parentCollection": "Colección padre"
+      },
+      "placeholders": { "profileName": "Ej.: Perfil predeterminado de importación" },
+      "sections": {
+        "mappingsByCollection": "Mapeos por colección",
+        "headerCollection": "Colección de encabezado",
+        "headerCollectionDescription": "Seleccione qué colección de tipo encabezado debe componer el perfil.",
+        "lineCollections": "Colecciones de línea",
+        "lineCollectionsDescription": "Marque las colecciones de línea que desea utilizar y defina un mapeo para cada una."
+      },
+      "lineCollection": {
+        "included": "Colección incluida en el perfil.",
+        "optional": "Colección opcional.",
+        "enableMappingHint": "Seleccione la colección para habilitar el mapeo.",
+        "topLevel": "En el nivel del documento",
+        "parentHint": "Elija otra línea seleccionada para generar esta colección dentro de ella."
+      },
+      "validation": {
+        "profileNameRequired": "El nombre es obligatorio (máx. 150 caracteres).",
+        "documentRequired": "Seleccione un documento.",
+        "headerCollectionRequired": "Seleccione una colección de encabezado.",
+        "headerMappingRequired": "Seleccione un mapeo para el encabezado.",
+        "lineMappingRequired": "Seleccione un mapeo para esta colección."
+      },
+      "feedback": {
+        "success": {
+          "created": "Perfil creado con éxito.",
+          "updated": "Perfil actualizado con éxito."
+        },
+        "errors": {
+          "saveProfile": "No fue posible guardar el perfil.",
+          "loadDocuments": "No fue posible cargar los documentos.",
+          "loadProfile": "No fue posible cargar el perfil.",
+          "loadCollections": "No fue posible cargar las colecciones.",
+          "loadCollectionMappingsPrefix": "No fue posible cargar los mapeos de la colección"
+        }
+      }
+    }
+  },
+  "processamento": {
+    "common": {
+      "file": "Archivo",
+      "date": "Fecha",
+      "document": "Documento",
+      "statusLabel": "Estado",
+      "total": "Total",
+      "success": "Éxito",
+      "errors": "Errores",
+      "ignored": "Ignorados",
+      "actions": "Acciones",
+      "scope": {
+        "default": "Predeterminado",
+        "company": "Empresa"
+      },
+      "status": {
+        "processing": "Procesando",
+        "success": "Éxito",
+        "error": "Error",
+        "ignored": "Ignorado"
+      }
+    },
+    "processamentoHome": {
+      "eyebrow": "Dominio",
+      "title": "Procesamiento",
+      "description": "Estructura preparada para componentes reutilizables, servicios y modelos del dominio de procesamiento."
+    },
+    "processamentoList": {
+      "header": { "title": "Procesamientos" },
+      "filters": {
+        "status": "Filtrar por estado",
+        "all": "Todos"
+      },
+      "actions": { "newImport": "Nueva importación" },
+      "tooltips": { "viewDetails": "Ver detalles" },
+      "empty": { "noProcessings": "No se encontró ningún procesamiento." },
+      "table": { "paginationAriaLabel": "Paginación de la lista de procesamientos" },
+      "feedback": { "errors": { "loadProcessings": "No fue posible cargar los procesamientos." } }
+    },
+    "processamentoUpload": {
+      "title": "Importar planilla",
+      "fields": { "mappingProfile": "Perfil de mapeo" },
+      "loading": { "profiles": "Cargando perfiles..." },
+      "actions": {
+        "selectFile": "Seleccionar archivo .xlsx",
+        "process": "Procesar"
+      },
+      "empty": {
+        "noProfilesForDocument": "No hay perfiles disponibles para este documento.",
+        "noFileSelected": "Ningún archivo seleccionado"
+      },
+      "summary": {
+        "oneCollection": "1 colección",
+        "collectionsSuffix": "colecciones"
+      },
+      "tooltips": {
+        "defaultProfile": "Perfil predeterminado disponible para todos los usuarios.",
+        "companyProfile": "Perfil personalizado para la empresa."
+      },
+      "validation": {
+        "documentRequired": "Seleccione un documento.",
+        "profileRequired": "Seleccione un perfil de mapeo."
+      },
+      "feedback": {
+        "success": { "uploaded": "Archivo enviado para procesamiento." },
+        "info": { "noProfiles": "No hay perfiles de mapeo disponibles para el documento seleccionado." },
+        "errors": {
+          "invalidFile": "Seleccione un archivo .xlsx válido.",
+          "companyNotFound": "Empresa no identificada en la sesión.",
+          "uploadFile": "No fue posible enviar el archivo para procesamiento.",
+          "loadDocuments": "No fue posible cargar los documentos.",
+          "loadProfiles": "No fue posible cargar los perfiles de mapeo."
+        }
+      }
+    },
+    "processamentoDetalhe": {
+      "header": { "title": "Detalles del procesamiento" },
+      "actions": {
+        "back": "Volver",
+        "reprocess": "Reprocesar",
+        "downloadErrors": "Descargar errores"
+      },
+      "info": {
+        "totalRecords": "Total registros",
+        "progress": "Progreso"
+      },
+      "itemsLog": { "title": "Log de ítems" },
+      "table": {
+        "header": {
+          "line": "Línea",
+          "message": "Mensaje"
+        },
+        "paginationAriaLabel": "Paginación de los ítems del procesamiento"
+      },
+      "tooltips": { "viewJson": "Ver JSON" },
+      "empty": { "noItems": "No se encontró ningún ítem." },
+      "feedback": {
+        "info": { "noErrorRecords": "Ningún registro con error." },
+        "errors": {
+          "loadProcessing": "No fue posible cargar el procesamiento.",
+          "loadItems": "No fue posible cargar los ítems."
+        }
+      }
+    },
+    "jsonDialog": {
+      "line": "Línea",
+      "sentJson": "JSON enviado",
+      "returnJson": "JSON de retorno",
+      "close": "Cerrar"
+    }
+  },
+  "layout": {
+    "sideMenu": {
+      "header": {
+        "title": "Menú principal",
+        "description": "Acceda rápidamente a los formularios del sistema."
+      },
+      "navAriaLabel": "Menú lateral",
+      "items": {
+        "dashboard": {
+          "label": "Dashboard",
+          "description": "Vista general inicial"
+        },
+        "companies": {
+          "label": "Empresas",
+          "description": "Administre registros y configuraciones."
+        },
+        "users": {
+          "label": "Usuarios",
+          "description": "Administre accesos y vínculos con empresas."
+        },
+        "documents": {
+          "label": "Documentos",
+          "description": "Centralice el flujo documental."
+        },
+        "collections": {
+          "label": "Colecciones",
+          "description": "Organice conjuntos reutilizables."
+        },
+        "mappingProfile": {
+          "label": "Perfil de mapeo",
+          "description": "Agrupe mapeos por documento."
+        },
+        "processing": {
+          "label": "Procesamiento",
+          "description": "Acompañe ejecuciones y etapas."
+        }
+      }
     }
   }
 }

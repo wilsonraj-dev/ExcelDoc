@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { AUTH_ROLES, AuthService } from '../../core/services/auth.service';
 
 interface MenuItem {
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
   icon: string;
   route: string;
   roles: string[];
@@ -18,55 +18,55 @@ interface MenuItem {
 export class SideMenuComponent {
   readonly menuItems: MenuItem[] = [
     {
-      label: 'Dashboard',
-      description: 'Visão geral inicial',
+      labelKey: 'layout.sideMenu.items.dashboard.label',
+      descriptionKey: 'layout.sideMenu.items.dashboard.description',
       icon: 'dashboard',
       route: '/dashboard',
       roles: [AUTH_ROLES.administrator, AUTH_ROLES.user],
       exact: true
     },
     {
-      label: 'Empresas',
-      description: 'Gerencie cadastros e configurações.',
+      labelKey: 'layout.sideMenu.items.companies.label',
+      descriptionKey: 'layout.sideMenu.items.companies.description',
       icon: 'domain',
       route: '/empresa',
       roles: [AUTH_ROLES.administrator, AUTH_ROLES.user]
     },
     {
-      label: 'Usuários',
-      description: 'Gerencie acessos e vínculos com empresas.',
+      labelKey: 'layout.sideMenu.items.users.label',
+      descriptionKey: 'layout.sideMenu.items.users.description',
       icon: 'group',
       route: '/usuarios',
       roles: [AUTH_ROLES.administrator],
       exact: true
     },
     {
-      label: 'Documentos',
-      description: 'Centralize o fluxo documental.',
+      labelKey: 'layout.sideMenu.items.documents.label',
+      descriptionKey: 'layout.sideMenu.items.documents.description',
       icon: 'description',
       route: '/documentos',
       roles: [AUTH_ROLES.administrator],
       exact: true
     },
     {
-      label: 'Coleções',
-      description: 'Organize conjuntos reutilizáveis.',
+      labelKey: 'layout.sideMenu.items.collections.label',
+      descriptionKey: 'layout.sideMenu.items.collections.description',
       icon: 'folder_copy',
       route: '/colecoes',
       roles: [AUTH_ROLES.administrator, AUTH_ROLES.user],
       exact: true
     },
     {
-      label: 'Perfil de Mapeamento',
-      description: 'Agrupe mapeamentos por documento.',
+      labelKey: 'layout.sideMenu.items.mappingProfile.label',
+      descriptionKey: 'layout.sideMenu.items.mappingProfile.description',
       icon: 'layers',
       route: '/perfil-mapeamento',
       roles: [AUTH_ROLES.administrator, AUTH_ROLES.user],
       exact: true
     },
     {
-      label: 'Processamento',
-      description: 'Acompanhe execuções e etapas.',
+      labelKey: 'layout.sideMenu.items.processing.label',
+      descriptionKey: 'layout.sideMenu.items.processing.description',
       icon: 'settings_slow_motion',
       route: '/processamento',
       roles: [AUTH_ROLES.administrator, AUTH_ROLES.user]

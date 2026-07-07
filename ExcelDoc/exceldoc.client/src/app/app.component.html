@@ -6,17 +6,17 @@
       <mat-toolbar class="topbar" *ngIf="session as currentSession">
         <div class="topbar__session">
           <div class="topbar__session-item">
-            <span>Usuário</span>
+            <span>{{ 'app-component.user' | translate }}</span>
             <strong>{{ currentSession.nomeUsuario }}</strong>
           </div>
 
           <div class="topbar__session-item">
-            <span>Empresa</span>
+            <span>{{ 'app-component.company' | translate }}</span>
             <strong>{{ companyLabel }}</strong>
           </div>
 
           <div class="topbar__session-item">
-            <span>Perfil</span>
+            <span>{{ 'app-component.profile' | translate }}</span>
             <strong>{{ currentSession.tipoUsuario }}</strong>
           </div>
 
