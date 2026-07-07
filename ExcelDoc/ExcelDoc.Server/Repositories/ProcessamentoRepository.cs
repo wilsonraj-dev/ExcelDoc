@@ -100,6 +100,16 @@ namespace ExcelDoc.Server.Repositories
             await _context.ProcessamentoItens.AddAsync(item, cancellationToken);
         }
 
+        public Task<bool> HasDocumentoProcessadoComSucessoAsync(string idDocumentoUnico, CancellationToken cancellationToken = default)
+        {
+            return _context.ProcessamentoItens
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.IdDocumentoUnico == idDocumentoUnico &&
+                    x.Status == StatusProcessamentoItem.Sucesso,
+                    cancellationToken);
+        }
+
         public Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return _context.SaveChangesAsync(cancellationToken);

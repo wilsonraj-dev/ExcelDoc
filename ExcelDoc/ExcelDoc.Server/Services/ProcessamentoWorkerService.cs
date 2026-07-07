@@ -14,9 +14,11 @@ namespace ExcelDoc.Server.Services
         private readonly IEncryptionService _encryptionService;
         private readonly IExcelReaderService _excelReaderService;
         private readonly IJsonBuilderService _jsonBuilderService;
+        private readonly IDocumentoUnicoService _documentoUnicoService;
         private readonly IAgrupamentoService _agrupamentoService;
         private readonly IProcessamentoRepository _processamentoRepository;
         private readonly ISapServiceLayerClient _sapServiceLayerClient;
+        private readonly ISystemClock _systemClock;
         private readonly ILogger<ProcessamentoWorkerService> _logger;
 
         public ProcessamentoWorkerService(
@@ -24,18 +26,22 @@ namespace ExcelDoc.Server.Services
             IEncryptionService encryptionService,
             IExcelReaderService excelReaderService,
             IJsonBuilderService jsonBuilderService,
+            IDocumentoUnicoService documentoUnicoService,
             IAgrupamentoService agrupamentoService,
             IProcessamentoRepository processamentoRepository,
             ISapServiceLayerClient sapServiceLayerClient,
+            ISystemClock systemClock,
             ILogger<ProcessamentoWorkerService> logger)
         {
             _configuracaoRepository = configuracaoRepository;
             _encryptionService = encryptionService;
             _excelReaderService = excelReaderService;
             _jsonBuilderService = jsonBuilderService;
+            _documentoUnicoService = documentoUnicoService;
             _agrupamentoService = agrupamentoService;
             _processamentoRepository = processamentoRepository;
             _sapServiceLayerClient = sapServiceLayerClient;
+            _systemClock = systemClock;
             _logger = logger;
         }
 
@@ -66,26 +72,25 @@ namespace ExcelDoc.Server.Services
                 return;
             }
 
-            var sapSession = await _sapServiceLayerClient.LoginAsync(sapConfig, cancellationToken);
+            await ProcessWithPerfilAsync(processamento, sapConfig, groups, cancellationToken);
 
-            await ProcessWithPerfilAsync(processamento, sapConfig, sapSession, groups, cancellationToken);
-
-            _logger.LogInformation("Processamento {ProcessamentoId} finalizado. Sucesso={TotalSucesso} Erro={TotalErro}",
-                processamento.Id, processamento.TotalSucesso, processamento.TotalErro);
+            _logger.LogInformation("Processamento {ProcessamentoId} finalizado. Sucesso={TotalSucesso} Erro={TotalErro} Ignorado={TotalIgnorado}",
+                processamento.Id, processamento.TotalSucesso, processamento.TotalErro, processamento.TotalIgnorado);
         }
 
         private async Task ProcessWithPerfilAsync(
             Processamento processamento,
             Configuracao sapConfig,
-            Background.SapSession sapSession,
             IReadOnlyList<Background.ExcelDocumentGroup> groups,
             CancellationToken cancellationToken)
         {
             var perfil = processamento.PerfilMapeamento!;
+            Background.SapSession? sapSession = null;
 
             processamento.TotalRegistros = groups.Count;
             processamento.TotalErro = 0;
             processamento.TotalSucesso = 0;
+            processamento.TotalIgnorado = 0;
             processamento.Status = StatusProcessamento.Processando;
             await _processamentoRepository.SaveChangesAsync(cancellationToken);
 
@@ -98,22 +103,49 @@ namespace ExcelDoc.Server.Services
                 var itemLog = new ProcessamentoItem
                 {
                     FK_IdProcessamento = processamento.Id,
+                    IdExcel = group.IdExcel,
                     LinhaExcel = firstRowNumber,
                     JsonEnviado = string.Empty,
-                    Status = StatusProcessamentoItem.Erro
+                    Status = StatusProcessamentoItem.Erro,
+                    DataExecucao = _systemClock.UtcNow
                 };
 
                 try
                 {
                     var payload = _jsonBuilderService.BuildDocumentPayload(perfil, groupRows);
                     var payloadJson = JsonSerializer.Serialize(payload, JsonOptions);
-                    var responseJson = await _sapServiceLayerClient.PostAsync(
-                        sapConfig, sapSession, processamento.Documento.Endpoint, payloadJson, cancellationToken);
-
+                    var idDocumentoUnico = _documentoUnicoService.BuildIdDocumentoUnico(processamento, group, payload);
                     itemLog.JsonEnviado = payloadJson;
-                    itemLog.JsonRetorno = responseJson;
-                    itemLog.Status = StatusProcessamentoItem.Sucesso;
-                    processamento.TotalSucesso++;
+                    itemLog.IdDocumentoUnico = idDocumentoUnico;
+
+                    if (await _processamentoRepository.HasDocumentoProcessadoComSucessoAsync(idDocumentoUnico, cancellationToken))
+                    {
+                        itemLog.JsonRetorno = JsonSerializer.Serialize(new
+                        {
+                            Ignorado = true,
+                            Motivo = "Documento já importado com sucesso.",
+                            group.IdExcel,
+                            IdDocumentoUnico = idDocumentoUnico
+                        }, JsonOptions);
+                        itemLog.Mensagem = "Documento ignorado porque já existe importação anterior com sucesso para o mesmo identificador.";
+                        itemLog.Status = StatusProcessamentoItem.Ignorado;
+                        processamento.TotalIgnorado++;
+
+                        _logger.LogInformation("Documento IdExcel {IdExcel} ignorado por duplicidade no processamento {ProcessamentoId}. IdDocumentoUnico={IdDocumentoUnico}",
+                            group.IdExcel, processamento.Id, idDocumentoUnico);
+                    }
+                    else
+                    {
+                        sapSession ??= await _sapServiceLayerClient.LoginAsync(sapConfig, cancellationToken);
+
+                        var responseJson = await _sapServiceLayerClient.PostAsync(
+                            sapConfig, sapSession, processamento.Documento.Endpoint, payloadJson, cancellationToken);
+
+                        itemLog.JsonRetorno = responseJson;
+                        itemLog.Mensagem = "Documento processado com sucesso.";
+                        itemLog.Status = StatusProcessamentoItem.Sucesso;
+                        processamento.TotalSucesso++;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -123,12 +155,14 @@ namespace ExcelDoc.Server.Services
                         ? GetExceptionData(ex, RequestPayloadKey) ?? JsonSerializer.Serialize(new { group.IdExcel, FirstRow = firstRowNumber, RowCount = groupRows.Count }, JsonOptions)
                         : itemLog.JsonEnviado;
                     itemLog.JsonRetorno ??= GetExceptionData(ex, ResponseBodyKey) ?? ex.Message;
+                    itemLog.Mensagem = ex.Message;
                     processamento.TotalErro++;
 
                     _logger.LogError(ex, "Erro ao processar IdExcel {IdExcel} (linha inicial {LinhaExcel}) do processamento {ProcessamentoId}",
                         group.IdExcel, firstRowNumber, processamento.Id);
                 }
 
+                itemLog.DataFinalizacao = _systemClock.UtcNow;
                 await _processamentoRepository.AddItemAsync(itemLog, cancellationToken);
                 await _processamentoRepository.SaveChangesAsync(cancellationToken);
             }
@@ -146,8 +180,10 @@ namespace ExcelDoc.Server.Services
             processamento.TotalRegistros = 0;
             processamento.TotalSucesso = 0;
             processamento.TotalErro = 1;
+            processamento.TotalIgnorado = 0;
 
             var errorText = exception.ToString();
+            var now = _systemClock.UtcNow;
             await _processamentoRepository.AddItemAsync(new ProcessamentoItem
             {
                 FK_IdProcessamento = processamento.Id,
@@ -159,8 +195,11 @@ namespace ExcelDoc.Server.Services
                     exception.RowNumber
                 }, JsonOptions),
                 JsonRetorno = exception.Message,
+                Mensagem = exception.Message,
                 Erro = errorText.Length > 4000 ? errorText[..4000] : errorText,
-                Status = StatusProcessamentoItem.Erro
+                Status = StatusProcessamentoItem.Erro,
+                DataExecucao = now,
+                DataFinalizacao = now
             }, cancellationToken);
 
             await _processamentoRepository.SaveChangesAsync(cancellationToken);

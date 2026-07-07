@@ -16,6 +16,8 @@ namespace ExcelDoc.Server.Repositories.Interfaces
 
         Task AddItemAsync(ProcessamentoItem item, CancellationToken cancellationToken = default);
 
+        Task<bool> HasDocumentoProcessadoComSucessoAsync(string idDocumentoUnico, CancellationToken cancellationToken = default);
+
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

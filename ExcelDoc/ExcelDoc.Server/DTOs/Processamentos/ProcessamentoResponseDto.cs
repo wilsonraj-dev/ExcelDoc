@@ -32,6 +32,8 @@ namespace ExcelDoc.Server.DTOs.Processamentos
 
         public int TotalErro { get; set; }
 
+        public int TotalIgnorado { get; set; }
+
         public string HashArquivo { get; set; } = string.Empty;
     }
 }

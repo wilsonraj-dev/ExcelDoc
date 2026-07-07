@@ -101,6 +101,7 @@ namespace ExcelDoc.Server.Services
                 DataExecucao = _systemClock.UtcNow,
                 Status = StatusProcessamento.Processando,
                 TotalErro = 0,
+                TotalIgnorado = 0,
                 TotalRegistros = 0,
                 TotalSucesso = 0,
                 HashArquivo = hash
@@ -166,11 +167,16 @@ namespace ExcelDoc.Server.Services
                 Items = result.Items.Select(x => new ProcessamentoItemResponseDto
                 {
                     Id = x.Id,
+                    IdExcel = x.IdExcel,
+                    IdDocumentoUnico = x.IdDocumentoUnico,
                     LinhaExcel = x.LinhaExcel,
                     JsonEnviado = x.JsonEnviado,
                     JsonRetorno = x.JsonRetorno,
+                    Mensagem = x.Mensagem,
                     Erro = x.Erro,
-                    Status = x.Status
+                    Status = x.Status,
+                    DataExecucao = x.DataExecucao,
+                    DataFinalizacao = x.DataFinalizacao
                 }).ToList(),
                 TotalCount = result.TotalCount,
                 PageNumber = pageNumber,
@@ -187,6 +193,7 @@ namespace ExcelDoc.Server.Services
 
             processamento.Status = StatusProcessamento.Erro;
             processamento.TotalErro = Math.Max(1, processamento.TotalErro);
+            var now = _systemClock.UtcNow;
 
             await _processamentoRepository.AddItemAsync(new ProcessamentoItem
             {
@@ -194,8 +201,11 @@ namespace ExcelDoc.Server.Services
                 LinhaExcel = 0,
                 JsonEnviado = GetExceptionData(exception, RequestPayloadKey) ?? JsonSerializer.Serialize(new { processamento.Id }),
                 JsonRetorno = GetExceptionData(exception, ResponseBodyKey) ?? exception.Message,
+                Mensagem = exception.Message,
                 Erro = erroDetalhado.Length > 4000 ? erroDetalhado[..4000] : erroDetalhado,
-                Status = StatusProcessamentoItem.Erro
+                Status = StatusProcessamentoItem.Erro,
+                DataExecucao = now,
+                DataFinalizacao = now
             }, cancellationToken);
 
             await _processamentoRepository.SaveChangesAsync(cancellationToken);
@@ -250,6 +260,7 @@ namespace ExcelDoc.Server.Services
                 TotalRegistros = processamento.TotalRegistros,
                 TotalSucesso = processamento.TotalSucesso,
                 TotalErro = processamento.TotalErro,
+                TotalIgnorado = processamento.TotalIgnorado,
                 HashArquivo = processamento.HashArquivo
             };
         }

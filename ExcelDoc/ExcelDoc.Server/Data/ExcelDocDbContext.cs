@@ -266,6 +266,9 @@ namespace ExcelDoc.Server.Data
                     .IsRequired()
                     .HasMaxLength(200);
 
+                entity.Property(e => e.TotalIgnorado)
+                    .HasDefaultValue(0);
+
                 entity.Property(e => e.DataExecucao)
                     .HasPrecision(0);
 
@@ -373,6 +376,12 @@ namespace ExcelDoc.Server.Data
 
                 entity.HasKey(e => e.Id);
 
+                entity.Property(e => e.IdDocumentoUnico)
+                    .HasMaxLength(128);
+
+                entity.Property(e => e.Mensagem)
+                    .HasMaxLength(1000);
+
                 entity.Property(e => e.JsonEnviado)
                     .IsRequired();
 
@@ -384,6 +393,15 @@ namespace ExcelDoc.Server.Data
                 entity.Property(e => e.Status)
                     .HasConversion<string>()
                     .HasMaxLength(20);
+
+                entity.Property(e => e.DataExecucao)
+                    .HasPrecision(0);
+
+                entity.Property(e => e.DataFinalizacao)
+                    .HasPrecision(0);
+
+                entity.HasIndex(e => new { e.IdDocumentoUnico, e.Status })
+                    .HasDatabaseName("IX_ProcessamentoItem_IdDocumentoUnico_Status");
 
                 entity.HasOne(e => e.Processamento)
                     .WithMany(e => e.Itens)

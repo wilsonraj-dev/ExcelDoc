@@ -28,6 +28,8 @@ namespace ExcelDoc.Server.Models
 
         public int TotalErro { get; set; }
 
+        public int TotalIgnorado { get; set; }
+
         [Required]
         [MaxLength(200)]
         public string HashArquivo { get; set; } = string.Empty;
