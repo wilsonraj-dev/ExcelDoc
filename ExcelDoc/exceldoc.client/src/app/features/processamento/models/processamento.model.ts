@@ -8,6 +8,7 @@ export interface Processamento {
   totalRegistros: number;
   totalSucesso: number;
   totalErro: number;
+  totalIgnorado: number;
   progresso?: number;
 }
 
@@ -18,12 +19,18 @@ export interface PagedResult<T> {
   pageSize: number;
 }
 
-export type ProcessamentoItemStatus = 'Sucesso' | 'Erro';
+export type ProcessamentoItemStatus = 'Sucesso' | 'Erro' | 'Ignorado';
 
 export interface ProcessamentoItem {
+  id: number;
+  idExcel: number | null;
+  idDocumentoUnico: string | null;
   linhaExcel: number;
   jsonEnviado: string;
   jsonRetorno: string;
   status: ProcessamentoItemStatus;
-  mensagemErro: string;
+  mensagem: string | null;
+  erro: string | null;
+  dataExecucao: string | null;
+  dataFinalizacao: string | null;
 }

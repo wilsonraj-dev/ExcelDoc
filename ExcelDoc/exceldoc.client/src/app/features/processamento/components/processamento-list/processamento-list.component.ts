@@ -18,7 +18,7 @@ import { ProcessamentoService } from '../../services/processamento.service';
 export class ProcessamentoListComponent implements OnInit {
   readonly displayedColumns: string[] = [
     'nomeArquivo', 'dataExecucao', 'status',
-    'totalRegistros', 'totalSucesso', 'totalErro', 'acoes'
+    'totalRegistros', 'totalSucesso', 'totalErro', 'totalIgnorado', 'acoes'
   ];
   readonly pageSizeOptions = [5, 10, 20];
   readonly dataSource = new MatTableDataSource<Processamento>([]);

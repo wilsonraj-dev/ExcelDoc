@@ -30,12 +30,14 @@ export class ProcessamentoDetalheComponent implements OnInit {
   private static readonly itemStatusMap: Record<string, string> = {
     '1': 'Sucesso',
     '2': 'Erro',
+    '3': 'Ignorado',
     Sucesso: 'Sucesso',
-    Erro: 'Erro'
+    Erro: 'Erro',
+    Ignorado: 'Ignorado'
   };
 
   processamento: Processamento | null = null;
-  readonly itensColumns: string[] = ['linhaExcel', 'status', 'mensagemErro', 'acoes'];
+  readonly itensColumns: string[] = ['idExcel', 'linhaExcel', 'status', 'mensagem', 'acoes'];
   readonly itensDataSource = new MatTableDataSource<ProcessamentoItem>([]);
   readonly pageSizeOptions = [10, 25, 50];
 
@@ -77,7 +79,7 @@ export class ProcessamentoDetalheComponent implements OnInit {
     if (!this.processamento || this.processamento.totalRegistros === 0) {
       return 0;
     }
-    const processed = this.processamento.totalSucesso + this.processamento.totalErro;
+    const processed = this.processamento.totalSucesso + this.processamento.totalErro + (this.processamento.totalIgnorado ?? 0);
     return Math.round((processed / this.processamento.totalRegistros) * 100);
   }
 
@@ -141,7 +143,12 @@ export class ProcessamentoDetalheComponent implements OnInit {
   }
 
   getItemStatusClass(status: string | number): string {
-    return this.getItemStatusLabel(status) === 'Erro' ? 'status-erro' : 'status-sucesso';
+    const label = this.getItemStatusLabel(status);
+    if (label === 'Erro') {
+      return 'status-erro';
+    }
+
+    return label === 'Ignorado' ? 'status-ignorado' : 'status-sucesso';
   }
 
   private loadProcessamento(): void {

@@ -60,6 +60,11 @@
           <td mat-cell *matCellDef="let row">{{ row.totalErro }}</td>
         </ng-container>
 
+        <ng-container matColumnDef="totalIgnorado">
+          <th mat-header-cell *matHeaderCellDef>Ignorados</th>
+          <td mat-cell *matCellDef="let row">{{ row.totalIgnorado || 0 }}</td>
+        </ng-container>
+
         <ng-container matColumnDef="acoes">
           <th mat-header-cell *matHeaderCellDef>Ações</th>
           <td mat-cell *matCellDef="let row">
