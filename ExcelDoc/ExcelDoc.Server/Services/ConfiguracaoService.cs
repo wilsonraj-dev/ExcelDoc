@@ -1,4 +1,5 @@
 using ExcelDoc.Server.DTOs.Configuracoes;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
@@ -9,17 +10,20 @@ namespace ExcelDoc.Server.Services
     {
         private readonly IConfiguracaoRepository _configuracaoRepository;
         private readonly IEncryptionService _encryptionService;
+        private readonly IMessageService _messageService;
         private readonly IUsuarioAcessoService _usuarioAcessoService;
         private readonly ILogger<ConfiguracaoService> _logger;
 
         public ConfiguracaoService(
             IConfiguracaoRepository configuracaoRepository,
             IEncryptionService encryptionService,
+            IMessageService messageService,
             IUsuarioAcessoService usuarioAcessoService,
             ILogger<ConfiguracaoService> logger)
         {
             _configuracaoRepository = configuracaoRepository;
             _encryptionService = encryptionService;
+            _messageService = messageService;
             _usuarioAcessoService = usuarioAcessoService;
             _logger = logger;
         }
@@ -29,7 +33,7 @@ namespace ExcelDoc.Server.Services
             await _usuarioAcessoService.ValidarAcessoEmpresaAsync(empresaId, false, cancellationToken);
 
             var entity = await _configuracaoRepository.GetByEmpresaIdAsync(empresaId, cancellationToken)
-                ?? throw new KeyNotFoundException("Configuração da empresa não encontrada.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.ConfigurationNotFound));
 
             return Map(entity);
         }

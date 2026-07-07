@@ -1,4 +1,5 @@
 using ExcelDoc.Server.DTOs.PerfilMapeamentos;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
@@ -8,15 +9,18 @@ namespace ExcelDoc.Server.Services
     public class PerfilMapeamentoService : IPerfilMapeamentoService
     {
         private readonly IPerfilMapeamentoRepository _repository;
+        private readonly IMessageService _messageService;
         private readonly IUsuarioAcessoService _usuarioAcessoService;
         private readonly ILogger<PerfilMapeamentoService> _logger;
 
         public PerfilMapeamentoService(
             IPerfilMapeamentoRepository repository,
+            IMessageService messageService,
             IUsuarioAcessoService usuarioAcessoService,
             ILogger<PerfilMapeamentoService> logger)
         {
             _repository = repository;
+            _messageService = messageService;
             _usuarioAcessoService = usuarioAcessoService;
             _logger = logger;
         }
@@ -36,7 +40,7 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var perfil = await _repository.GetByIdAsync(id, cancellationToken)
-                ?? throw new KeyNotFoundException("Perfil de mapeamento nao encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
             EnsureCanAccess(usuario, perfil);
             return Map(perfil);
@@ -47,7 +51,7 @@ namespace ExcelDoc.Server.Services
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
 
             _ = await _repository.GetDocumentoByIdAsync(request.FK_IdDocumento, cancellationToken)
-                ?? throw new KeyNotFoundException("Documento nao encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.DocumentNotFound));
 
             EnsureCanCreate(usuario, request);
 
@@ -75,13 +79,13 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var perfil = await _repository.GetByIdAsync(id, cancellationToken)
-                ?? throw new KeyNotFoundException("Perfil de mapeamento nao encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
             EnsureCanEdit(usuario, perfil);
 
             if (perfil.FK_IdDocumento != request.FK_IdDocumento)
             {
-                throw new InvalidOperationException("Nao e permitido alterar o documento do perfil.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingProfileDocumentCannotBeChanged));
             }
 
             await ValidarItensAsync(request.FK_IdDocumento, request.Itens, cancellationToken);
@@ -110,7 +114,7 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var perfil = await _repository.GetByIdAsync(id, cancellationToken)
-                ?? throw new KeyNotFoundException("Perfil de mapeamento nao encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
             EnsureCanEdit(usuario, perfil);
 
@@ -122,13 +126,13 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var origem = await _repository.GetByIdAsync(id, cancellationToken)
-                ?? throw new KeyNotFoundException("Perfil de mapeamento nao encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
             EnsureCanAccess(usuario, origem);
 
             if (!usuario.FK_IdEmpresa.HasValue && usuario.TipoUsuario != TipoUsuario.Administrador)
             {
-                throw new UnauthorizedAccessException("Usuario sem empresa vinculada nao pode clonar perfis.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotCloneProfiles));
             }
 
             var clone = new PerfilMapeamento
@@ -153,13 +157,13 @@ namespace ExcelDoc.Server.Services
         {
             if (itens.Count == 0)
             {
-                throw new InvalidOperationException("Selecione ao menos uma colecao para compor o perfil.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.SelectAtLeastOneCollectionForProfile));
             }
 
             var colecaoIds = itens.Select(i => i.FK_IdColecao).ToList();
             if (colecaoIds.Distinct().Count() != colecaoIds.Count)
             {
-                throw new InvalidOperationException("Nao e permitido duplicar colecoes dentro do mesmo perfil.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.DuplicateCollectionsProfile));
             }
 
             var itensPorColecao = itens.ToDictionary(i => i.FK_IdColecao);
@@ -168,12 +172,12 @@ namespace ExcelDoc.Server.Services
 
             if (colecoesDocumento.Count == 0)
             {
-                throw new InvalidOperationException("O documento informado nao possui colecoes vinculadas.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.DocumentHasNoLinkedCollections));
             }
 
             if (colecaoIds.Any(id => !colecoesDocumentoIds.Contains(id)))
             {
-                throw new InvalidOperationException("O perfil contem colecoes que nao pertencem ao documento selecionado.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.ProfileContainsCollectionsNotInDocument));
             }
 
             var headerColecoesIds = colecoesDocumento
@@ -183,7 +187,7 @@ namespace ExcelDoc.Server.Services
 
             if (headerColecoesIds.Count == 0)
             {
-                throw new InvalidOperationException("O documento deve possuir ao menos uma colecao do tipo cabecalho vinculada.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.DocumentMustHaveHeaderCollection));
             }
 
             var lineColecoesIds = colecoesDocumento
@@ -194,18 +198,18 @@ namespace ExcelDoc.Server.Services
             var selectedHeaderIds = colecaoIds.Where(headerColecoesIds.Contains).ToList();
             if (selectedHeaderIds.Count != 1)
             {
-                throw new InvalidOperationException("O perfil deve conter exatamente uma colecao do tipo cabecalho.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.ProfileMustContainExactlyOneHeaderCollection));
             }
 
             if (itens.Any(item => headerColecoesIds.Contains(item.FK_IdColecao) && item.FK_IdColecaoPai.HasValue))
             {
-                throw new InvalidOperationException("Colecoes de cabecalho nao podem ser aninhadas.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.HeaderCollectionsCannotBeNested));
             }
 
             var selectedLineIds = colecaoIds.Where(lineColecoesIds.Contains).ToList();
             if (lineColecoesIds.Count > 0 && selectedLineIds.Count == 0)
             {
-                throw new InvalidOperationException("Selecione ao menos uma colecao do tipo line para compor o perfil.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.SelectAtLeastOneLineCollection));
             }
 
             var selectedRootLineIds = itens
@@ -215,7 +219,7 @@ namespace ExcelDoc.Server.Services
 
             if (lineColecoesIds.Count > 0 && selectedRootLineIds.Count == 0)
             {
-                throw new InvalidOperationException("Selecione ao menos uma colecao de linha raiz para compor o perfil.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.SelectAtLeastOneRootLineCollection));
             }
 
             foreach (var item in itens.Where(item => item.FK_IdColecaoPai.HasValue))
@@ -224,17 +228,17 @@ namespace ExcelDoc.Server.Services
 
                 if (parentColecaoId == item.FK_IdColecao)
                 {
-                    throw new InvalidOperationException("Uma colecao nao pode ser filha dela mesma.");
+                    throw new InvalidOperationException(_messageService.Get(MessageKeys.CollectionCannotBeChildOfItself));
                 }
 
                 if (!itensPorColecao.ContainsKey(parentColecaoId))
                 {
-                    throw new InvalidOperationException("Toda colecao filha deve apontar para uma colecao pai selecionada no perfil.");
+                    throw new InvalidOperationException(_messageService.Get(MessageKeys.ChildCollectionMustPointToSelectedParent));
                 }
 
                 if (!lineColecoesIds.Contains(item.FK_IdColecao) || !lineColecoesIds.Contains(parentColecaoId))
                 {
-                    throw new InvalidOperationException("Somente colecoes do tipo line podem ser aninhadas.");
+                    throw new InvalidOperationException(_messageService.Get(MessageKeys.OnlyLineCollectionsCanBeNested));
                 }
             }
 
@@ -249,7 +253,7 @@ namespace ExcelDoc.Server.Services
 
                     if (!visitedParentIds.Add(parentColecaoId))
                     {
-                        throw new InvalidOperationException("O relacionamento entre colecoes do perfil contem um ciclo.");
+                        throw new InvalidOperationException(_messageService.Get(MessageKeys.ProfileCollectionRelationshipCycle));
                     }
 
                     current = itensPorColecao[parentColecaoId];
@@ -259,11 +263,11 @@ namespace ExcelDoc.Server.Services
             foreach (var item in itens)
             {
                 var mapeamento = await _repository.GetMapeamentoByIdAsync(item.FK_IdMapeamento, cancellationToken)
-                    ?? throw new KeyNotFoundException($"Mapeamento {item.FK_IdMapeamento} nao encontrado.");
+                    ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingIdNotFound, item.FK_IdMapeamento));
 
                 if (mapeamento.FK_IdColecao != item.FK_IdColecao)
                 {
-                    throw new InvalidOperationException($"Mapeamento {item.FK_IdMapeamento} nao pertence a colecao {item.FK_IdColecao}.");
+                    throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingDoesNotBelongToCollection, item.FK_IdMapeamento, item.FK_IdColecao));
                 }
             }
         }
@@ -314,15 +318,15 @@ namespace ExcelDoc.Server.Services
             return usuario.FK_IdEmpresa == perfil.FK_IdEmpresa;
         }
 
-        private static void EnsureCanAccess(Usuario usuario, PerfilMapeamento perfil)
+        private void EnsureCanAccess(Usuario usuario, PerfilMapeamento perfil)
         {
             if (!PodeVisualizar(usuario, perfil))
             {
-                throw new UnauthorizedAccessException("Usuario nao possui acesso a este perfil de mapeamento.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMappingProfile));
             }
         }
 
-        private static void EnsureCanEdit(Usuario usuario, PerfilMapeamento perfil)
+        private void EnsureCanEdit(Usuario usuario, PerfilMapeamento perfil)
         {
             EnsureCanAccess(usuario, perfil);
 
@@ -330,27 +334,27 @@ namespace ExcelDoc.Server.Services
 
             if (perfil.IsPadrao || perfil.FK_IdEmpresa != usuario.FK_IdEmpresa)
             {
-                throw new UnauthorizedAccessException("Usuario nao possui permissao para alterar este perfil.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeProfile));
             }
         }
 
-        private static void EnsureCanCreate(Usuario usuario, PerfilMapeamentoRequestDto request)
+        private void EnsureCanCreate(Usuario usuario, PerfilMapeamentoRequestDto request)
         {
             if (usuario.TipoUsuario == TipoUsuario.Administrador) return;
 
             if (!usuario.FK_IdEmpresa.HasValue)
             {
-                throw new UnauthorizedAccessException("Usuario sem empresa vinculada nao pode criar perfis.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotCreateProfiles));
             }
 
             if (request.IsPadrao)
             {
-                throw new UnauthorizedAccessException("Apenas administradores podem criar perfis padrao.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanCreateDefaultProfiles));
             }
 
             if (request.FK_IdEmpresa.HasValue && request.FK_IdEmpresa != usuario.FK_IdEmpresa)
             {
-                throw new UnauthorizedAccessException("Usuario nao pode criar perfis para outra empresa.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserCannotCreateProfilesForAnotherCompany));
             }
         }
 

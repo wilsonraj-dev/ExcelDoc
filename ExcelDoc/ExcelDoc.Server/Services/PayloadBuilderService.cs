@@ -1,4 +1,5 @@
 using System.Globalization;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Services.Interfaces;
 
@@ -10,6 +11,7 @@ namespace ExcelDoc.Server.Services
         private static readonly CultureInfo EnUsCulture = CultureInfo.GetCultureInfo("en-US");
         private static readonly CultureInfo[] DateCultures = [PtBrCulture, EnUsCulture, CultureInfo.InvariantCulture];
         private static readonly CultureInfo[] NumberCultures = [PtBrCulture, EnUsCulture, CultureInfo.InvariantCulture];
+        private readonly IMessageService _messageService;
         private static readonly string[] KnownDateFormats =
         [
             "dd/MM/yyyy",
@@ -35,6 +37,11 @@ namespace ExcelDoc.Server.Services
             "M-d-yyyy"
         ];
 
+        public PayloadBuilderService(IMessageService messageService)
+        {
+            _messageService = messageService;
+        }
+
         public IDictionary<string, object?> BuildPayload(Documento documento, Mapeamento mapeamento, IReadOnlyDictionary<int, string?> rowValues)
         {
             var payload = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -48,7 +55,7 @@ namespace ExcelDoc.Server.Services
             return payload;
         }
 
-        private static object? ConvertValue(string? rawValue, MapeamentoCampo campo)
+        private object? ConvertValue(string? rawValue, MapeamentoCampo campo)
         {
             if (string.IsNullOrWhiteSpace(rawValue))
             {
@@ -68,19 +75,19 @@ namespace ExcelDoc.Server.Services
             };
         }
 
-        private static int ParseInt(string value)
+        private int ParseInt(string value)
         {
             var number = ParseDouble(value);
 
             if (number % 1 != 0)
             {
-                throw new FormatException($"Valor inteiro inválido: {value}");
+                throw new FormatException(_messageService.Get(MessageKeys.InvalidIntegerValue, value));
             }
 
             return Convert.ToInt32(number);
         }
 
-        private static double ParseDouble(string value)
+        private double ParseDouble(string value)
         {
             var normalizedValue = value.Trim();
 
@@ -102,17 +109,17 @@ namespace ExcelDoc.Server.Services
                 }
             }
 
-            throw new FormatException($"Valor numérico inválido: {value}");
+            throw new FormatException(_messageService.Get(MessageKeys.InvalidNumericValue, value));
         }
 
-        private static string ParseDateTime(string value, string? format)
+        private string ParseDateTime(string value, string? format)
         {
             if (TryParseExcelDate(value, format, out var date))
             {
                 return date.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
             }
 
-            throw new FormatException($"Data inválida: {value}");
+            throw new FormatException(_messageService.Get(MessageKeys.DateInvalid, value));
         }
 
         private static bool TryParseExcelDate(string value, string? format, out DateTime date)
@@ -164,7 +171,7 @@ namespace ExcelDoc.Server.Services
             return false;
         }
 
-        private static bool ParseBoolean(string value)
+        private bool ParseBoolean(string value)
         {
             return value.ToLowerInvariant() switch
             {
@@ -180,7 +187,7 @@ namespace ExcelDoc.Server.Services
                 "não" => false,
                 "n" => false,
                 "no" => false,
-                _ => throw new FormatException($"Valor booleano inválido: {value}")
+                _ => throw new FormatException(_messageService.Get(MessageKeys.InvalidBooleanValue, value))
             };
         }
     }

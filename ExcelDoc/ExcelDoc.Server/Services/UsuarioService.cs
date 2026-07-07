@@ -1,6 +1,7 @@
 using ExcelDoc.Server.DTOs;
 using ExcelDoc.Server.DTOs.Auth;
 using ExcelDoc.Server.DTOs.Usuarios;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
@@ -12,6 +13,7 @@ namespace ExcelDoc.Server.Services
         private const int MaxPageSize = 50;
         private readonly IEmpresaRepository _empresaRepository;
         private readonly ILogger<UsuarioService> _logger;
+        private readonly IMessageService _messageService;
         private readonly IPasswordHasherService _passwordHasherService;
         private readonly IUsuarioAcessoService _usuarioAcessoService;
         private readonly IUsuarioRepository _usuarioRepository;
@@ -19,12 +21,14 @@ namespace ExcelDoc.Server.Services
         public UsuarioService(
             IEmpresaRepository empresaRepository,
             ILogger<UsuarioService> logger,
+            IMessageService messageService,
             IPasswordHasherService passwordHasherService,
             IUsuarioAcessoService usuarioAcessoService,
             IUsuarioRepository usuarioRepository)
         {
             _empresaRepository = empresaRepository;
             _logger = logger;
+            _messageService = messageService;
             _passwordHasherService = passwordHasherService;
             _usuarioAcessoService = usuarioAcessoService;
             _usuarioRepository = usuarioRepository;
@@ -39,19 +43,19 @@ namespace ExcelDoc.Server.Services
 
             if (await _usuarioRepository.ExistsByNomeUsuarioAsync(nomeUsuario, cancellationToken))
             {
-                throw new InvalidOperationException("Nome de usuário já cadastrado.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.UsernameAlreadyRegistered));
             }
 
             if (await _usuarioRepository.ExistsByEmailAsync(email, cancellationToken))
             {
-                throw new InvalidOperationException("E-mail já cadastrado.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.EmailAlreadyRegistered));
             }
 
             Empresa? empresa = null;
             if (request.EmpresaId.HasValue)
             {
                 empresa = await _empresaRepository.GetByIdAsync(request.EmpresaId.Value, cancellationToken)
-                    ?? throw new KeyNotFoundException("Empresa não encontrada.");
+                    ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.CompanyNotFound));
             }
 
             var usuario = new Usuario
@@ -100,15 +104,15 @@ namespace ExcelDoc.Server.Services
             await ValidarAdministradorAsync(cancellationToken);
 
             var usuario = await _usuarioRepository.GetTrackedByIdAsync(usuarioId, cancellationToken)
-                ?? throw new KeyNotFoundException("Usuário não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.UserNotFound));
 
             if (usuario.TipoUsuario == TipoUsuario.Administrador)
             {
-                throw new InvalidOperationException("Usuários administradores não podem ser vinculados por esta funcionalidade.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.AdminUsersCannotBeLinked));
             }
 
             var empresa = await _empresaRepository.GetByIdAsync(request.EmpresaId, cancellationToken)
-                ?? throw new KeyNotFoundException("Empresa não encontrada.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.CompanyNotFound));
 
             usuario.FK_IdEmpresa = empresa.Id;
             usuario.Empresa = empresa;
@@ -125,11 +129,11 @@ namespace ExcelDoc.Server.Services
             var valid = new[] { "pt", "en", "es" };
             if (!valid.Contains(idioma))
             {
-                throw new FormatException("Idioma inválido.");
+                throw new FormatException(_messageService.Get(MessageKeys.InvalidLanguage));
             }
 
             var usuario = await _usuarioRepository.GetTrackedByIdAsync(usuarioId, cancellationToken)
-                ?? throw new KeyNotFoundException("Usuário não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.UserNotFound));
 
             usuario.Idioma = idioma;
             await _usuarioRepository.SaveChangesAsync(cancellationToken);
@@ -156,7 +160,7 @@ namespace ExcelDoc.Server.Services
 
             if (usuario.TipoUsuario != TipoUsuario.Administrador)
             {
-                throw new UnauthorizedAccessException("Apenas administradores podem executar esta ação.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanExecuteAction));
             }
         }
     }

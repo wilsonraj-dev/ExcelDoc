@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using ExcelDoc.Server.IoC;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +23,9 @@ builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(Stor
 builder.Services.Configure<EncryptionOptions>(builder.Configuration.GetSection(EncryptionOptions.SectionName));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
+
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddInfrastructureLanguages();
 
 builder.Services.AddDbContext<ExcelDocDbContext>(options =>
     options.UseMySQL(connectionString));
@@ -68,6 +73,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRequestLocalization();
 
 app.UseAuthentication();
 app.UseAuthorization();

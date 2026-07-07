@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="AdminUsersCannotBeLinked" xml:space="preserve"><value>Administrator users cannot be linked through this feature.</value></data>
+  <data name="ChildCollectionMustPointToSelectedParent" xml:space="preserve"><value>Every child collection must point to a parent collection selected in the profile.</value></data>
+  <data name="CollectionAlreadyExists" xml:space="preserve"><value>A collection with the same name and type already exists in the informed scope.</value></data>
+  <data name="CollectionCannotBeChildOfItself" xml:space="preserve"><value>A collection cannot be its own child.</value></data>
+  <data name="CollectionDeleteActiveLinks" xml:space="preserve"><value>The collection could not be deleted because it has active links.</value></data>
+  <data name="CollectionDeleteLinkedDocuments" xml:space="preserve"><value>The collection cannot be deleted because it is linked to documents.</value></data>
+  <data name="CollectionNameMaxLength" xml:space="preserve"><value>Collection name must be at most 150 characters.</value></data>
+  <data name="CollectionNameRequired" xml:space="preserve"><value>Collection name is required.</value></data>
+  <data name="CollectionNotFound" xml:space="preserve"><value>Collection not found.</value></data>
+  <data name="CompanyAlreadyExistsWithName" xml:space="preserve"><value>A company with this name already exists.</value></data>
+  <data name="CompanyNameRequired" xml:space="preserve"><value>Company name is required.</value></data>
+  <data name="CompanyNotFound" xml:space="preserve"><value>Company not found.</value></data>
+  <data name="ConfigurationNotFound" xml:space="preserve"><value>Company configuration not found.</value></data>
+  <data name="CredentialsInvalid" xml:space="preserve"><value>Invalid credentials.</value></data>
+  <data name="DateInvalid" xml:space="preserve"><value>Invalid date: {0}</value></data>
+  <data name="DateTimeFieldFormatRequired" xml:space="preserve"><value>Format is required when the field type is DateTime.</value></data>
+  <data name="DefaultMappingsCannotBeDeleted" xml:space="preserve"><value>Default mappings cannot be deleted.</value></data>
+  <data name="DocumentAlreadyExistsWithNameOrEndpoint" xml:space="preserve"><value>A document with the same name or endpoint already exists.</value></data>
+  <data name="DocumentAlreadyImportedWithSuccess" xml:space="preserve"><value>Document skipped because a previous successful import already exists for the same identifier.</value></data>
+  <data name="DocumentDeleteLinkedRecords" xml:space="preserve"><value>The document could not be deleted because it is linked to other records.</value></data>
+  <data name="DocumentEndpointRequired" xml:space="preserve"><value>Document endpoint is required.</value></data>
+  <data name="DocumentHasNoLinkedCollections" xml:space="preserve"><value>The informed document has no linked collections.</value></data>
+  <data name="DocumentMustHaveHeaderCollection" xml:space="preserve"><value>The document must have at least one linked header collection.</value></data>
+  <data name="DocumentNameRequired" xml:space="preserve"><value>Document name is required.</value></data>
+  <data name="DocumentNotFound" xml:space="preserve"><value>Document not found.</value></data>
+  <data name="DocumentProcessedSuccessfully" xml:space="preserve"><value>Document processed successfully.</value></data>
+  <data name="DuplicateCollectionsProfile" xml:space="preserve"><value>Collections cannot be duplicated within the same profile.</value></data>
+  <data name="EmailAlreadyRegistered" xml:space="preserve"><value>E-mail is already registered.</value></data>
+  <data name="EmptyIdExcelValueAtRow" xml:space="preserve"><value>Empty value in column '#' at row {0}.</value></data>
+  <data name="FileRequired" xml:space="preserve"><value>File is required.</value></data>
+  <data name="HeaderCollectionsCannotBeNested" xml:space="preserve"><value>Header collections cannot be nested.</value></data>
+  <data name="InvalidBooleanValue" xml:space="preserve"><value>Invalid boolean value: {0}</value></data>
+  <data name="InvalidDocumentLinks" xml:space="preserve"><value>The documents informed for linking are invalid.</value></data>
+  <data name="InvalidIdExcelValueAtRow" xml:space="preserve"><value>Invalid value in column '#' at row {0}: '{1}'. Enter an integer.</value></data>
+  <data name="InvalidIntegerValue" xml:space="preserve"><value>Invalid integer value: {0}</value></data>
+  <data name="InvalidLanguage" xml:space="preserve"><value>Invalid language.</value></data>
+  <data name="InvalidNumericValue" xml:space="preserve"><value>Invalid numeric value: {0}</value></data>
+  <data name="MappingCollectionCannotBeChanged" xml:space="preserve"><value>The mapping collection cannot be changed.</value></data>
+  <data name="MappingDoesNotBelongToCollection" xml:space="preserve"><value>Mapping {0} does not belong to collection {1}.</value></data>
+  <data name="MappingFieldColumnIndexAlreadyExists" xml:space="preserve"><value>A field with column index {0} already exists in this mapping.</value></data>
+  <data name="MappingFieldMappingCannotBeChanged" xml:space="preserve"><value>The field mapping cannot be changed.</value></data>
+  <data name="MappingFieldNotFound" xml:space="preserve"><value>Mapping field not found.</value></data>
+  <data name="MappingIdNotFound" xml:space="preserve"><value>Mapping {0} not found.</value></data>
+  <data name="MappingProfileDoesNotBelongToDocument" xml:space="preserve"><value>The informed mapping profile does not belong to the selected document.</value></data>
+  <data name="MappingProfileDocumentCannotBeChanged" xml:space="preserve"><value>The profile document cannot be changed.</value></data>
+  <data name="MappingProfileHasNoItems" xml:space="preserve"><value>The informed mapping profile has no items for processing.</value></data>
+  <data name="MappingProfileNotFound" xml:space="preserve"><value>Mapping profile not found.</value></data>
+  <data name="MappingNotFound" xml:space="preserve"><value>Mapping not found.</value></data>
+  <data name="OnlyAdminsCanChangeDefaultMappings" xml:space="preserve"><value>Only administrators can change default mappings.</value></data>
+  <data name="OnlyAdminsCanChangeDocuments" xml:space="preserve"><value>Only administrators can change documents.</value></data>
+  <data name="OnlyAdminsCanChangeSystemCollections" xml:space="preserve"><value>Only administrators can change system default collections.</value></data>
+  <data name="OnlyAdminsCanCreateDefaultMappings" xml:space="preserve"><value>Only administrators can create default mappings.</value></data>
+  <data name="OnlyAdminsCanCreateDefaultProfiles" xml:space="preserve"><value>Only administrators can create default profiles.</value></data>
+  <data name="OnlyAdminsCanExecuteAction" xml:space="preserve"><value>Only administrators can execute this action.</value></data>
+  <data name="OnlyAdminsCanRegisterCompanies" xml:space="preserve"><value>Only administrators can register companies.</value></data>
+  <data name="OnlyExcelFilesAccepted" xml:space="preserve"><value>Only Excel .xls and .xlsx files are accepted.</value></data>
+  <data name="OnlyLineCollectionsCanBeNested" xml:space="preserve"><value>Only line collections can be nested.</value></data>
+  <data name="OneOrMoreDocumentsNotFound" xml:space="preserve"><value>One or more informed documents were not found.</value></data>
+  <data name="PasswordResetCodeInvalidOrExpired" xml:space="preserve"><value>Invalid or expired code.</value></data>
+  <data name="ProcessingNotFound" xml:space="preserve"><value>Processing not found.</value></data>
+  <data name="ProcessingWithoutMappingProfileNotSupported" xml:space="preserve"><value>Processing without a mapping profile is not supported.</value></data>
+  <data name="ProfileCollectionRelationshipCycle" xml:space="preserve"><value>The relationship between profile collections contains a cycle.</value></data>
+  <data name="ProfileContainsCollectionsNotInDocument" xml:space="preserve"><value>The profile contains collections that do not belong to the selected document.</value></data>
+  <data name="ProfileMustContainExactlyOneHeaderCollection" xml:space="preserve"><value>The profile must contain exactly one header collection.</value></data>
+  <data name="RequiredIdExcelColumnNotFound" xml:space="preserve"><value>The required column '#' was not found in the spreadsheet header rows.</value></data>
+  <data name="SapAuthenticationCookieNotReturned" xml:space="preserve"><value>SAP Service Layer did not return an authentication cookie.</value></data>
+  <data name="SapSendPermissionUnavailable" xml:space="preserve"><value>Could not obtain permission to send to SAP.</value></data>
+  <data name="SelectAtLeastOneCollectionForProfile" xml:space="preserve"><value>Select at least one collection to compose the profile.</value></data>
+  <data name="SelectAtLeastOneLineCollection" xml:space="preserve"><value>Select at least one line collection to compose the profile.</value></data>
+  <data name="SelectAtLeastOneRootLineCollection" xml:space="preserve"><value>Select at least one root line collection to compose the profile.</value></data>
+  <data name="SpreadsheetEmptyRows" xml:space="preserve"><value>The spreadsheet has no filled rows.</value></data>
+  <data name="SpreadsheetNoDataRows" xml:space="preserve"><value>The spreadsheet has no data rows for processing.</value></data>
+  <data name="TokenInvalidForCurrentUser" xml:space="preserve"><value>Invalid token for the current user.</value></data>
+  <data name="UserCannotCreateMappingsForAnotherCompany" xml:space="preserve"><value>User cannot create mappings for another company.</value></data>
+  <data name="UserCannotCreateProfilesForAnotherCompany" xml:space="preserve"><value>User cannot create profiles for another company.</value></data>
+  <data name="UserCompanyNotFound" xml:space="preserve"><value>User company not found.</value></data>
+  <data name="UserDoesNotHaveAccessToCollection" xml:space="preserve"><value>User does not have access to this collection.</value></data>
+  <data name="UserDoesNotHaveAccessToCompany" xml:space="preserve"><value>User does not have access to the informed company.</value></data>
+  <data name="UserDoesNotHaveAccessToMapping" xml:space="preserve"><value>User does not have access to this mapping.</value></data>
+  <data name="UserDoesNotHaveAccessToMappingProfile" xml:space="preserve"><value>User does not have access to this mapping profile.</value></data>
+  <data name="UserDoesNotHavePermissionToChangeMapping" xml:space="preserve"><value>User does not have permission to change this mapping.</value></data>
+  <data name="UserDoesNotHavePermissionToChangeProfile" xml:space="preserve"><value>User does not have permission to change this profile.</value></data>
+  <data name="UserIdentifierInvalidInToken" xml:space="preserve"><value>Invalid user identifier in the token.</value></data>
+  <data name="UserInactive" xml:space="preserve"><value>User is inactive.</value></data>
+  <data name="UserNotAuthenticated" xml:space="preserve"><value>User is not authenticated.</value></data>
+  <data name="UserNotFound" xml:space="preserve"><value>User not found.</value></data>
+  <data name="UsernameAlreadyRegistered" xml:space="preserve"><value>Username is already registered.</value></data>
+  <data name="UserWithoutCompanyCannotCloneMappings" xml:space="preserve"><value>User without a linked company cannot clone mappings.</value></data>
+  <data name="UserWithoutCompanyCannotCloneProfiles" xml:space="preserve"><value>User without a linked company cannot clone profiles.</value></data>
+  <data name="UserWithoutCompanyCannotCreateMappings" xml:space="preserve"><value>User without a linked company cannot create mappings.</value></data>
+  <data name="UserWithoutCompanyCannotCreateProfiles" xml:space="preserve"><value>User without a linked company cannot create profiles.</value></data>
+  <data name="UserWithoutCompanyCannotExecuteAction" xml:space="preserve"><value>User without a linked company cannot execute this action.</value></data>
+</root>

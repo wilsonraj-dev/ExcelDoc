@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using ExcelDoc.Server.Background;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Options;
 using ExcelDoc.Server.Services.Interfaces;
@@ -16,14 +17,17 @@ namespace ExcelDoc.Server.Services
         private const string ResponseBodyKey = "ResponseBody";
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<SapServiceLayerClient> _logger;
+        private readonly IMessageService _messageService;
         private readonly TokenBucketRateLimiter _rateLimiter;
 
         public SapServiceLayerClient(
             IHttpClientFactory httpClientFactory,
             IOptions<ProcessingOptions> options,
+            IMessageService messageService,
             ILogger<SapServiceLayerClient> logger)
         {
             _httpClientFactory = httpClientFactory;
+            _messageService = messageService;
             _logger = logger;
 
             var permitsPerSecond = Math.Max(1, options.Value.SapRequestsPerSecond);
@@ -85,7 +89,7 @@ namespace ExcelDoc.Server.Services
 
             if (string.IsNullOrWhiteSpace(cookieHeader))
             {
-                throw new InvalidOperationException("SAP Service Layer não retornou cookie de autenticação.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.SapAuthenticationCookieNotReturned));
             }
 
             return new SapSession { CookieHeader = cookieHeader };
@@ -96,7 +100,7 @@ namespace ExcelDoc.Server.Services
             using var lease = await _rateLimiter.AcquireAsync(1, cancellationToken);
             if (!lease.IsAcquired)
             {
-                throw new InvalidOperationException("Não foi possível obter permissão para envio ao SAP.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.SapSendPermissionUnavailable));
             }
 
             using var client = _httpClientFactory.CreateClient("sap-service-layer");

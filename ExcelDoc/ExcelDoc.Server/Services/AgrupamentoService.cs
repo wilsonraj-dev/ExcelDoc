@@ -1,4 +1,5 @@
 using ExcelDoc.Server.Background;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Services.Interfaces;
 
 namespace ExcelDoc.Server.Services
@@ -7,6 +8,12 @@ namespace ExcelDoc.Server.Services
     {
         private const string IdExcelHeaderName = "#";
         private const int HeaderRowsToInspect = 2;
+        private readonly IMessageService _messageService;
+
+        public AgrupamentoService(IMessageService messageService)
+        {
+            _messageService = messageService;
+        }
 
         public IReadOnlyList<ExcelDocumentGroup> AgruparPorIdExcel(
             IReadOnlyCollection<ExcelRowData> rows)
@@ -15,11 +22,11 @@ namespace ExcelDoc.Server.Services
 
             if (orderedRows.Count == 0)
             {
-                throw new ExcelImportValidationException("A planilha não possui linhas preenchidas.");
+                throw new ExcelImportValidationException(_messageService.Get(MessageKeys.SpreadsheetEmptyRows));
             }
 
             var idExcelHeader = FindIdExcelHeader(orderedRows)
-                ?? throw new ExcelImportValidationException("A coluna obrigatória '#' não foi encontrada nas linhas de cabeçalho da planilha.");
+                ?? throw new ExcelImportValidationException(_messageService.Get(MessageKeys.RequiredIdExcelColumnNotFound));
 
             var dataRows = orderedRows
                 .Where(row => row.RowNumber > idExcelHeader.RowNumber)
@@ -27,7 +34,7 @@ namespace ExcelDoc.Server.Services
 
             if (dataRows.Count == 0)
             {
-                throw new ExcelImportValidationException("A planilha não possui linhas de dados para processamento.");
+                throw new ExcelImportValidationException(_messageService.Get(MessageKeys.SpreadsheetNoDataRows));
             }
 
             var groupsById = new Dictionary<int, List<ExcelRowData>>();
@@ -115,13 +122,13 @@ namespace ExcelDoc.Server.Services
             return null;
         }
 
-        private static int ReadIdExcel(ExcelRowData row, int columnNumber)
+        private int ReadIdExcel(ExcelRowData row, int columnNumber)
         {
             if (!row.Values.TryGetValue(columnNumber, out var rawValue) ||
                 string.IsNullOrWhiteSpace(rawValue))
             {
                 throw new ExcelImportValidationException(
-                    $"Valor da coluna '#' vazio na linha {row.RowNumber}.",
+                    _messageService.Get(MessageKeys.EmptyIdExcelValueAtRow, row.RowNumber),
                     row.RowNumber);
             }
 
@@ -130,7 +137,7 @@ namespace ExcelDoc.Server.Services
             if (!int.TryParse(value, out var idExcel))
             {
                 throw new ExcelImportValidationException(
-                    $"Valor inválido na coluna '#' na linha {row.RowNumber}: '{value}'. Informe um número inteiro.",
+                    _messageService.Get(MessageKeys.InvalidIdExcelValueAtRow, row.RowNumber, value),
                     row.RowNumber);
             }
 

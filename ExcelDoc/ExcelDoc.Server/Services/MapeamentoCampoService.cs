@@ -1,4 +1,5 @@
 using ExcelDoc.Server.DTOs.Mapeamentos;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
@@ -8,13 +9,16 @@ namespace ExcelDoc.Server.Services
     public class MapeamentoCampoService : IMapeamentoCampoService
     {
         private readonly IMapeamentoRepository _mapeamentoRepository;
+        private readonly IMessageService _messageService;
         private readonly IUsuarioAcessoService _usuarioAcessoService;
 
         public MapeamentoCampoService(
             IMapeamentoRepository mapeamentoRepository,
+            IMessageService messageService,
             IUsuarioAcessoService usuarioAcessoService)
         {
             _mapeamentoRepository = mapeamentoRepository;
+            _messageService = messageService;
             _usuarioAcessoService = usuarioAcessoService;
         }
 
@@ -22,7 +26,7 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(mapeamentoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingNotFound));
 
             EnsureCanAccessMapeamento(usuario, mapeamento);
 
@@ -34,7 +38,7 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(request.FK_IdMapeamento, cancellationToken)
-                ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingNotFound));
 
             EnsureCanEditMapeamento(usuario, mapeamento);
             await ValidateCampoAsync(request, null, cancellationToken);
@@ -58,13 +62,13 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var campo = await _mapeamentoRepository.GetCampoByIdAsync(id, cancellationToken)
-                ?? throw new KeyNotFoundException("Campo de mapeamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingFieldNotFound));
 
             EnsureCanEditMapeamento(usuario, campo.Mapeamento);
 
             if (campo.FK_IdMapeamento != request.FK_IdMapeamento)
             {
-                throw new InvalidOperationException("Não é permitido alterar o mapeamento do campo.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingFieldMappingCannotBeChanged));
             }
 
             await ValidateCampoAsync(request, id, cancellationToken);
@@ -82,7 +86,7 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var campo = await _mapeamentoRepository.GetCampoByIdAsync(id, cancellationToken)
-                ?? throw new KeyNotFoundException("Campo de mapeamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingFieldNotFound));
 
             EnsureCanEditMapeamento(usuario, campo.Mapeamento);
             _mapeamentoRepository.RemoveCampo(campo);
@@ -93,16 +97,16 @@ namespace ExcelDoc.Server.Services
         {
             if (request.TipoCampo == TipoCampo.DateTime && string.IsNullOrWhiteSpace(request.Formato))
             {
-                throw new InvalidOperationException("Formato é obrigatório quando o tipo do campo é DateTime.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.DateTimeFieldFormatRequired));
             }
 
             if (await _mapeamentoRepository.ExistsIndiceNoMapeamentoAsync(request.FK_IdMapeamento, request.IndiceColuna, ignoreId, cancellationToken))
             {
-                throw new InvalidOperationException($"Já existe um campo com o índice de coluna {request.IndiceColuna} neste mapeamento.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingFieldColumnIndexAlreadyExists, request.IndiceColuna));
             }
         }
 
-        private static void EnsureCanAccessMapeamento(Usuario usuario, Mapeamento mapeamento)
+        private void EnsureCanAccessMapeamento(Usuario usuario, Mapeamento mapeamento)
         {
             if (usuario.TipoUsuario == TipoUsuario.Administrador)
             {
@@ -116,11 +120,11 @@ namespace ExcelDoc.Server.Services
 
             if (usuario.FK_IdEmpresa != mapeamento.FK_IdEmpresa)
             {
-                throw new UnauthorizedAccessException("Usuário não possui acesso a este mapeamento.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMapping));
             }
         }
 
-        private static void EnsureCanEditMapeamento(Usuario usuario, Mapeamento mapeamento)
+        private void EnsureCanEditMapeamento(Usuario usuario, Mapeamento mapeamento)
         {
             EnsureCanAccessMapeamento(usuario, mapeamento);
 
@@ -131,7 +135,7 @@ namespace ExcelDoc.Server.Services
 
             if (mapeamento.IsPadrao || usuario.FK_IdEmpresa != mapeamento.FK_IdEmpresa)
             {
-                throw new UnauthorizedAccessException("Usuário não possui permissão para alterar este mapeamento.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeMapping));
             }
         }
 

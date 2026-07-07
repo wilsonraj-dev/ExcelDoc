@@ -1,4 +1,5 @@
 using ExcelDoc.Server.DTOs.Documentos;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
@@ -9,11 +10,13 @@ namespace ExcelDoc.Server.Services
     public class DocumentoService : IDocumentoService
     {
         private readonly IDocumentoRepository _documentoRepository;
+        private readonly IMessageService _messageService;
         private readonly IUsuarioAcessoService _usuarioAcessoService;
 
-        public DocumentoService(IDocumentoRepository documentoRepository, IUsuarioAcessoService usuarioAcessoService)
+        public DocumentoService(IDocumentoRepository documentoRepository, IMessageService messageService, IUsuarioAcessoService usuarioAcessoService)
         {
             _documentoRepository = documentoRepository;
+            _messageService = messageService;
             _usuarioAcessoService = usuarioAcessoService;
         }
 
@@ -33,7 +36,7 @@ namespace ExcelDoc.Server.Services
             await _usuarioAcessoService.GetUsuarioAtualAsync(true, cancellationToken);
 
             var documento = await _documentoRepository.GetByIdAsync(documentoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Documento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.DocumentNotFound));
 
             return Map(documento);
         }
@@ -49,7 +52,7 @@ namespace ExcelDoc.Server.Services
 
             if (await _documentoRepository.ExistsByNomeOrEndpointAsync(nomeDocumento, endpoint, null, cancellationToken))
             {
-                throw new InvalidOperationException("Já existe um documento com o mesmo nome ou endpoint.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.DocumentAlreadyExistsWithNameOrEndpoint));
             }
 
             var documento = new Documento
@@ -69,7 +72,7 @@ namespace ExcelDoc.Server.Services
             await ValidarAdministradorAsync(cancellationToken);
 
             var documento = await _documentoRepository.GetTrackedByIdAsync(documentoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Documento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.DocumentNotFound));
 
             try
             {
@@ -78,7 +81,7 @@ namespace ExcelDoc.Server.Services
             }
             catch (DbUpdateException)
             {
-                throw new InvalidOperationException("Não foi possível excluir o documento porque ele está vinculado a outros registros.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.DocumentDeleteLinkedRecords));
             }
         }
 
@@ -87,7 +90,7 @@ namespace ExcelDoc.Server.Services
             await ValidarAdministradorAsync(cancellationToken);
 
             var documento = await _documentoRepository.GetTrackedByIdAsync(documentoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Documento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.DocumentNotFound));
 
             var nomeDocumento = request.NomeDocumento.Trim();
             var endpoint = request.Endpoint.Trim();
@@ -96,7 +99,7 @@ namespace ExcelDoc.Server.Services
 
             if (await _documentoRepository.ExistsByNomeOrEndpointAsync(nomeDocumento, endpoint, documentoId, cancellationToken))
             {
-                throw new InvalidOperationException("Já existe um documento com o mesmo nome ou endpoint.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.DocumentAlreadyExistsWithNameOrEndpoint));
             }
 
             documento.NomeDocumento = nomeDocumento;
@@ -113,20 +116,20 @@ namespace ExcelDoc.Server.Services
 
             if (usuario.TipoUsuario != TipoUsuario.Administrador)
             {
-                throw new UnauthorizedAccessException("Apenas administradores podem alterar documentos.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanChangeDocuments));
             }
         }
 
-        private static void ValidarCampos(string nomeDocumento, string endpoint)
+        private void ValidarCampos(string nomeDocumento, string endpoint)
         {
             if (string.IsNullOrWhiteSpace(nomeDocumento))
             {
-                throw new InvalidOperationException("Nome do documento é obrigatório.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.DocumentNameRequired));
             }
 
             if (string.IsNullOrWhiteSpace(endpoint))
             {
-                throw new InvalidOperationException("Endpoint do documento é obrigatório.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.DocumentEndpointRequired));
             }
         }
 

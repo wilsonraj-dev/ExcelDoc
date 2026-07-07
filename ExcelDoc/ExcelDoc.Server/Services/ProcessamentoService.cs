@@ -3,6 +3,7 @@ using ExcelDoc.Server.Background;
 using ExcelDoc.Server.Background.Interfaces;
 using ExcelDoc.Server.DTOs;
 using ExcelDoc.Server.DTOs.Processamentos;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Options;
 using ExcelDoc.Server.Repositories.Interfaces;
@@ -19,6 +20,7 @@ namespace ExcelDoc.Server.Services
         private readonly IDocumentoRepository _documentoRepository;
         private readonly IArquivoStorageService _arquivoStorageService;
         private readonly IHashArquivoService _hashArquivoService;
+        private readonly IMessageService _messageService;
         private readonly IPerfilMapeamentoRepository _perfilMapeamentoRepository;
         private readonly IProcessamentoRepository _processamentoRepository;
         private readonly ISystemClock _systemClock;
@@ -31,6 +33,7 @@ namespace ExcelDoc.Server.Services
             IDocumentoRepository documentoRepository,
             IArquivoStorageService arquivoStorageService,
             IHashArquivoService hashArquivoService,
+            IMessageService messageService,
             IPerfilMapeamentoRepository perfilMapeamentoRepository,
             IProcessamentoRepository processamentoRepository,
             ISystemClock systemClock,
@@ -42,6 +45,7 @@ namespace ExcelDoc.Server.Services
             _documentoRepository = documentoRepository;
             _arquivoStorageService = arquivoStorageService;
             _hashArquivoService = hashArquivoService;
+            _messageService = messageService;
             _perfilMapeamentoRepository = perfilMapeamentoRepository;
             _processamentoRepository = processamentoRepository;
             _systemClock = systemClock;
@@ -54,29 +58,29 @@ namespace ExcelDoc.Server.Services
         {
             if (request.Arquivo is null || request.Arquivo.Length == 0)
             {
-                throw new InvalidOperationException("Arquivo é obrigatório.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.FileRequired));
             }
 
             var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
 
             var documento = await _documentoRepository.GetByIdAsync(request.DocumentoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Documento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.DocumentNotFound));
             var perfilMapeamento = await _perfilMapeamentoRepository.GetForExecutionAsync(request.PerfilMapeamentoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Perfil de mapeamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
             ValidateDocumentoPerfilMapeamento(documento, perfilMapeamento);
             ValidateAccessToPerfilMapeamento(usuario, perfilMapeamento);
 
             if (perfilMapeamento.Itens.Count == 0)
             {
-                throw new InvalidOperationException("O perfil de mapeamento informado não possui itens para processamento.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingProfileHasNoItems));
             }
 
             var extension = Path.GetExtension(request.Arquivo.FileName);
             if (!string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(extension, ".xls", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException("Apenas arquivos Excel .xls e .xlsx são aceitos.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.OnlyExcelFilesAccepted));
             }
 
             byte[] content;
@@ -128,7 +132,7 @@ namespace ExcelDoc.Server.Services
         public async Task<ProcessamentoResponseDto> GetByIdAsync(int processamentoId, CancellationToken cancellationToken = default)
         {
             var processamento = await _processamentoRepository.GetByIdAsync(processamentoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Processamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.ProcessingNotFound));
 
             await _usuarioAcessoService.ValidarAcessoEmpresaAsync(processamento.FK_IdEmpresa, false, cancellationToken);
             return Map(processamento);
@@ -154,7 +158,7 @@ namespace ExcelDoc.Server.Services
         public async Task<PagedResultDto<ProcessamentoItemResponseDto>> GetItemsPagedAsync(int processamentoId, ProcessamentoItensQueryDto query, CancellationToken cancellationToken = default)
         {
             var processamento = await _processamentoRepository.GetByIdAsync(processamentoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Processamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.ProcessingNotFound));
 
             await _usuarioAcessoService.ValidarAcessoEmpresaAsync(processamento.FK_IdEmpresa, false, cancellationToken);
 
@@ -187,7 +191,7 @@ namespace ExcelDoc.Server.Services
         public async Task MarcarErroFinalAsync(int processamentoId, Exception exception, CancellationToken cancellationToken = default)
         {
             var processamento = await _processamentoRepository.GetForExecutionAsync(processamentoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Processamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.ProcessingNotFound));
 
             var erroDetalhado = exception.ToString();
 
@@ -211,15 +215,15 @@ namespace ExcelDoc.Server.Services
             await _processamentoRepository.SaveChangesAsync(cancellationToken);
         }
 
-        private static void ValidateDocumentoPerfilMapeamento(Documento documento, PerfilMapeamento perfilMapeamento)
+        private void ValidateDocumentoPerfilMapeamento(Documento documento, PerfilMapeamento perfilMapeamento)
         {
             if (perfilMapeamento.FK_IdDocumento != documento.Id)
             {
-                throw new InvalidOperationException("O perfil de mapeamento informado não pertence ao documento selecionado.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingProfileDoesNotBelongToDocument));
             }
         }
 
-        private static void ValidateAccessToPerfilMapeamento(Usuario usuario, PerfilMapeamento perfilMapeamento)
+        private void ValidateAccessToPerfilMapeamento(Usuario usuario, PerfilMapeamento perfilMapeamento)
         {
             if (usuario.TipoUsuario == TipoUsuario.Administrador)
             {
@@ -233,7 +237,7 @@ namespace ExcelDoc.Server.Services
 
             if (usuario.FK_IdEmpresa != perfilMapeamento.FK_IdEmpresa)
             {
-                throw new UnauthorizedAccessException("Usuário não possui acesso ao perfil de mapeamento informado.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMappingProfile));
             }
         }
 

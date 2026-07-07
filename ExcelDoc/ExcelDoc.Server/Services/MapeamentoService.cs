@@ -1,4 +1,5 @@
 using ExcelDoc.Server.DTOs.Mapeamentos;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
@@ -8,15 +9,18 @@ namespace ExcelDoc.Server.Services
     public class MapeamentoService : IMapeamentoService
     {
         private readonly IMapeamentoRepository _mapeamentoRepository;
+        private readonly IMessageService _messageService;
         private readonly IUsuarioAcessoService _usuarioAcessoService;
         private readonly ILogger<MapeamentoService> _logger;
 
         public MapeamentoService(
             IMapeamentoRepository mapeamentoRepository,
+            IMessageService messageService,
             IUsuarioAcessoService usuarioAcessoService,
             ILogger<MapeamentoService> logger)
         {
             _mapeamentoRepository = mapeamentoRepository;
+            _messageService = messageService;
             _usuarioAcessoService = usuarioAcessoService;
             _logger = logger;
         }
@@ -25,7 +29,7 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var colecao = await _mapeamentoRepository.GetColecaoByIdAsync(colecaoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Coleção não encontrada.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.CollectionNotFound));
 
             EnsureCanAccessColecao(usuario, colecao);
 
@@ -40,7 +44,7 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(id, cancellationToken)
-                ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingNotFound));
 
             EnsureCanAccessMapeamento(usuario, mapeamento);
             return Map(mapeamento);
@@ -50,7 +54,7 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var colecao = await _mapeamentoRepository.GetColecaoByIdAsync(request.FK_IdColecao, cancellationToken)
-                ?? throw new KeyNotFoundException("Coleção não encontrada.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.CollectionNotFound));
 
             EnsureCanCreateMapeamento(usuario, request, colecao);
 
@@ -76,13 +80,13 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var origem = await _mapeamentoRepository.GetMapeamentoByIdAsync(id, cancellationToken)
-                ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingNotFound));
 
             EnsureCanAccessMapeamento(usuario, origem);
 
             if (!usuario.FK_IdEmpresa.HasValue && usuario.TipoUsuario != TipoUsuario.Administrador)
             {
-                throw new UnauthorizedAccessException("Usuário sem empresa vinculada não pode clonar mapeamentos.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotCloneMappings));
             }
 
             var clone = new Mapeamento
@@ -116,18 +120,18 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(id, cancellationToken)
-                ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingNotFound));
 
             EnsureCanEditMapeamento(usuario, mapeamento);
 
             if (mapeamento.FK_IdColecao != request.FK_IdColecao)
             {
-                throw new InvalidOperationException("Não é permitido alterar a coleção do mapeamento.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingCollectionCannotBeChanged));
             }
 
             if (mapeamento.IsPadrao && usuario.TipoUsuario != TipoUsuario.Administrador)
             {
-                throw new UnauthorizedAccessException("Apenas administradores podem alterar mapeamentos padrão.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanChangeDefaultMappings));
             }
 
             mapeamento.Nome = request.Nome.Trim();
@@ -146,13 +150,13 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(id, cancellationToken)
-                ?? throw new KeyNotFoundException("Mapeamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingNotFound));
 
             EnsureCanEditMapeamento(usuario, mapeamento);
 
             if (mapeamento.IsPadrao)
             {
-                throw new InvalidOperationException("Mapeamentos padrão não podem ser excluídos.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.DefaultMappingsCannotBeDeleted));
             }
 
             _mapeamentoRepository.RemoveMapeamento(mapeamento);
@@ -174,7 +178,7 @@ namespace ExcelDoc.Server.Services
             return usuario.FK_IdEmpresa == mapeamento.FK_IdEmpresa;
         }
 
-        private static void EnsureCanAccessColecao(Usuario usuario, Colecao colecao)
+        private void EnsureCanAccessColecao(Usuario usuario, Colecao colecao)
         {
             if (usuario.TipoUsuario == TipoUsuario.Administrador)
             {
@@ -188,21 +192,21 @@ namespace ExcelDoc.Server.Services
 
             if (usuario.FK_IdEmpresa != colecao.FK_IdEmpresa)
             {
-                throw new UnauthorizedAccessException("Usuário não possui acesso a esta coleção.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToCollection));
             }
         }
 
-        private static void EnsureCanAccessMapeamento(Usuario usuario, Mapeamento mapeamento)
+        private void EnsureCanAccessMapeamento(Usuario usuario, Mapeamento mapeamento)
         {
             EnsureCanAccessColecao(usuario, mapeamento.Colecao);
 
             if (!PodeVisualizarMapeamento(usuario, mapeamento))
             {
-                throw new UnauthorizedAccessException("Usuário não possui acesso a este mapeamento.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMapping));
             }
         }
 
-        private static void EnsureCanEditMapeamento(Usuario usuario, Mapeamento mapeamento)
+        private void EnsureCanEditMapeamento(Usuario usuario, Mapeamento mapeamento)
         {
             EnsureCanAccessMapeamento(usuario, mapeamento);
 
@@ -213,11 +217,11 @@ namespace ExcelDoc.Server.Services
 
             if (mapeamento.IsPadrao || mapeamento.FK_IdEmpresa != usuario.FK_IdEmpresa)
             {
-                throw new UnauthorizedAccessException("Usuário não possui permissão para alterar este mapeamento.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeMapping));
             }
         }
 
-        private static void EnsureCanCreateMapeamento(Usuario usuario, MapeamentoRequestDto request, Colecao colecao)
+        private void EnsureCanCreateMapeamento(Usuario usuario, MapeamentoRequestDto request, Colecao colecao)
         {
             EnsureCanAccessColecao(usuario, colecao);
 
@@ -228,17 +232,17 @@ namespace ExcelDoc.Server.Services
 
             if (!usuario.FK_IdEmpresa.HasValue)
             {
-                throw new UnauthorizedAccessException("Usuário sem empresa vinculada não pode criar mapeamentos.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotCreateMappings));
             }
 
             if (request.IsPadrao)
             {
-                throw new UnauthorizedAccessException("Apenas administradores podem criar mapeamentos padrão.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanCreateDefaultMappings));
             }
 
             if (request.FK_IdEmpresa.HasValue && request.FK_IdEmpresa != usuario.FK_IdEmpresa)
             {
-                throw new UnauthorizedAccessException("Usuário não pode criar mapeamentos para outra empresa.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserCannotCreateMappingsForAnotherCompany));
             }
         }
 

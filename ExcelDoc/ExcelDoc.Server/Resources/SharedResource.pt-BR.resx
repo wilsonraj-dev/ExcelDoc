@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="AdminUsersCannotBeLinked" xml:space="preserve"><value>Usu&#xE1;rios administradores n&#xE3;o podem ser vinculados por esta funcionalidade.</value></data>
+  <data name="ChildCollectionMustPointToSelectedParent" xml:space="preserve"><value>Toda cole&#xE7;&#xE3;o filha deve apontar para uma cole&#xE7;&#xE3;o pai selecionada no perfil.</value></data>
+  <data name="CollectionAlreadyExists" xml:space="preserve"><value>J&#xE1; existe uma cole&#xE7;&#xE3;o com o mesmo nome e tipo no escopo informado.</value></data>
+  <data name="CollectionCannotBeChildOfItself" xml:space="preserve"><value>Uma cole&#xE7;&#xE3;o n&#xE3;o pode ser filha dela mesma.</value></data>
+  <data name="CollectionDeleteActiveLinks" xml:space="preserve"><value>N&#xE3;o foi poss&#xED;vel excluir a cole&#xE7;&#xE3;o porque ela possui v&#xED;nculos ativos.</value></data>
+  <data name="CollectionDeleteLinkedDocuments" xml:space="preserve"><value>N&#xE3;o &#xE9; poss&#xED;vel excluir a cole&#xE7;&#xE3;o porque ela est&#xE1; vinculada a documentos.</value></data>
+  <data name="CollectionNameMaxLength" xml:space="preserve"><value>Nome da cole&#xE7;&#xE3;o deve ter no m&#xE1;ximo 150 caracteres.</value></data>
+  <data name="CollectionNameRequired" xml:space="preserve"><value>Nome da cole&#xE7;&#xE3;o &#xE9; obrigat&#xF3;rio.</value></data>
+  <data name="CollectionNotFound" xml:space="preserve"><value>Cole&#xE7;&#xE3;o n&#xE3;o encontrada.</value></data>
+  <data name="CompanyAlreadyExistsWithName" xml:space="preserve"><value>J&#xE1; existe uma empresa cadastrada com este nome.</value></data>
+  <data name="CompanyNameRequired" xml:space="preserve"><value>Nome da empresa &#xE9; obrigat&#xF3;rio.</value></data>
+  <data name="CompanyNotFound" xml:space="preserve"><value>Empresa n&#xE3;o encontrada.</value></data>
+  <data name="ConfigurationNotFound" xml:space="preserve"><value>Configura&#xE7;&#xE3;o da empresa n&#xE3;o encontrada.</value></data>
+  <data name="CredentialsInvalid" xml:space="preserve"><value>Credenciais inv&#xE1;lidas.</value></data>
+  <data name="DateInvalid" xml:space="preserve"><value>Data inv&#xE1;lida: {0}</value></data>
+  <data name="DateTimeFieldFormatRequired" xml:space="preserve"><value>Formato &#xE9; obrigat&#xF3;rio quando o tipo do campo &#xE9; DateTime.</value></data>
+  <data name="DefaultMappingsCannotBeDeleted" xml:space="preserve"><value>Mapeamentos padr&#xE3;o n&#xE3;o podem ser exclu&#xED;dos.</value></data>
+  <data name="DocumentAlreadyExistsWithNameOrEndpoint" xml:space="preserve"><value>J&#xE1; existe um documento com o mesmo nome ou endpoint.</value></data>
+  <data name="DocumentAlreadyImportedWithSuccess" xml:space="preserve"><value>Documento ignorado porque j&#xE1; existe importa&#xE7;&#xE3;o anterior com sucesso para o mesmo identificador.</value></data>
+  <data name="DocumentDeleteLinkedRecords" xml:space="preserve"><value>N&#xE3;o foi poss&#xED;vel excluir o documento porque ele est&#xE1; vinculado a outros registros.</value></data>
+  <data name="DocumentEndpointRequired" xml:space="preserve"><value>Endpoint do documento &#xE9; obrigat&#xF3;rio.</value></data>
+  <data name="DocumentHasNoLinkedCollections" xml:space="preserve"><value>O documento informado n&#xE3;o possui cole&#xE7;&#xF5;es vinculadas.</value></data>
+  <data name="DocumentMustHaveHeaderCollection" xml:space="preserve"><value>O documento deve possuir ao menos uma cole&#xE7;&#xE3;o do tipo cabe&#xE7;alho vinculada.</value></data>
+  <data name="DocumentNameRequired" xml:space="preserve"><value>Nome do documento &#xE9; obrigat&#xF3;rio.</value></data>
+  <data name="DocumentNotFound" xml:space="preserve"><value>Documento n&#xE3;o encontrado.</value></data>
+  <data name="DocumentProcessedSuccessfully" xml:space="preserve"><value>Documento processado com sucesso.</value></data>
+  <data name="DuplicateCollectionsProfile" xml:space="preserve"><value>N&#xE3;o &#xE9; permitido duplicar cole&#xE7;&#xF5;es dentro do mesmo perfil.</value></data>
+  <data name="EmailAlreadyRegistered" xml:space="preserve"><value>E-mail j&#xE1; cadastrado.</value></data>
+  <data name="EmptyIdExcelValueAtRow" xml:space="preserve"><value>Valor da coluna '#' vazio na linha {0}.</value></data>
+  <data name="FileRequired" xml:space="preserve"><value>Arquivo &#xE9; obrigat&#xF3;rio.</value></data>
+  <data name="HeaderCollectionsCannotBeNested" xml:space="preserve"><value>Cole&#xE7;&#xF5;es de cabe&#xE7;alho n&#xE3;o podem ser aninhadas.</value></data>
+  <data name="InvalidBooleanValue" xml:space="preserve"><value>Valor booleano inv&#xE1;lido: {0}</value></data>
+  <data name="InvalidDocumentLinks" xml:space="preserve"><value>Os documentos informados para v&#xED;nculo s&#xE3;o inv&#xE1;lidos.</value></data>
+  <data name="InvalidIdExcelValueAtRow" xml:space="preserve"><value>Valor inv&#xE1;lido na coluna '#' na linha {0}: '{1}'. Informe um n&#xFA;mero inteiro.</value></data>
+  <data name="InvalidIntegerValue" xml:space="preserve"><value>Valor inteiro inv&#xE1;lido: {0}</value></data>
+  <data name="InvalidLanguage" xml:space="preserve"><value>Idioma inv&#xE1;lido.</value></data>
+  <data name="InvalidNumericValue" xml:space="preserve"><value>Valor num&#xE9;rico inv&#xE1;lido: {0}</value></data>
+  <data name="MappingCollectionCannotBeChanged" xml:space="preserve"><value>N&#xE3;o &#xE9; permitido alterar a cole&#xE7;&#xE3;o do mapeamento.</value></data>
+  <data name="MappingDoesNotBelongToCollection" xml:space="preserve"><value>Mapeamento {0} n&#xE3;o pertence &#xE0; cole&#xE7;&#xE3;o {1}.</value></data>
+  <data name="MappingFieldColumnIndexAlreadyExists" xml:space="preserve"><value>J&#xE1; existe um campo com o &#xED;ndice de coluna {0} neste mapeamento.</value></data>
+  <data name="MappingFieldMappingCannotBeChanged" xml:space="preserve"><value>N&#xE3;o &#xE9; permitido alterar o mapeamento do campo.</value></data>
+  <data name="MappingFieldNotFound" xml:space="preserve"><value>Campo de mapeamento n&#xE3;o encontrado.</value></data>
+  <data name="MappingIdNotFound" xml:space="preserve"><value>Mapeamento {0} n&#xE3;o encontrado.</value></data>
+  <data name="MappingProfileDoesNotBelongToDocument" xml:space="preserve"><value>O perfil de mapeamento informado n&#xE3;o pertence ao documento selecionado.</value></data>
+  <data name="MappingProfileDocumentCannotBeChanged" xml:space="preserve"><value>N&#xE3;o &#xE9; permitido alterar o documento do perfil.</value></data>
+  <data name="MappingProfileHasNoItems" xml:space="preserve"><value>O perfil de mapeamento informado n&#xE3;o possui itens para processamento.</value></data>
+  <data name="MappingProfileNotFound" xml:space="preserve"><value>Perfil de mapeamento n&#xE3;o encontrado.</value></data>
+  <data name="MappingNotFound" xml:space="preserve"><value>Mapeamento n&#xE3;o encontrado.</value></data>
+  <data name="OnlyAdminsCanChangeDefaultMappings" xml:space="preserve"><value>Apenas administradores podem alterar mapeamentos padr&#xE3;o.</value></data>
+  <data name="OnlyAdminsCanChangeDocuments" xml:space="preserve"><value>Apenas administradores podem alterar documentos.</value></data>
+  <data name="OnlyAdminsCanChangeSystemCollections" xml:space="preserve"><value>Apenas administradores podem alterar cole&#xE7;&#xF5;es padr&#xE3;o do sistema.</value></data>
+  <data name="OnlyAdminsCanCreateDefaultMappings" xml:space="preserve"><value>Apenas administradores podem criar mapeamentos padr&#xE3;o.</value></data>
+  <data name="OnlyAdminsCanCreateDefaultProfiles" xml:space="preserve"><value>Apenas administradores podem criar perfis padr&#xE3;o.</value></data>
+  <data name="OnlyAdminsCanExecuteAction" xml:space="preserve"><value>Apenas administradores podem executar esta a&#xE7;&#xE3;o.</value></data>
+  <data name="OnlyAdminsCanRegisterCompanies" xml:space="preserve"><value>Apenas administradores podem cadastrar empresas.</value></data>
+  <data name="OnlyExcelFilesAccepted" xml:space="preserve"><value>Apenas arquivos Excel .xls e .xlsx s&#xE3;o aceitos.</value></data>
+  <data name="OnlyLineCollectionsCanBeNested" xml:space="preserve"><value>Somente cole&#xE7;&#xF5;es do tipo line podem ser aninhadas.</value></data>
+  <data name="OneOrMoreDocumentsNotFound" xml:space="preserve"><value>Um ou mais documentos informados n&#xE3;o foram encontrados.</value></data>
+  <data name="PasswordResetCodeInvalidOrExpired" xml:space="preserve"><value>C&#xF3;digo inv&#xE1;lido ou expirado.</value></data>
+  <data name="ProcessingNotFound" xml:space="preserve"><value>Processamento n&#xE3;o encontrado.</value></data>
+  <data name="ProcessingWithoutMappingProfileNotSupported" xml:space="preserve"><value>Processamento sem perfil de mapeamento n&#xE3;o &#xE9; suportado.</value></data>
+  <data name="ProfileCollectionRelationshipCycle" xml:space="preserve"><value>O relacionamento entre cole&#xE7;&#xF5;es do perfil cont&#xE9;m um ciclo.</value></data>
+  <data name="ProfileContainsCollectionsNotInDocument" xml:space="preserve"><value>O perfil cont&#xE9;m cole&#xE7;&#xF5;es que n&#xE3;o pertencem ao documento selecionado.</value></data>
+  <data name="ProfileMustContainExactlyOneHeaderCollection" xml:space="preserve"><value>O perfil deve conter exatamente uma cole&#xE7;&#xE3;o do tipo cabe&#xE7;alho.</value></data>
+  <data name="RequiredIdExcelColumnNotFound" xml:space="preserve"><value>A coluna obrigat&#xF3;ria '#' n&#xE3;o foi encontrada nas linhas de cabe&#xE7;alho da planilha.</value></data>
+  <data name="SapAuthenticationCookieNotReturned" xml:space="preserve"><value>SAP Service Layer n&#xE3;o retornou cookie de autentica&#xE7;&#xE3;o.</value></data>
+  <data name="SapSendPermissionUnavailable" xml:space="preserve"><value>N&#xE3;o foi poss&#xED;vel obter permiss&#xE3;o para envio ao SAP.</value></data>
+  <data name="SelectAtLeastOneCollectionForProfile" xml:space="preserve"><value>Selecione ao menos uma cole&#xE7;&#xE3;o para compor o perfil.</value></data>
+  <data name="SelectAtLeastOneLineCollection" xml:space="preserve"><value>Selecione ao menos uma cole&#xE7;&#xE3;o do tipo line para compor o perfil.</value></data>
+  <data name="SelectAtLeastOneRootLineCollection" xml:space="preserve"><value>Selecione ao menos uma cole&#xE7;&#xE3;o de linha raiz para compor o perfil.</value></data>
+  <data name="SpreadsheetEmptyRows" xml:space="preserve"><value>A planilha n&#xE3;o possui linhas preenchidas.</value></data>
+  <data name="SpreadsheetNoDataRows" xml:space="preserve"><value>A planilha n&#xE3;o possui linhas de dados para processamento.</value></data>
+  <data name="TokenInvalidForCurrentUser" xml:space="preserve"><value>Token inv&#xE1;lido para o usu&#xE1;rio atual.</value></data>
+  <data name="UserCannotCreateMappingsForAnotherCompany" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o pode criar mapeamentos para outra empresa.</value></data>
+  <data name="UserCannotCreateProfilesForAnotherCompany" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o pode criar perfis para outra empresa.</value></data>
+  <data name="UserCompanyNotFound" xml:space="preserve"><value>Empresa do usu&#xE1;rio n&#xE3;o encontrada.</value></data>
+  <data name="UserDoesNotHaveAccessToCollection" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o possui acesso a esta cole&#xE7;&#xE3;o.</value></data>
+  <data name="UserDoesNotHaveAccessToCompany" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o possui acesso &#xE0; empresa informada.</value></data>
+  <data name="UserDoesNotHaveAccessToMapping" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o possui acesso a este mapeamento.</value></data>
+  <data name="UserDoesNotHaveAccessToMappingProfile" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o possui acesso a este perfil de mapeamento.</value></data>
+  <data name="UserDoesNotHavePermissionToChangeMapping" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o possui permiss&#xE3;o para alterar este mapeamento.</value></data>
+  <data name="UserDoesNotHavePermissionToChangeProfile" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o possui permiss&#xE3;o para alterar este perfil.</value></data>
+  <data name="UserIdentifierInvalidInToken" xml:space="preserve"><value>Identificador do usu&#xE1;rio inv&#xE1;lido no token.</value></data>
+  <data name="UserInactive" xml:space="preserve"><value>Usu&#xE1;rio inativo.</value></data>
+  <data name="UserNotAuthenticated" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o autenticado.</value></data>
+  <data name="UserNotFound" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o encontrado.</value></data>
+  <data name="UsernameAlreadyRegistered" xml:space="preserve"><value>Nome de usu&#xE1;rio j&#xE1; cadastrado.</value></data>
+  <data name="UserWithoutCompanyCannotCloneMappings" xml:space="preserve"><value>Usu&#xE1;rio sem empresa vinculada n&#xE3;o pode clonar mapeamentos.</value></data>
+  <data name="UserWithoutCompanyCannotCloneProfiles" xml:space="preserve"><value>Usu&#xE1;rio sem empresa vinculada n&#xE3;o pode clonar perfis.</value></data>
+  <data name="UserWithoutCompanyCannotCreateMappings" xml:space="preserve"><value>Usu&#xE1;rio sem empresa vinculada n&#xE3;o pode criar mapeamentos.</value></data>
+  <data name="UserWithoutCompanyCannotCreateProfiles" xml:space="preserve"><value>Usu&#xE1;rio sem empresa vinculada n&#xE3;o pode criar perfis.</value></data>
+  <data name="UserWithoutCompanyCannotExecuteAction" xml:space="preserve"><value>Usu&#xE1;rio sem empresa vinculada n&#xE3;o pode executar esta a&#xE7;&#xE3;o.</value></data>
+</root>

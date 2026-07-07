@@ -1,4 +1,5 @@
 using ExcelDoc.Server.DTOs.Empresas;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
@@ -10,15 +11,18 @@ namespace ExcelDoc.Server.Services
     {
         private readonly IEmpresaRepository _empresaRepository;
         private readonly IUsuarioAcessoService _usuarioAcessoService;
+        private readonly IMessageService _messageService;
         private readonly ILogger<EmpresaService> _logger;
 
         public EmpresaService(
             IEmpresaRepository empresaRepository,
             IUsuarioAcessoService usuarioAcessoService,
+            IMessageService messageService,
             ILogger<EmpresaService> logger)
         {
             _empresaRepository = empresaRepository;
             _usuarioAcessoService = usuarioAcessoService;
+            _messageService = messageService;
             _logger = logger;
         }
 
@@ -38,7 +42,7 @@ namespace ExcelDoc.Server.Services
             }
 
             var empresa = await _empresaRepository.GetByIdAsync(usuario.FK_IdEmpresa.Value, cancellationToken)
-                ?? throw new KeyNotFoundException("Empresa do usuário não encontrada.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.UserCompanyNotFound));
 
             return new[] { Map(empresa) };
         }
@@ -49,18 +53,18 @@ namespace ExcelDoc.Server.Services
 
             if (usuario.TipoUsuario != TipoUsuario.Administrador)
             {
-                throw new UnauthorizedAccessException("Apenas administradores podem cadastrar empresas.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanRegisterCompanies));
             }
 
             var nomeEmpresa = request.NomeEmpresa.Trim();
             if (string.IsNullOrWhiteSpace(nomeEmpresa))
             {
-                throw new InvalidOperationException("Nome da empresa é obrigatório.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.CompanyNameRequired));
             }
 
             if (await _empresaRepository.ExistsByNameAsync(nomeEmpresa, cancellationToken))
             {
-                throw new InvalidOperationException("Já existe uma empresa cadastrada com este nome.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.CompanyAlreadyExistsWithName));
             }
 
             var empresa = new Empresa

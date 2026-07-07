@@ -1,5 +1,6 @@
 using ExcelDoc.Server.DTOs.Colecoes;
 using ExcelDoc.Server.DTOs.Documentos;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
@@ -10,12 +11,14 @@ namespace ExcelDoc.Server.Services
     public class ColecaoService : IColecaoService
     {
         private readonly IColecaoRepository _colecaoRepository;
+        private readonly IMessageService _messageService;
         private readonly IUsuarioAcessoService _usuarioAcessoService;
         private readonly ILogger<ColecaoService> _logger;
 
-        public ColecaoService(IColecaoRepository colecaoRepository, IUsuarioAcessoService usuarioAcessoService, ILogger<ColecaoService> logger)
+        public ColecaoService(IColecaoRepository colecaoRepository, IMessageService messageService, IUsuarioAcessoService usuarioAcessoService, ILogger<ColecaoService> logger)
         {
             _colecaoRepository = colecaoRepository;
+            _messageService = messageService;
             _usuarioAcessoService = usuarioAcessoService;
             _logger = logger;
         }
@@ -35,7 +38,7 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var colecao = await _colecaoRepository.GetByIdWithMappingsAsync(colecaoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Coleção não encontrada.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.CollectionNotFound));
 
             EnsureCanAccessColecao(usuario, colecao);
 
@@ -78,7 +81,7 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var colecao = await _colecaoRepository.GetByIdWithMappingsAsync(colecaoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Coleção não encontrada.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.CollectionNotFound));
 
             EnsureCanEditColecao(usuario, colecao);
 
@@ -108,13 +111,13 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
             var colecao = await _colecaoRepository.GetByIdWithMappingsAsync(colecaoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Coleção não encontrada.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.CollectionNotFound));
 
             EnsureCanEditColecao(usuario, colecao);
 
             if (colecao.DocumentoColecoes.Any())
             {
-                throw new InvalidOperationException("Não é possível excluir a coleção porque ela está vinculada a documentos.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.CollectionDeleteLinkedDocuments));
             }
 
             try
@@ -124,7 +127,7 @@ namespace ExcelDoc.Server.Services
             }
             catch (DbUpdateException)
             {
-                throw new InvalidOperationException("Não foi possível excluir a coleção porque ela possui vínculos ativos.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.CollectionDeleteActiveLinks));
             }
         }
 
@@ -132,30 +135,30 @@ namespace ExcelDoc.Server.Services
         {
             if (string.IsNullOrWhiteSpace(nomeColecao))
             {
-                throw new InvalidOperationException("Nome da coleção é obrigatório.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.CollectionNameRequired));
             }
 
             if (nomeColecao.Length > 150)
             {
-                throw new InvalidOperationException("Nome da coleção deve ter no máximo 150 caracteres.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.CollectionNameMaxLength));
             }
 
             if (await _colecaoRepository.ExistsByNomeAsync(nomeColecao, tipoColecao, empresaId, ignoreId, cancellationToken))
             {
-                throw new InvalidOperationException("Já existe uma coleção com o mesmo nome e tipo no escopo informado.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.CollectionAlreadyExists));
             }
 
             if (documentoIds.Any(x => x <= 0))
             {
-                throw new InvalidOperationException("Os documentos informados para vínculo são inválidos.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.InvalidDocumentLinks));
             }
         }
 
-        private static void EnsureAllDocumentosExist(IReadOnlyCollection<int> documentoIds, IReadOnlyCollection<Documento> documentos)
+        private void EnsureAllDocumentosExist(IReadOnlyCollection<int> documentoIds, IReadOnlyCollection<Documento> documentos)
         {
             if (documentoIds.Count != documentos.Count)
             {
-                throw new InvalidOperationException("Um ou mais documentos informados não foram encontrados.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.OneOrMoreDocumentsNotFound));
             }
         }
 
@@ -194,13 +197,13 @@ namespace ExcelDoc.Server.Services
             }
         }
 
-        private static int? ResolveEmpresaId(Usuario usuario, int? empresaId, bool allowGlobal)
+        private int? ResolveEmpresaId(Usuario usuario, int? empresaId, bool allowGlobal)
         {
             if (empresaId.HasValue)
             {
                 if (usuario.TipoUsuario != TipoUsuario.Administrador && usuario.FK_IdEmpresa != empresaId)
                 {
-                    throw new UnauthorizedAccessException("Usuário não possui acesso à empresa informada.");
+                    throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToCompany));
                 }
 
                 return empresaId;
@@ -213,13 +216,13 @@ namespace ExcelDoc.Server.Services
 
             if (!usuario.FK_IdEmpresa.HasValue)
             {
-                throw new UnauthorizedAccessException("Usuário sem empresa vinculada não pode executar esta ação.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotExecuteAction));
             }
 
             return usuario.FK_IdEmpresa;
         }
 
-        private static void EnsureCanAccessColecao(Usuario usuario, Colecao colecao)
+        private void EnsureCanAccessColecao(Usuario usuario, Colecao colecao)
         {
             if (usuario.TipoUsuario == TipoUsuario.Administrador)
             {
@@ -233,17 +236,17 @@ namespace ExcelDoc.Server.Services
 
             if (usuario.FK_IdEmpresa != colecao.FK_IdEmpresa)
             {
-                throw new UnauthorizedAccessException("Usuário não possui acesso a esta coleção.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToCollection));
             }
         }
 
-        private static void EnsureCanEditColecao(Usuario usuario, Colecao colecao)
+        private void EnsureCanEditColecao(Usuario usuario, Colecao colecao)
         {
             EnsureCanAccessColecao(usuario, colecao);
 
             if (usuario.TipoUsuario != TipoUsuario.Administrador && !colecao.FK_IdEmpresa.HasValue)
             {
-                throw new UnauthorizedAccessException("Apenas administradores podem alterar coleções padrão do sistema.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanChangeSystemCollections));
             }
         }
 

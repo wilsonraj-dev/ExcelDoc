@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using ExcelDoc.Server.DTOs.Auth;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Options;
 using ExcelDoc.Server.Repositories.Interfaces;
@@ -18,6 +19,7 @@ namespace ExcelDoc.Server.Services
         private readonly JwtOptions _jwtOptions;
         private readonly IEmailService _emailService;
         private readonly ILogger<AuthService> _logger;
+        private readonly IMessageService _messageService;
         private readonly IPasswordHasherService _passwordHasherService;
         private readonly ISystemClock _systemClock;
         private readonly IUsuarioRepository _usuarioRepository;
@@ -26,6 +28,7 @@ namespace ExcelDoc.Server.Services
             IOptions<JwtOptions> jwtOptions,
             IEmailService emailService,
             ILogger<AuthService> logger,
+            IMessageService messageService,
             IPasswordHasherService passwordHasherService,
             ISystemClock systemClock,
             IUsuarioRepository usuarioRepository)
@@ -33,6 +36,7 @@ namespace ExcelDoc.Server.Services
             _jwtOptions = jwtOptions.Value;
             _emailService = emailService;
             _logger = logger;
+            _messageService = messageService;
             _passwordHasherService = passwordHasherService;
             _systemClock = systemClock;
             _usuarioRepository = usuarioRepository;
@@ -64,16 +68,16 @@ namespace ExcelDoc.Server.Services
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
         {
             var usuario = await _usuarioRepository.GetByLoginAsync(request.Login.Trim(), cancellationToken)
-                ?? throw new UnauthorizedAccessException("Credenciais inválidas.");
+                ?? throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.CredentialsInvalid));
 
             if (!usuario.Ativo)
             {
-                throw new UnauthorizedAccessException("Usuário inativo.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserInactive));
             }
 
             if (!_passwordHasherService.Verify(request.Senha, usuario.SenhaHash))
             {
-                throw new UnauthorizedAccessException("Credenciais inválidas.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.CredentialsInvalid));
             }
 
             if (_passwordHasherService.NeedsRehash(usuario.SenhaHash))
@@ -129,12 +133,12 @@ namespace ExcelDoc.Server.Services
 
             if (await _usuarioRepository.ExistsByNomeUsuarioAsync(nomeUsuario, cancellationToken))
             {
-                throw new InvalidOperationException("Nome de usuário já cadastrado.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.UsernameAlreadyRegistered));
             }
 
             if (await _usuarioRepository.ExistsByEmailAsync(email, cancellationToken))
             {
-                throw new InvalidOperationException("E-mail já cadastrado.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.EmailAlreadyRegistered));
             }
 
             var usuario = new Usuario
@@ -163,7 +167,7 @@ namespace ExcelDoc.Server.Services
         {
             var email = request.Email.Trim();
             var usuario = await _usuarioRepository.GetByEmailAsync(email, cancellationToken)
-                ?? throw new InvalidOperationException("Código inválido ou expirado.");
+                ?? throw new InvalidOperationException(_messageService.Get(MessageKeys.PasswordResetCodeInvalidOrExpired));
 
             if (!usuario.Ativo ||
                 string.IsNullOrWhiteSpace(usuario.ResetPasswordCode) ||
@@ -171,7 +175,7 @@ namespace ExcelDoc.Server.Services
                 usuario.ResetPasswordCode != request.Codigo.Trim() ||
                 usuario.ResetPasswordCodeExpiresAtUtc <= _systemClock.UtcNow)
             {
-                throw new InvalidOperationException("Código inválido ou expirado.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.PasswordResetCodeInvalidOrExpired));
             }
 
             usuario.SenhaHash = _passwordHasherService.Hash(request.NovaSenha);

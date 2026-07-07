@@ -1,3 +1,4 @@
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
@@ -7,11 +8,13 @@ namespace ExcelDoc.Server.Services
     public class UsuarioAcessoService : IUsuarioAcessoService
     {
         private readonly ICurrentUserService _currentUserService;
+        private readonly IMessageService _messageService;
         private readonly IUsuarioRepository _usuarioRepository;
 
-        public UsuarioAcessoService(ICurrentUserService currentUserService, IUsuarioRepository usuarioRepository)
+        public UsuarioAcessoService(ICurrentUserService currentUserService, IMessageService messageService, IUsuarioRepository usuarioRepository)
         {
             _currentUserService = currentUserService;
+            _messageService = messageService;
             _usuarioRepository = usuarioRepository;
         }
 
@@ -19,16 +22,16 @@ namespace ExcelDoc.Server.Services
         {
             var usuarioId = _currentUserService.GetRequiredUserId();
             var usuario = await _usuarioRepository.GetByIdAsync(usuarioId, cancellationToken)
-                ?? throw new KeyNotFoundException("Usuário não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.UserNotFound));
 
             if (!usuario.Ativo)
             {
-                throw new UnauthorizedAccessException("Usuário inativo.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserInactive));
             }
 
             if (requerEmpresaVinculada && !usuario.FK_IdEmpresa.HasValue)
             {
-                throw new UnauthorizedAccessException("Usuário sem empresa vinculada não pode executar ações.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotExecuteAction));
             }
 
             return usuario;
@@ -40,12 +43,12 @@ namespace ExcelDoc.Server.Services
 
             if (requerAdministrador && usuario.TipoUsuario != TipoUsuario.Administrador)
             {
-                throw new UnauthorizedAccessException("Apenas administradores podem executar esta ação.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanExecuteAction));
             }
 
             if (usuario.TipoUsuario != TipoUsuario.Administrador && usuario.FK_IdEmpresa != empresaId)
             {
-                throw new UnauthorizedAccessException("Usuário não possui acesso à empresa informada.");
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToCompany));
             }
 
             return usuario;

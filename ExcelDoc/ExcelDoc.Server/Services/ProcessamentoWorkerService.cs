@@ -1,4 +1,5 @@
 using System.Text.Json;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
@@ -14,6 +15,7 @@ namespace ExcelDoc.Server.Services
         private readonly IEncryptionService _encryptionService;
         private readonly IExcelReaderService _excelReaderService;
         private readonly IJsonBuilderService _jsonBuilderService;
+        private readonly IMessageService _messageService;
         private readonly IDocumentoUnicoService _documentoUnicoService;
         private readonly IAgrupamentoService _agrupamentoService;
         private readonly IProcessamentoRepository _processamentoRepository;
@@ -26,6 +28,7 @@ namespace ExcelDoc.Server.Services
             IEncryptionService encryptionService,
             IExcelReaderService excelReaderService,
             IJsonBuilderService jsonBuilderService,
+            IMessageService messageService,
             IDocumentoUnicoService documentoUnicoService,
             IAgrupamentoService agrupamentoService,
             IProcessamentoRepository processamentoRepository,
@@ -37,6 +40,7 @@ namespace ExcelDoc.Server.Services
             _encryptionService = encryptionService;
             _excelReaderService = excelReaderService;
             _jsonBuilderService = jsonBuilderService;
+            _messageService = messageService;
             _documentoUnicoService = documentoUnicoService;
             _agrupamentoService = agrupamentoService;
             _processamentoRepository = processamentoRepository;
@@ -48,17 +52,17 @@ namespace ExcelDoc.Server.Services
         public async Task ProcessAsync(Background.ProcessamentoQueueItem item, CancellationToken cancellationToken = default)
         {
             var processamento = await _processamentoRepository.GetForExecutionAsync(item.ProcessamentoId, cancellationToken)
-                ?? throw new KeyNotFoundException("Processamento não encontrado.");
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.ProcessingNotFound));
 
             var configuracao = await _configuracaoRepository.GetByEmpresaIdAsync(processamento.FK_IdEmpresa, cancellationToken)
-                ?? throw new InvalidOperationException("Configuração da empresa não encontrada.");
+                ?? throw new InvalidOperationException(_messageService.Get(MessageKeys.ConfigurationNotFound));
 
             var sapConfig = DecryptConfiguration(configuracao);
             var rows = await _excelReaderService.ReadRowsAsync(item.FilePath, cancellationToken);
 
             if (processamento.PerfilMapeamento is null)
             {
-                throw new InvalidOperationException("Processamento sem perfil de mapeamento não é suportado.");
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.ProcessingWithoutMappingProfileNotSupported));
             }
 
             IReadOnlyList<Background.ExcelDocumentGroup> groups;
@@ -123,11 +127,11 @@ namespace ExcelDoc.Server.Services
                         itemLog.JsonRetorno = JsonSerializer.Serialize(new
                         {
                             Ignorado = true,
-                            Motivo = "Documento já importado com sucesso.",
+                            Motivo = _messageService.Get(MessageKeys.DocumentAlreadyImportedWithSuccess),
                             group.IdExcel,
                             IdDocumentoUnico = idDocumentoUnico
                         }, JsonOptions);
-                        itemLog.Mensagem = "Documento ignorado porque já existe importação anterior com sucesso para o mesmo identificador.";
+                        itemLog.Mensagem = _messageService.Get(MessageKeys.DocumentAlreadyImportedWithSuccess);
                         itemLog.Status = StatusProcessamentoItem.Ignorado;
                         processamento.TotalIgnorado++;
 
@@ -142,7 +146,7 @@ namespace ExcelDoc.Server.Services
                             sapConfig, sapSession, processamento.Documento.Endpoint, payloadJson, cancellationToken);
 
                         itemLog.JsonRetorno = responseJson;
-                        itemLog.Mensagem = "Documento processado com sucesso.";
+                        itemLog.Mensagem = _messageService.Get(MessageKeys.DocumentProcessedSuccessfully);
                         itemLog.Status = StatusProcessamentoItem.Sucesso;
                         processamento.TotalSucesso++;
                     }
