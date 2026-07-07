@@ -4,6 +4,9 @@ namespace ExcelDoc.Server.Services.Interfaces
 {
     public interface IAgrupamentoService
     {
+        IReadOnlyList<ExcelDocumentGroup> AgruparPorIdExcel(
+            IReadOnlyCollection<ExcelRowData> rows);
+
         IReadOnlyList<IReadOnlyList<ExcelRowData>> AgruparLinhas(
             IReadOnlyCollection<ExcelRowData> rows,
             IReadOnlyCollection<int> colunasAgrupamento);

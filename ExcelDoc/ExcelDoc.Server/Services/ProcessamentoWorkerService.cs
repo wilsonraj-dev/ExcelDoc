@@ -48,16 +48,27 @@ namespace ExcelDoc.Server.Services
                 ?? throw new InvalidOperationException("Configuração da empresa não encontrada.");
 
             var sapConfig = DecryptConfiguration(configuracao);
-            var sapSession = await _sapServiceLayerClient.LoginAsync(sapConfig, cancellationToken);
             var rows = await _excelReaderService.ReadRowsAsync(item.FilePath, cancellationToken);
-            var dataRows = rows.Skip(2).ToList();
 
             if (processamento.PerfilMapeamento is null)
             {
                 throw new InvalidOperationException("Processamento sem perfil de mapeamento não é suportado.");
             }
 
-            await ProcessWithPerfilAsync(processamento, sapConfig, sapSession, dataRows, cancellationToken);
+            IReadOnlyList<Background.ExcelDocumentGroup> groups;
+            try
+            {
+                groups = _agrupamentoService.AgruparPorIdExcel(rows);
+            }
+            catch (ExcelImportValidationException ex)
+            {
+                await RegisterValidationErrorAsync(processamento, ex, cancellationToken);
+                return;
+            }
+
+            var sapSession = await _sapServiceLayerClient.LoginAsync(sapConfig, cancellationToken);
+
+            await ProcessWithPerfilAsync(processamento, sapConfig, sapSession, groups, cancellationToken);
 
             _logger.LogInformation("Processamento {ProcessamentoId} finalizado. Sucesso={TotalSucesso} Erro={TotalErro}",
                 processamento.Id, processamento.TotalSucesso, processamento.TotalErro);
@@ -67,20 +78,10 @@ namespace ExcelDoc.Server.Services
             Processamento processamento,
             Configuracao sapConfig,
             Background.SapSession sapSession,
-            List<Background.ExcelRowData> dataRows,
+            IReadOnlyList<Background.ExcelDocumentGroup> groups,
             CancellationToken cancellationToken)
         {
             var perfil = processamento.PerfilMapeamento!;
-
-            // Agrupa pelas colunas do Header: linhas com mesmos valores de Header formam um documento
-            var colunasHeader = perfil.Itens
-                .Where(i => i.Colecao.TipoColecao == TipoColecao.Header)
-                .SelectMany(i => i.Mapeamento.Campos)
-                .Select(c => c.IndiceColuna)
-                .Distinct()
-                .ToList();
-
-            var groups = _agrupamentoService.AgruparLinhas(dataRows, colunasHeader);
 
             processamento.TotalRegistros = groups.Count;
             processamento.TotalErro = 0;
@@ -92,7 +93,8 @@ namespace ExcelDoc.Server.Services
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var firstRowNumber = group[0].RowNumber;
+                var groupRows = group.Rows;
+                var firstRowNumber = groupRows[0].RowNumber;
                 var itemLog = new ProcessamentoItem
                 {
                     FK_IdProcessamento = processamento.Id,
@@ -103,7 +105,7 @@ namespace ExcelDoc.Server.Services
 
                 try
                 {
-                    var payload = _jsonBuilderService.BuildDocumentPayload(perfil, group);
+                    var payload = _jsonBuilderService.BuildDocumentPayload(perfil, groupRows);
                     var payloadJson = JsonSerializer.Serialize(payload, JsonOptions);
                     var responseJson = await _sapServiceLayerClient.PostAsync(
                         sapConfig, sapSession, processamento.Documento.Endpoint, payloadJson, cancellationToken);
@@ -118,13 +120,13 @@ namespace ExcelDoc.Server.Services
                     var errorText = ex.ToString();
                     itemLog.Erro = errorText.Length > 4000 ? errorText[..4000] : errorText;
                     itemLog.JsonEnviado = itemLog.JsonEnviado == string.Empty
-                        ? GetExceptionData(ex, RequestPayloadKey) ?? JsonSerializer.Serialize(new { FirstRow = firstRowNumber, RowCount = group.Count }, JsonOptions)
+                        ? GetExceptionData(ex, RequestPayloadKey) ?? JsonSerializer.Serialize(new { group.IdExcel, FirstRow = firstRowNumber, RowCount = groupRows.Count }, JsonOptions)
                         : itemLog.JsonEnviado;
                     itemLog.JsonRetorno ??= GetExceptionData(ex, ResponseBodyKey) ?? ex.Message;
                     processamento.TotalErro++;
 
-                    _logger.LogError(ex, "Erro ao processar grupo (linha inicial {LinhaExcel}) do processamento {ProcessamentoId}",
-                        firstRowNumber, processamento.Id);
+                    _logger.LogError(ex, "Erro ao processar IdExcel {IdExcel} (linha inicial {LinhaExcel}) do processamento {ProcessamentoId}",
+                        group.IdExcel, firstRowNumber, processamento.Id);
                 }
 
                 await _processamentoRepository.AddItemAsync(itemLog, cancellationToken);
@@ -133,6 +135,38 @@ namespace ExcelDoc.Server.Services
 
             processamento.Status = processamento.TotalErro > 0 ? StatusProcessamento.Erro : StatusProcessamento.Sucesso;
             await _processamentoRepository.SaveChangesAsync(cancellationToken);
+        }
+
+        private async Task RegisterValidationErrorAsync(
+            Processamento processamento,
+            ExcelImportValidationException exception,
+            CancellationToken cancellationToken)
+        {
+            processamento.Status = StatusProcessamento.Erro;
+            processamento.TotalRegistros = 0;
+            processamento.TotalSucesso = 0;
+            processamento.TotalErro = 1;
+
+            var errorText = exception.ToString();
+            await _processamentoRepository.AddItemAsync(new ProcessamentoItem
+            {
+                FK_IdProcessamento = processamento.Id,
+                LinhaExcel = exception.RowNumber ?? 0,
+                JsonEnviado = JsonSerializer.Serialize(new
+                {
+                    Validation = "IdExcel",
+                    Column = "#",
+                    exception.RowNumber
+                }, JsonOptions),
+                JsonRetorno = exception.Message,
+                Erro = errorText.Length > 4000 ? errorText[..4000] : errorText,
+                Status = StatusProcessamentoItem.Erro
+            }, cancellationToken);
+
+            await _processamentoRepository.SaveChangesAsync(cancellationToken);
+
+            _logger.LogWarning(exception, "Erro de validacao da planilha no processamento {ProcessamentoId}. LinhaExcel={LinhaExcel}",
+                processamento.Id, exception.RowNumber);
         }
 
         private static string? GetExceptionData(Exception exception, string key)
