@@ -10,9 +10,15 @@
   <data name="CollectionCannotBeChildOfItself" xml:space="preserve"><value>Una colecci&#xF3;n no puede ser hija de s&#xED; misma.</value></data>
   <data name="CollectionDeleteActiveLinks" xml:space="preserve"><value>No se pudo eliminar la colecci&#xF3;n porque tiene v&#xED;nculos activos.</value></data>
   <data name="CollectionDeleteLinkedDocuments" xml:space="preserve"><value>No es posible eliminar la colecci&#xF3;n porque est&#xE1; vinculada a documentos.</value></data>
+  <data name="CollectionInvalid" xml:space="preserve"><value>Colecci&#xF3;n inv&#xE1;lida.</value></data>
   <data name="CollectionNameMaxLength" xml:space="preserve"><value>El nombre de la colecci&#xF3;n debe tener como m&#xE1;ximo 150 caracteres.</value></data>
   <data name="CollectionNameRequired" xml:space="preserve"><value>El nombre de la colecci&#xF3;n es obligatorio.</value></data>
   <data name="CollectionNotFound" xml:space="preserve"><value>Colecci&#xF3;n no encontrada.</value></data>
+  <data name="CollectionRequired" xml:space="preserve"><value>La colecci&#xF3;n es obligatoria.</value></data>
+  <data name="ColumnIndexPositive" xml:space="preserve"><value>El &#xED;ndice de la columna debe ser un n&#xFA;mero positivo.</value></data>
+  <data name="ColumnIndexRequired" xml:space="preserve"><value>El &#xED;ndice de la columna es obligatorio.</value></data>
+  <data name="CloneNameMaxLength" xml:space="preserve"><value>El nombre del clon debe tener como m&#xE1;ximo 150 caracteres.</value></data>
+  <data name="CloneNameRequired" xml:space="preserve"><value>El nombre del clon es obligatorio.</value></data>
   <data name="CompanyAlreadyExistsWithName" xml:space="preserve"><value>Ya existe una empresa registrada con este nombre.</value></data>
   <data name="CompanyNameRequired" xml:space="preserve"><value>El nombre de la empresa es obligatorio.</value></data>
   <data name="CompanyNotFound" xml:space="preserve"><value>Empresa no encontrada.</value></data>
@@ -30,10 +36,16 @@
   <data name="DocumentNameRequired" xml:space="preserve"><value>El nombre del documento es obligatorio.</value></data>
   <data name="DocumentNotFound" xml:space="preserve"><value>Documento no encontrado.</value></data>
   <data name="DocumentProcessedSuccessfully" xml:space="preserve"><value>Documento procesado correctamente.</value></data>
+  <data name="DocumentInvalid" xml:space="preserve"><value>Documento inv&#xE1;lido.</value></data>
+  <data name="DocumentRequired" xml:space="preserve"><value>El documento es obligatorio.</value></data>
   <data name="DuplicateCollectionsProfile" xml:space="preserve"><value>No se permite duplicar colecciones dentro del mismo perfil.</value></data>
   <data name="EmailAlreadyRegistered" xml:space="preserve"><value>El e-mail ya est&#xE1; registrado.</value></data>
   <data name="EmptyIdExcelValueAtRow" xml:space="preserve"><value>Valor vac&#xED;o en la columna '#' en la fila {0}.</value></data>
   <data name="FileRequired" xml:space="preserve"><value>El archivo es obligatorio.</value></data>
+  <data name="FieldNameMaxLength" xml:space="preserve"><value>El nombre del campo debe tener como m&#xE1;ximo 150 caracteres.</value></data>
+  <data name="FieldNameRequired" xml:space="preserve"><value>El nombre del campo es obligatorio.</value></data>
+  <data name="FieldTypeRequired" xml:space="preserve"><value>El tipo del campo es obligatorio.</value></data>
+  <data name="FormatMaxLength" xml:space="preserve"><value>El formato debe tener como m&#xE1;ximo 50 caracteres.</value></data>
   <data name="HeaderCollectionsCannotBeNested" xml:space="preserve"><value>Las colecciones de encabezado no pueden anidarse.</value></data>
   <data name="InvalidBooleanValue" xml:space="preserve"><value>Valor booleano inv&#xE1;lido: {0}</value></data>
   <data name="InvalidDocumentLinks" xml:space="preserve"><value>Los documentos informados para el v&#xED;nculo son inv&#xE1;lidos.</value></data>
@@ -46,12 +58,16 @@
   <data name="MappingFieldColumnIndexAlreadyExists" xml:space="preserve"><value>Ya existe un campo con el &#xED;ndice de columna {0} en este mapeo.</value></data>
   <data name="MappingFieldMappingCannotBeChanged" xml:space="preserve"><value>No se permite cambiar el mapeo del campo.</value></data>
   <data name="MappingFieldNotFound" xml:space="preserve"><value>Campo de mapeo no encontrado.</value></data>
+  <data name="MappingInvalid" xml:space="preserve"><value>Mapeo inv&#xE1;lido.</value></data>
   <data name="MappingIdNotFound" xml:space="preserve"><value>Mapeo {0} no encontrado.</value></data>
+  <data name="MappingNameMaxLength" xml:space="preserve"><value>El nombre del mapeo debe tener como m&#xE1;ximo 150 caracteres.</value></data>
+  <data name="MappingNameRequired" xml:space="preserve"><value>El nombre del mapeo es obligatorio.</value></data>
   <data name="MappingProfileDoesNotBelongToDocument" xml:space="preserve"><value>El perfil de mapeo informado no pertenece al documento seleccionado.</value></data>
   <data name="MappingProfileDocumentCannotBeChanged" xml:space="preserve"><value>No se permite cambiar el documento del perfil.</value></data>
   <data name="MappingProfileHasNoItems" xml:space="preserve"><value>El perfil de mapeo informado no tiene elementos para procesar.</value></data>
   <data name="MappingProfileNotFound" xml:space="preserve"><value>Perfil de mapeo no encontrado.</value></data>
   <data name="MappingNotFound" xml:space="preserve"><value>Mapeo no encontrado.</value></data>
+  <data name="MappingRequired" xml:space="preserve"><value>El mapeo es obligatorio.</value></data>
   <data name="OnlyAdminsCanChangeDefaultMappings" xml:space="preserve"><value>Solo los administradores pueden cambiar mapeos predeterminados.</value></data>
   <data name="OnlyAdminsCanChangeDocuments" xml:space="preserve"><value>Solo los administradores pueden cambiar documentos.</value></data>
   <data name="OnlyAdminsCanChangeSystemCollections" xml:space="preserve"><value>Solo los administradores pueden cambiar colecciones predeterminadas del sistema.</value></data>
@@ -65,6 +81,8 @@
   <data name="PasswordResetCodeInvalidOrExpired" xml:space="preserve"><value>C&#xF3;digo inv&#xE1;lido o expirado.</value></data>
   <data name="ProcessingNotFound" xml:space="preserve"><value>Procesamiento no encontrado.</value></data>
   <data name="ProcessingWithoutMappingProfileNotSupported" xml:space="preserve"><value>No se admite procesamiento sin perfil de mapeo.</value></data>
+  <data name="ProfileNameMaxLength" xml:space="preserve"><value>El nombre del perfil debe tener como m&#xE1;ximo 150 caracteres.</value></data>
+  <data name="ProfileNameRequired" xml:space="preserve"><value>El nombre del perfil es obligatorio.</value></data>
   <data name="ProfileCollectionRelationshipCycle" xml:space="preserve"><value>La relaci&#xF3;n entre colecciones del perfil contiene un ciclo.</value></data>
   <data name="ProfileContainsCollectionsNotInDocument" xml:space="preserve"><value>El perfil contiene colecciones que no pertenecen al documento seleccionado.</value></data>
   <data name="ProfileMustContainExactlyOneHeaderCollection" xml:space="preserve"><value>El perfil debe contener exactamente una colecci&#xF3;n de encabezado.</value></data>

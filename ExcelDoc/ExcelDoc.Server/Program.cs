@@ -4,11 +4,9 @@ using ExcelDoc.Server.Options;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using ExcelDoc.Server;
 using ExcelDoc.Server.IoC;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Localization;
-using System.Globalization;
-
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -55,7 +53,12 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddInfrastructureRepositories();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddDataAnnotationsLocalization(options =>
+    {
+        options.DataAnnotationLocalizerProvider = (_, factory) =>
+            factory.Create(typeof(SharedResource));
+    });
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 

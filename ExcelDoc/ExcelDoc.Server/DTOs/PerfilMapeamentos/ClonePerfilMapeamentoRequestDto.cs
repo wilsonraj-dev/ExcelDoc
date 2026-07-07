@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using ExcelDoc.Server.Localization;
 
 namespace ExcelDoc.Server.DTOs.PerfilMapeamentos
 {
     public class ClonePerfilMapeamentoRequestDto
     {
-        [Required(ErrorMessage = "Nome do clone é obrigatório.")]
-        [MaxLength(150, ErrorMessage = "Nome do clone deve ter no máximo 150 caracteres.")]
+        [Required(ErrorMessage = MessageKeys.CloneNameRequired)]
+        [MaxLength(150, ErrorMessage = MessageKeys.CloneNameMaxLength)]
         public string Nome { get; set; } = string.Empty;
     }
 }
