@@ -34,9 +34,9 @@
     </div>
   </div>
 
-  <p class="feedback feedback--error" *ngIf="errorMessage">{{ errorMessage }}</p>
-  <p class="feedback feedback--info" *ngIf="infoMessage">{{ infoMessage }}</p>
-  <p class="feedback feedback--success" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="feedback feedback--error" *ngIf="errorFeedback">{{ errorFeedback }}</p>
+  <p class="feedback feedback--info" *ngIf="infoFeedback">{{ infoFeedback }}</p>
+  <p class="feedback feedback--success" *ngIf="successFeedback">{{ successFeedback }}</p>
 
   <div class="loading-state" *ngIf="loadingEmpresas && !empresas.length">
     <mat-spinner diameter="36"></mat-spinner>
@@ -89,7 +89,7 @@
 
       <form class="settings-form" [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingConfiguration">
         <div class="settings-form__company">
-          <span class="settings-form__label">{{ 'companySettings.label.company' | translate }}</span>
+          <span class="settings-form__label">{{ 'companySettings.tableCompany' | translate }}</span>
           <strong>{{ selectedEmpresa?.nomeEmpresa }}</strong>
         </div>
 

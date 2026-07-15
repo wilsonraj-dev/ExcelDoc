@@ -10,6 +10,9 @@ namespace ExcelDoc.Server.DTOs.Colecoes
         [MaxLength(150)]
         public string NomeColecao { get; set; } = string.Empty;
 
+        [MaxLength(500)]
+        public string? Descricao { get; set; }
+
         [Required]
         public TipoColecao TipoColecao { get; set; }
 

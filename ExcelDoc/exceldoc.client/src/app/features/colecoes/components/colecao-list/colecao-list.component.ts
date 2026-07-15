@@ -32,7 +32,7 @@ interface ColecaoListFilter {
   styleUrl: './colecao-list.component.css'
 })
 export class ColecaoListComponent implements OnInit {
-  readonly displayedColumns: string[] = ['nomeColecao', 'tipoColecao', 'tipo', 'mapeamentos', 'acoes'];
+  readonly displayedColumns: string[] = ['nomeColecao', 'descricao', 'tipoColecao', 'tipo', 'mapeamentos', 'acoes'];
   readonly pageSizeOptions = [5, 10, 20];
   readonly dataSource = new MatTableDataSource<Colecao>([]);
   readonly filterForm = new FormGroup({

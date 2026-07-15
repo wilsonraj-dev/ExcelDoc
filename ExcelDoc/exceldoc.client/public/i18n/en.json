@@ -256,6 +256,7 @@
       "table": {
         "header": {
           "collectionName": "Collection Name",
+          "description": "Description",
           "collectionType": "Collection Type",
           "type": "Type",
           "mappings": "Mappings",
@@ -303,11 +304,13 @@
       },
       "fields": {
         "collectionName": "Collection name",
+        "description": "Description",
         "collectionType": "Collection type",
         "linkedDocuments": "Linked documents"
       },
       "placeholders": {
-        "collectionName": "E.g.: Standard invoice items"
+        "collectionName": "E.g.: Standard invoice items",
+        "description": "Describe the purpose of the collection"
       },
       "documentsHint": {
         "noneAvailable": "No documents available to link.",
@@ -337,6 +340,7 @@
         "collectionNameRequired": "Enter the collection name.",
         "collectionTypeRequired": "Select the collection type.",
         "collectionNameMaxLength": "The collection name must have at most 150 characters.",
+        "descriptionMaxLength": "The description must have at most 500 characters.",
         "invalidField": "Invalid field."
       },
       "feedback": {

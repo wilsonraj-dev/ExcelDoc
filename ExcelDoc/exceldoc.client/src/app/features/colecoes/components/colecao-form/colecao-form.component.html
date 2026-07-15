@@ -36,6 +36,12 @@
       </div>
 
       <mat-form-field appearance="outline">
+        <mat-label>{{ 'colecoes.colecaoForm.fields.description' | translate }}</mat-label>
+        <textarea matInput formControlName="descricao" rows="3" [placeholder]="'colecoes.colecaoForm.placeholders.description' | translate"></textarea>
+        <mat-error *ngIf="isInvalid('descricao')">{{ getErrorMessage('descricao') }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
         <mat-label>{{ 'colecoes.colecaoForm.fields.linkedDocuments' | translate }}</mat-label>
         <mat-select formControlName="documentoIds" multiple>
           <mat-select-trigger>{{ selectedDocumentosLabel }}</mat-select-trigger>

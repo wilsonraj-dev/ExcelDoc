@@ -39,7 +39,9 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
   empresas: EmpresaResponse[] = [];
   readonly empresasDataSource = new MatTableDataSource<EmpresaResponse>([]);
   errorMessage = '';
+  errorMessageKey = '';
   infoMessage = '';
+  infoMessageKey = '';
   isAdministrator = false;
   loadingConfiguration = false;
   loadingEmpresas = false;
@@ -48,6 +50,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
   selectedEmpresaId: number | null = null;
   session: LoginResponse | null;
   successMessage = '';
+  successMessageKey = '';
   hasExistingConfiguration = false;
 
   private readonly destroyRef = inject(DestroyRef);
@@ -77,6 +80,18 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
 
   get isBusy(): boolean {
     return this.loadingEmpresas || this.loadingConfiguration || this.saving;
+  }
+
+  get errorFeedback(): string {
+    return this.errorMessageKey ? this.translate.instant(this.errorMessageKey) : this.errorMessage;
+  }
+
+  get infoFeedback(): string {
+    return this.infoMessageKey ? this.translate.instant(this.infoMessageKey) : this.infoMessage;
+  }
+
+  get successFeedback(): string {
+    return this.successMessageKey ? this.translate.instant(this.successMessageKey) : this.successMessage;
   }
 
   get pageTitle(): string {
@@ -123,7 +138,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
     }
 
     if (!this.session.empresaId) {
-      this.errorMessage = this.translate.instant('companySettings.errors.noLinkedCompany');
+      this.setErrorKey('companySettings.errors.noLinkedCompany');
       return;
     }
 
@@ -140,7 +155,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
     this.clearFeedback(true);
 
     if (!this.selectedEmpresaId) {
-      this.errorMessage = this.translate.instant('companySettings.errors.selectCompany');
+      this.setErrorKey('companySettings.errors.selectCompany');
       return;
     }
 
@@ -166,7 +181,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
         next: (response: ConfiguracaoResponse) => {
           this.loadedEmpresaId = response.empresaId;
           this.hasExistingConfiguration = true;
-          this.successMessage = this.translate.instant('companySettings.successSaved');
+          this.setSuccessKey('companySettings.successSaved');
           this.form.reset({
             linkServiceLayer: response.linkServiceLayer,
             database: response.database,
@@ -175,7 +190,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
           });
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? this.translate.instant('companySettings.errors.saveConfiguration');
+          this.setErrorMessage(error.error?.detail, 'companySettings.errors.saveConfiguration');
         }
       });
   }
@@ -216,7 +231,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
       this.loadedEmpresaId = null;
       this.hasExistingConfiguration = false;
       this.form.reset(this.createEmptyFormValue());
-      this.errorMessage = this.translate.instant('companySettings.error.invalidCompany');
+      this.setErrorKey('companySettings.error.invalidCompany');
       return;
     }
 
@@ -226,11 +241,39 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
 
   private clearFeedback(clearInfoMessage: boolean): void {
     this.errorMessage = '';
+    this.errorMessageKey = '';
     this.successMessage = '';
+    this.successMessageKey = '';
 
     if (clearInfoMessage) {
       this.infoMessage = '';
+      this.infoMessageKey = '';
     }
+  }
+
+  private setErrorKey(key: string): void {
+    this.errorMessage = '';
+    this.errorMessageKey = key;
+  }
+
+  private setErrorMessage(message: string | undefined | null, fallbackKey: string): void {
+    if (message) {
+      this.errorMessage = message;
+      this.errorMessageKey = '';
+      return;
+    }
+
+    this.setErrorKey(fallbackKey);
+  }
+
+  private setInfoKey(key: string): void {
+    this.infoMessage = '';
+    this.infoMessageKey = key;
+  }
+
+  private setSuccessKey(key: string): void {
+    this.successMessage = '';
+    this.successMessageKey = key;
   }
 
   private createEmptyFormValue(): CompanySettingsFormValue {
@@ -275,11 +318,11 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
         error: (error: HttpErrorResponse) => {
           if (error.status === 404) {
             this.loadedEmpresaId = empresaId;
-            this.infoMessage = this.translate.instant('companySettings.info.noConfig');
+            this.setInfoKey('companySettings.info.noConfig');
             return;
           }
 
-          this.errorMessage = error.error?.detail ?? this.translate.instant('companySettings.errors.loadConfiguration');
+          this.setErrorMessage(error.error?.detail, 'companySettings.errors.loadConfiguration');
         }
       });
   }
@@ -300,7 +343,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
           this.syncSelectedEmpresa();
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.error?.detail ?? this.translate.instant('companySettings.errors.loadCompanies');
+          this.setErrorMessage(error.error?.detail, 'companySettings.errors.loadCompanies');
         }
       });
   }
@@ -315,7 +358,7 @@ export class CompanySettingsComponent implements OnInit, AfterViewInit {
 
     if (!empresa) {
       if (!this.loadingEmpresas && this.empresas.length > 0) {
-        this.errorMessage = this.translate.instant('companySettings.errors.selectedUnavailable');
+        this.setErrorKey('companySettings.errors.selectedUnavailable');
       }
       return;
     }

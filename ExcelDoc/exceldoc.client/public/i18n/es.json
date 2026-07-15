@@ -256,6 +256,7 @@
       "table": {
         "header": {
           "collectionName": "Nombre de la colección",
+          "description": "Descripción",
           "collectionType": "Tipo de colección",
           "type": "Tipo",
           "mappings": "Mapeos",
@@ -303,11 +304,13 @@
       },
       "fields": {
         "collectionName": "Nombre de la colección",
+        "description": "Descripción",
         "collectionType": "Tipo de colección",
         "linkedDocuments": "Documentos vinculados"
       },
       "placeholders": {
-        "collectionName": "Ej.: Elementos estándar de la factura"
+        "collectionName": "Ej.: Elementos estándar de la factura",
+        "description": "Describa la finalidad de la colección"
       },
       "documentsHint": {
         "noneAvailable": "No hay documentos disponibles para vincular.",
@@ -337,6 +340,7 @@
         "collectionNameRequired": "Informe el nombre de la colección.",
         "collectionTypeRequired": "Seleccione el tipo de colección.",
         "collectionNameMaxLength": "El nombre de la colección debe tener como máximo 150 caracteres.",
+        "descriptionMaxLength": "La descripción debe tener como máximo 500 caracteres.",
         "invalidField": "Campo inválido."
       },
       "feedback": {

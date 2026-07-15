@@ -256,6 +256,7 @@
       "table": {
         "header": {
           "collectionName": "Nome da coleção",
+          "description": "Descrição",
           "collectionType": "Tipo da coleção",
           "type": "Tipo",
           "mappings": "Mapeamentos",
@@ -303,11 +304,13 @@
       },
       "fields": {
         "collectionName": "Nome da coleção",
+        "description": "Descrição",
         "collectionType": "Tipo da coleção",
         "linkedDocuments": "Documentos vinculados"
       },
       "placeholders": {
-        "collectionName": "Ex.: Itens padrão da nota fiscal"
+        "collectionName": "Ex.: Itens padrão da nota fiscal",
+        "description": "Descreva a finalidade da coleção"
       },
       "documentsHint": {
         "noneAvailable": "Nenhum documento disponível para vinculação.",
@@ -337,6 +340,7 @@
         "collectionNameRequired": "Informe o nome da coleção.",
         "collectionTypeRequired": "Selecione o tipo da coleção.",
         "collectionNameMaxLength": "O nome da coleção deve ter no máximo 150 caracteres.",
+        "descriptionMaxLength": "A descrição deve ter no máximo 500 caracteres.",
         "invalidField": "Campo inválido."
       },
       "feedback": {

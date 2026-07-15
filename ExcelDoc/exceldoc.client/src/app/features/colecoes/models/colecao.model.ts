@@ -8,6 +8,7 @@ export enum TipoColecao {
 export interface Colecao {
   id: number;
   nomeColecao: string;
+  descricao?: string | null;
   tipoColecao: TipoColecao | string | number;
   fk_IdEmpresa?: number | null;
   empresaId?: number | null;
@@ -19,6 +20,7 @@ export interface Colecao {
 
 export interface ColecaoPayload {
   nomeColecao: string;
+  descricao: string | null;
   tipoColecao: number;
   fk_IdEmpresa: number | null;
   documentoIds: number[];

@@ -28,6 +28,7 @@ import { ColecaoService } from '../../services/colecao.service';
 export class ColecaoFormComponent implements OnInit {
   readonly form = new FormGroup({
     nomeColecao: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(150)] }),
+    descricao: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),
     tipoColecao: new FormControl<TipoColecao>(TipoColecao.Header, { nonNullable: true, validators: [Validators.required] }),
     documentoIds: new FormControl<number[]>([], { nonNullable: true }),
     criarComoPadrao: new FormControl(false, { nonNullable: true })
@@ -171,12 +172,12 @@ export class ColecaoFormComponent implements OnInit {
     this.loadEditData(colecaoId);
   }
 
-  isInvalid(controlName: 'nomeColecao' | 'tipoColecao'): boolean {
+  isInvalid(controlName: 'nomeColecao' | 'descricao' | 'tipoColecao'): boolean {
     const control = this.form.controls[controlName];
     return control.invalid && (control.dirty || control.touched);
   }
 
-  getErrorMessage(controlName: 'nomeColecao' | 'tipoColecao'): string {
+  getErrorMessage(controlName: 'nomeColecao' | 'descricao' | 'tipoColecao'): string {
     const control = this.form.controls[controlName];
 
     if (control.hasError('required')) {
@@ -186,7 +187,9 @@ export class ColecaoFormComponent implements OnInit {
     }
 
     if (control.hasError('maxlength')) {
-      return this.translate.instant('colecoes.colecaoForm.validation.collectionNameMaxLength');
+      return controlName === 'descricao'
+        ? this.translate.instant('colecoes.colecaoForm.validation.descriptionMaxLength')
+        : this.translate.instant('colecoes.colecaoForm.validation.collectionNameMaxLength');
     }
 
     return this.translate.instant('colecoes.colecaoForm.validation.invalidField');
@@ -216,6 +219,7 @@ export class ColecaoFormComponent implements OnInit {
 
     const payload: ColecaoPayload = {
       nomeColecao: this.form.controls.nomeColecao.getRawValue().trim(),
+      descricao: this.form.controls.descricao.getRawValue().trim() || null,
       tipoColecao: toTipoColecaoRequestValue(this.form.controls.tipoColecao.getRawValue()),
       fk_IdEmpresa: this.isColecaoPadraoSelecionada ? null : this.empresaId,
       documentoIds: this.form.controls.documentoIds.getRawValue()
@@ -308,6 +312,7 @@ export class ColecaoFormComponent implements OnInit {
           this.documentos = [...documentos].sort((left, right) => left.nomeDocumento.localeCompare(right.nomeDocumento));
           this.form.reset({
             nomeColecao: colecao.nomeColecao,
+            descricao: colecao.descricao ?? '',
             tipoColecao: resolveTipoColecao(colecao.tipoColecao),
             documentoIds: getColecaoDocumentoIds(colecao),
             criarComoPadrao: isColecaoPadrao(colecao)

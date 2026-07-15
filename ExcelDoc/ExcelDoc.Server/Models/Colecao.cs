@@ -10,6 +10,9 @@ namespace ExcelDoc.Server.Models
         [MaxLength(150)]
         public string NomeColecao { get; set; } = string.Empty;
 
+        [MaxLength(500)]
+        public string? Descricao { get; set; }
+
         public TipoColecao TipoColecao { get; set; }
 
         public int? FK_IdEmpresa { get; set; }

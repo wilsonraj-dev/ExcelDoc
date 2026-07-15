@@ -9,6 +9,8 @@ namespace ExcelDoc.Server.DTOs.Colecoes
 
         public string NomeColecao { get; set; } = string.Empty;
 
+        public string? Descricao { get; set; }
+
         public TipoColecao TipoColecao { get; set; }
 
         public int? EmpresaId { get; set; }

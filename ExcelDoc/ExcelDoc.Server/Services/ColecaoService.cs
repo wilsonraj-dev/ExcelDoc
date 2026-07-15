@@ -63,6 +63,7 @@ namespace ExcelDoc.Server.Services
             var colecao = new Colecao
             {
                 NomeColecao = nomeColecao,
+                Descricao = request.Descricao?.Trim(),
                 TipoColecao = request.TipoColecao,
                 FK_IdEmpresa = empresaId,
                 DocumentoColecoes = documentos.Select(documento => new DocumentoColecao
@@ -98,6 +99,7 @@ namespace ExcelDoc.Server.Services
             EnsureAllDocumentosExist(documentoIds, documentos);
 
             colecao.NomeColecao = nomeColecao;
+            colecao.Descricao = request.Descricao?.Trim();
             colecao.TipoColecao = request.TipoColecao;
             colecao.FK_IdEmpresa = empresaId;
             SynchronizeDocumentos(colecao, documentoIds);
@@ -258,6 +260,7 @@ namespace ExcelDoc.Server.Services
             {
                 Id = colecao.Id,
                 NomeColecao = colecao.NomeColecao,
+                Descricao = colecao.Descricao,
                 TipoColecao = colecao.TipoColecao,
                 EmpresaId = colecao.FK_IdEmpresa,
                 DocumentoIds = colecao.DocumentoColecoes

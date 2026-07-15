@@ -144,6 +144,9 @@ namespace ExcelDoc.Server.Data
                     .IsRequired()
                     .HasMaxLength(150);
 
+                entity.Property(e => e.Descricao)
+                    .HasMaxLength(500);
+
                 entity.Property(e => e.TipoColecao)
                     .HasConversion<string>()
                     .HasMaxLength(20);
