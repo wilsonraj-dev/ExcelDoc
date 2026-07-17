@@ -33,7 +33,7 @@ const routes: Routes = [
     path: 'colecoes',
     loadChildren: () => import('./features/colecoes/colecoes.module').then((module) => module.ColecoesModule),
     canActivate: [AuthGuard],
-    data: { roles: [AUTH_ROLES.administrator, AUTH_ROLES.user] }
+    data: { roles: [AUTH_ROLES.administrator] }
   },
   {
     path: 'mapeamento',

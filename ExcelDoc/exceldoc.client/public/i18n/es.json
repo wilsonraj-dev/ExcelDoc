@@ -374,6 +374,90 @@
         "create": "Crear"
       }
     },
+    "workspace": {
+      "breadcrumbs": {
+        "ariaLabel": "Navegación del mapeo",
+        "mappings": "Mapeos"
+      },
+      "loading": {
+        "document": "Cargando documento",
+        "mapping": "Cargando mapeo"
+      },
+      "meta": {
+        "base": "Base",
+        "marketingDocuments": "Documentos de marketing",
+        "createdAt": "Creado el"
+      },
+      "status": { "active": "Activo" },
+      "header": {
+        "description": "Configure cómo se importan los campos de Excel a SAP Business One."
+      },
+      "fields": {
+        "document": "Documento SAP",
+        "mapping": "Configuración de mapeo"
+      },
+      "actions": {
+        "excelPreview": "Vista previa de Excel",
+        "clone": "Clonar y personalizar",
+        "cloneShort": "Crear mi versión",
+        "cloning": "Clonando...",
+        "save": "Guardar mapeo",
+        "saving": "Guardando..."
+      },
+      "tabs": {
+        "ariaLabel": "Secciones del mapeo",
+        "mapping": "Mapeo",
+        "document": "Información del documento",
+        "history": "Historial de cambios",
+        "historyHint": "El historial detallado estará disponible en una próxima versión.",
+        "soon": "Próximamente"
+      },
+      "protection": {
+        "title": "Modelo predeterminado protegido",
+        "description": "Este modelo funciona inmediatamente para documentos de marketing. Clónelo solo cuando su empresa necesite campos o columnas diferentes."
+      },
+      "legacy": {
+        "title": "Configuración antigua en modo protegido",
+        "description": "Esta configuración aún comparte campos con el modelo predeterminado. Cree una nueva versión para editarla con seguridad."
+      },
+      "structure": {
+        "title": "Estructura del documento",
+        "description": "Colecciones definidas por el modelo SAP",
+        "activeCollections": "colecciones activas",
+        "collections": "colecciones",
+        "fields": "campos",
+        "mappedFields": "campos mapeados",
+        "fixedHint": "La estructura proviene del modelo predeterminado; personalice los campos dentro de cada colección."
+      },
+      "cloneDialog": {
+        "title": "Crear mapeo personalizado",
+        "label": "Nombre de la nueva configuración",
+        "copySuffix": "Mi empresa"
+      },
+      "documentInfo": {
+        "title": "Información del documento",
+        "description": "Datos técnicos utilizados para enviar el documento a SAP Business One.",
+        "name": "Documento",
+        "endpoint": "Endpoint de Service Layer",
+        "configuration": "Configuración",
+        "scope": "Alcance"
+      },
+      "empty": {
+        "title": "Mapeo no disponible",
+        "noDocuments": "No se ha configurado ningún documento SAP.",
+        "noMappings": "Este documento aún no tiene un mapeo predeterminado.",
+        "selectCollectionTitle": "Seleccione una colección",
+        "selectCollectionDescription": "Elija una parte de la estructura a la izquierda para ver sus campos."
+      },
+      "feedback": {
+        "companyRequired": "Vincule el usuario a una empresa para crear una versión personalizada.",
+        "cloned": "Versión personalizada creada. Los campos ahora se pueden editar con seguridad.",
+        "cloneError": "No se pudo crear la versión personalizada.",
+        "loadDocumentsError": "No se pudieron cargar los documentos.",
+        "loadMappingsError": "No se pudieron cargar los mapeos del documento.",
+        "unsavedChanges": "Guarde o cancele los cambios antes de cambiar de documento, configuración o colección."
+      }
+    },
     "mapeamentoHome": {
       "header": {
         "eyebrow": "Mapeo de campos",
@@ -434,6 +518,7 @@
       }
     },
     "mapeamentoEditor": {
+      "level": "Nivel",
       "actions": {
         "excelPreview": "Vista previa de Excel",
         "addField": "Agregar campo",
@@ -442,14 +527,22 @@
       },
       "tooltips": {
         "uploadExcel": "Cargar un archivo Excel para ver valores",
-        "removeField": "Eliminar campo"
+        "removeField": "Eliminar campo",
+        "orderField": "Orden del campo en el mapeo",
+        "sapField": "Propiedad enviada a la API de SAP Business One",
+        "excelColumn": "Posición de la columna en la hoja, comenzando en 1",
+        "readOnlyField": "Campo protegido del modelo predeterminado"
+      },
+      "search": {
+        "label": "Buscar campo SAP",
+        "placeholder": "Buscar campo SAP..."
       },
       "table": {
         "header": {
-          "fieldName": "Nombre del campo",
+          "fieldName": "Campo SAP",
           "excelColumn": "Columna Excel",
           "type": "Tipo",
-          "format": "Formato",
+          "format": "Formato / Regla",
           "preview": "Vista previa",
           "actions": "Acciones"
         }
@@ -467,7 +560,16 @@
         "datetime": "Fecha y hora",
         "boolean": "Booleano"
       },
-      "empty": { "noFields": "No hay campos registrados para este mapeo." },
+      "empty": {
+        "noFields": "No hay campos registrados para este mapeo.",
+        "noSearchResults": "Ningún campo coincide con la búsqueda."
+      },
+      "footer": {
+        "cloneHint": "Clone el modelo para cambiar estos campos sin afectar el predeterminado.",
+        "editHint": "Edite los campos y guarde el mapeo al finalizar.",
+        "of": "de",
+        "fields": "campos"
+      },
       "preview": { "emptyColumn": "(columna vacía)" },
       "validation": {
         "fieldNameRequired": "El nombre del campo es obligatorio",
@@ -656,7 +758,10 @@
     },
     "processamentoUpload": {
       "title": "Importar planilla",
-      "fields": { "mappingProfile": "Perfil de mapeo" },
+      "fields": {
+        "mappingProfile": "Perfil de mapeo",
+        "mappingConfiguration": "Configuración de mapeo"
+      },
       "loading": { "profiles": "Cargando perfiles..." },
       "actions": {
         "selectFile": "Seleccionar archivo .xlsx",
@@ -753,6 +858,10 @@
         "collections": {
           "label": "Colecciones",
           "description": "Organice conjuntos reutilizables."
+        },
+        "mappings": {
+          "label": "Mapeos",
+          "description": "Use el estándar de SAP o cree una versión personalizada."
         },
         "mappingProfile": {
           "label": "Perfil de mapeo",

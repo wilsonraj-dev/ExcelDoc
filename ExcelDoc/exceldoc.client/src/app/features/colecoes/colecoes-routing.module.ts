@@ -10,19 +10,19 @@ const routes: Routes = [
     path: '',
     component: ColecaoListComponent,
     canActivate: [AuthGuard],
-    data: { roles: [AUTH_ROLES.administrator, AUTH_ROLES.user] }
+    data: { roles: [AUTH_ROLES.administrator] }
   },
   {
     path: 'nova',
     component: ColecaoFormComponent,
     canActivate: [AuthGuard],
-    data: { roles: [AUTH_ROLES.administrator, AUTH_ROLES.user] }
+    data: { roles: [AUTH_ROLES.administrator] }
   },
   {
     path: ':id',
     component: ColecaoFormComponent,
     canActivate: [AuthGuard],
-    data: { roles: [AUTH_ROLES.administrator, AUTH_ROLES.user] }
+    data: { roles: [AUTH_ROLES.administrator] }
   }
 ];
 

@@ -64,7 +64,10 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-//await ApplicationDbInitializer.InitializeAsync(app.Services);
+if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("InitializeDefaults"))
+{
+    await ApplicationDbInitializer.InitializeAsync(app.Services);
+}
 
 app.UseDefaultFiles();
 app.MapStaticAssets();

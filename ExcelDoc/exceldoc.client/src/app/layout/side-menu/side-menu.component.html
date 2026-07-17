@@ -1,8 +1,9 @@
 <aside class="side-menu" *ngIf="isAuthenticated">
-  <div class="side-menu__brand">
-    <span class="side-menu__badge">ExcelDoc</span>
-    <h1>{{ 'layout.sideMenu.header.title' | translate }}</h1>
-    <p>{{ 'layout.sideMenu.header.description' | translate }}</p>
+  <div class="side-menu__brand" aria-label="ExcelDoc" matTooltip="ExcelDoc" matTooltipPosition="right">
+    <span class="side-menu__logo" aria-hidden="true">
+      <mat-icon>deployed_code</mat-icon>
+    </span>
+    <span class="visually-hidden">ExcelDoc</span>
   </div>
 
   <mat-nav-list class="side-menu__nav" [attr.aria-label]="'layout.sideMenu.navAriaLabel' | translate">
@@ -11,10 +12,12 @@
        *ngFor="let item of availableMenuItems"
        [routerLink]="item.route"
        routerLinkActive="is-active"
+       [attr.aria-label]="item.labelKey | translate"
+       [matTooltip]="item.labelKey | translate"
+       matTooltipPosition="right"
        [routerLinkActiveOptions]="{ exact: item.exact ?? false }">
-      <mat-icon class="side-menu__icon" matListItemIcon>{{ item.icon }}</mat-icon>
-      <span matListItemTitle>{{ item.labelKey | translate }}</span>
-      <span matListItemLine>{{ item.descriptionKey | translate }}</span>
+      <mat-icon class="side-menu__icon" aria-hidden="true">{{ item.icon }}</mat-icon>
+      <span class="visually-hidden">{{ item.labelKey | translate }}</span>
     </a>
   </mat-nav-list>
 </aside>

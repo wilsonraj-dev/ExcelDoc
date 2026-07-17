@@ -1,55 +1,104 @@
-<section class="mapeamento-editor-container">
-  <div class="header-bar">
-    <div class="header-left">
-      <h3>{{ mapeamento.nome }}</h3>
-      <span class="colecao-badge">{{ colecaoNome || (('mapeamento.common.collectionNumberPrefix' | translate) + colecaoId) }}</span>
-      <span class="readonly-badge" *ngIf="readonly">{{ 'mapeamento.common.readOnly' | translate }}</span>
+<section class="mapping-editor" [class.mapping-editor--readonly]="readonly">
+  <header class="collection-header">
+    <div class="collection-header__identity">
+      <span class="collection-header__icon" aria-hidden="true">
+        <mat-icon>tune</mat-icon>
+      </span>
+      <div>
+        <div class="collection-header__title-row">
+          <h3>{{ colecaoNome || (('mapeamento.common.collectionNumberPrefix' | translate) + colecaoId) }}</h3>
+          <span class="level-chip">{{ 'mapeamento.mapeamentoEditor.level' | translate }} {{ nivel }}</span>
+          <span class="readonly-chip" *ngIf="readonly">
+            <mat-icon>lock</mat-icon>
+            {{ 'mapeamento.common.readOnly' | translate }}
+          </span>
+        </div>
+        <p>{{ mapeamento.nome }}</p>
+      </div>
     </div>
 
-    <div class="header-actions">
-      <button mat-stroked-button type="button" (click)="fileInput.click()" [matTooltip]="'mapeamento.mapeamentoEditor.tooltips.uploadExcel' | translate">
-        <mat-icon>upload_file</mat-icon>
-        {{ 'mapeamento.mapeamentoEditor.actions.excelPreview' | translate }}
+    <div class="collection-header__tools">
+      <label class="field-search">
+        <span class="sr-only">{{ 'mapeamento.mapeamentoEditor.search.label' | translate }}</span>
+        <input type="search"
+               [(ngModel)]="searchTerm"
+               [placeholder]="'mapeamento.mapeamentoEditor.search.placeholder' | translate">
+        <mat-icon>search</mat-icon>
+      </label>
+
+      <button mat-stroked-button
+              color="primary"
+              type="button"
+              (click)="adicionarCampo()"
+              [disabled]="readonly">
+        <mat-icon>add</mat-icon>
+        {{ 'mapeamento.mapeamentoEditor.actions.addField' | translate }}
       </button>
-      <input #fileInput type="file" accept=".xlsx,.xls" hidden (change)="onExcelUpload($event)">
     </div>
-  </div>
+  </header>
+
+  <input #fileInput type="file" accept=".xlsx,.xls" hidden (change)="onExcelUpload($event)">
 
   <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
 
   <div class="table-wrapper" *ngIf="!isLoading">
-    <table mat-table [dataSource]="rows" class="mapeamento-table">
+    <table mat-table [dataSource]="visibleRows" class="mapping-table">
+      <ng-container matColumnDef="ordem">
+        <th mat-header-cell *matHeaderCellDef class="drag-column"></th>
+        <td mat-cell *matCellDef="let row" class="drag-column">
+          <mat-icon class="drag-handle" [matTooltip]="'mapeamento.mapeamentoEditor.tooltips.orderField' | translate">drag_indicator</mat-icon>
+        </td>
+      </ng-container>
+
       <ng-container matColumnDef="nomeCampo">
         <th mat-header-cell *matHeaderCellDef>
-          {{ 'mapeamento.mapeamentoEditor.table.header.fieldName' | translate }} <span class="required-marker">*</span>
+          {{ 'mapeamento.mapeamentoEditor.table.header.fieldName' | translate }}
+          <mat-icon class="header-help" [matTooltip]="'mapeamento.mapeamentoEditor.tooltips.sapField' | translate">info</mat-icon>
         </th>
         <td mat-cell *matCellDef="let row">
-          <mat-form-field appearance="outline" class="inline-field">
-            <input matInput [(ngModel)]="row.nomeCampo" (ngModelChange)="onFieldChange(row)" [readonly]="readonly" [placeholder]="'mapeamento.mapeamentoEditor.placeholders.fieldName' | translate" [class.field-error]="row.errors.nomeCampo">
-            <mat-error *ngIf="row.errors.nomeCampo">{{ row.errors.nomeCampo }}</mat-error>
-          </mat-form-field>
+          <div class="readonly-field-name" *ngIf="readonly; else editableFieldName">
+            <span>{{ row.nomeCampo }}</span>
+            <span class="default-chip">{{ 'mapeamento.common.scope.default' | translate }}</span>
+          </div>
+          <ng-template #editableFieldName>
+            <mat-form-field appearance="outline" class="inline-field inline-field--name" subscriptSizing="dynamic">
+              <input matInput
+                     [(ngModel)]="row.nomeCampo"
+                     (ngModelChange)="onFieldChange(row)"
+                     [placeholder]="'mapeamento.mapeamentoEditor.placeholders.fieldName' | translate">
+              <mat-error *ngIf="row.errors.nomeCampo">{{ row.errors.nomeCampo }}</mat-error>
+            </mat-form-field>
+          </ng-template>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="indiceColuna">
         <th mat-header-cell *matHeaderCellDef>
-          {{ 'mapeamento.mapeamentoEditor.table.header.excelColumn' | translate }} <span class="required-marker">*</span>
+          {{ 'mapeamento.mapeamentoEditor.table.header.excelColumn' | translate }}
+          <mat-icon class="header-help" [matTooltip]="'mapeamento.mapeamentoEditor.tooltips.excelColumn' | translate">info</mat-icon>
         </th>
         <td mat-cell *matCellDef="let row">
-          <mat-form-field appearance="outline" class="inline-field inline-field-sm">
-            <input matInput type="number" min="1" [(ngModel)]="row.indiceColuna" (ngModelChange)="onFieldChange(row)" [readonly]="readonly" [placeholder]="'mapeamento.mapeamentoEditor.placeholders.excelColumn' | translate" [class.field-error]="row.errors.indiceColuna">
+          <mat-form-field appearance="outline" class="inline-field inline-field--column" subscriptSizing="dynamic">
+            <input matInput
+                   type="number"
+                   min="1"
+                   [(ngModel)]="row.indiceColuna"
+                   (ngModelChange)="onFieldChange(row)"
+                   [readonly]="readonly"
+                   [placeholder]="'mapeamento.mapeamentoEditor.placeholders.excelColumn' | translate">
             <mat-error *ngIf="row.errors.indiceColuna">{{ row.errors.indiceColuna }}</mat-error>
           </mat-form-field>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="tipoCampo">
-        <th mat-header-cell *matHeaderCellDef>
-          {{ 'mapeamento.mapeamentoEditor.table.header.type' | translate }} <span class="required-marker">*</span>
-        </th>
+        <th mat-header-cell *matHeaderCellDef>{{ 'mapeamento.mapeamentoEditor.table.header.type' | translate }}</th>
         <td mat-cell *matCellDef="let row">
-          <mat-form-field appearance="outline" class="inline-field">
-            <mat-select [(ngModel)]="row.tipoCampo" (ngModelChange)="onFieldChange(row)" [disabled]="readonly" [class.field-error]="row.errors.tipoCampo" [placeholder]="'mapeamento.mapeamentoEditor.placeholders.select' | translate">
+          <mat-form-field appearance="outline" class="inline-field" subscriptSizing="dynamic">
+            <mat-select [(ngModel)]="row.tipoCampo"
+                        (ngModelChange)="onFieldChange(row)"
+                        [disabled]="readonly"
+                        [placeholder]="'mapeamento.mapeamentoEditor.placeholders.select' | translate">
               <mat-option *ngFor="let opt of tipoCampoOptions" [value]="opt.value">
                 {{ ('mapeamento.mapeamentoEditor.fieldTypes.' + opt.label.toLowerCase()) | translate }}
               </mat-option>
@@ -62,8 +111,12 @@
       <ng-container matColumnDef="formato">
         <th mat-header-cell *matHeaderCellDef>{{ 'mapeamento.mapeamentoEditor.table.header.format' | translate }}</th>
         <td mat-cell *matCellDef="let row">
-          <mat-form-field appearance="outline" class="inline-field">
-            <input matInput [(ngModel)]="row.formato" (ngModelChange)="onFieldChange(row)" [disabled]="!isFormatoEnabled(row)" [placeholder]="'mapeamento.mapeamentoEditor.placeholders.format' | translate" [class.field-error]="row.errors.formato">
+          <mat-form-field appearance="outline" class="inline-field" subscriptSizing="dynamic">
+            <input matInput
+                   [(ngModel)]="row.formato"
+                   (ngModelChange)="onFieldChange(row)"
+                   [disabled]="!isFormatoEnabled(row)"
+                   [placeholder]="row.tipoCampo === 4 ? ('mapeamento.mapeamentoEditor.placeholders.format' | translate) : '-'">
             <mat-error *ngIf="row.errors.formato">{{ row.errors.formato }}</mat-error>
           </mat-form-field>
         </td>
@@ -73,15 +126,21 @@
         <th mat-header-cell *matHeaderCellDef>{{ 'mapeamento.mapeamentoEditor.table.header.preview' | translate }}</th>
         <td mat-cell *matCellDef="let row">
           <span class="preview-value" *ngIf="row.previewValue">{{ row.previewValue }}</span>
-          <span class="preview-empty" *ngIf="!row.previewValue && excelPreviewData.length > 0">—</span>
+          <span class="preview-empty" *ngIf="!row.previewValue">—</span>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="acoes">
         <th mat-header-cell *matHeaderCellDef>{{ 'mapeamento.mapeamentoEditor.table.header.actions' | translate }}</th>
-        <td mat-cell *matCellDef="let row; let i = index">
-          <div class="table-action-wrapper">
-            <button mat-icon-button color="warn" type="button" (click)="removerCampo(i)" [disabled]="readonly" [matTooltip]="'mapeamento.mapeamentoEditor.tooltips.removeField' | translate">
+        <td mat-cell *matCellDef="let row">
+          <div class="row-actions">
+            <mat-icon *ngIf="readonly" class="row-lock" [matTooltip]="'mapeamento.mapeamentoEditor.tooltips.readOnlyField' | translate">lock</mat-icon>
+            <button *ngIf="!readonly"
+                    mat-icon-button
+                    color="warn"
+                    type="button"
+                    (click)="removerCampoRow(row)"
+                    [matTooltip]="'mapeamento.mapeamentoEditor.tooltips.removeField' | translate">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
@@ -89,28 +148,40 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns" [class.row-error]="row.errors.nomeCampo || row.errors.indiceColuna || row.errors.tipoCampo || row.errors.formato" [class.row-new]="row.isNew"></tr>
+      <tr mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          [class.row-error]="row.errors.nomeCampo || row.errors.indiceColuna || row.errors.tipoCampo || row.errors.formato"
+          [class.row-new]="row.isNew"></tr>
     </table>
 
-    <div class="empty-state" *ngIf="rows.length === 0">
-      <mat-icon>table_chart</mat-icon>
-      <p>{{ 'mapeamento.mapeamentoEditor.empty.noFields' | translate }}</p>
+    <div class="empty-state" *ngIf="visibleRows.length === 0">
+      <mat-icon>{{ rows.length ? 'search_off' : 'table_chart' }}</mat-icon>
+      <p>{{ (rows.length ? 'mapeamento.mapeamentoEditor.empty.noSearchResults' : 'mapeamento.mapeamentoEditor.empty.noFields') | translate }}</p>
     </div>
   </div>
 
-  <div class="action-bar" *ngIf="!isLoading">
-    <button mat-raised-button color="primary" type="button" (click)="adicionarCampo()" [disabled]="readonly">
-      <mat-icon>add</mat-icon>
-      {{ 'mapeamento.mapeamentoEditor.actions.addField' | translate }}
-    </button>
-
-    <div class="action-bar-right">
-      <button mat-stroked-button type="button" (click)="cancelar()" [disabled]="readonly || !hasChanges || isSaving">
-        {{ 'mapeamento.mapeamentoEditor.actions.cancelChanges' | translate }}
-      </button>
-      <button mat-raised-button color="accent" type="button" (click)="salvar()" [disabled]="readonly || isSaving || !hasChanges">
-        {{ 'mapeamento.mapeamentoEditor.actions.saveAll' | translate }}
-      </button>
+  <footer class="editor-footer" *ngIf="!isLoading">
+    <div class="editor-hint">
+      <mat-icon>info</mat-icon>
+      <span>{{ readonly
+        ? ('mapeamento.mapeamentoEditor.footer.cloneHint' | translate)
+        : ('mapeamento.mapeamentoEditor.footer.editHint' | translate) }}</span>
     </div>
+    <strong>{{ visibleRows.length }} {{ 'mapeamento.mapeamentoEditor.footer.of' | translate }} {{ rows.length }} {{ 'mapeamento.mapeamentoEditor.footer.fields' | translate }}</strong>
+  </footer>
+
+  <div class="standalone-actions" *ngIf="!managedActions && !isLoading">
+    <button mat-stroked-button type="button" (click)="openExcelPreview()">
+      <mat-icon>upload_file</mat-icon>
+      {{ 'mapeamento.mapeamentoEditor.actions.excelPreview' | translate }}
+    </button>
+    <span class="standalone-actions__spacer"></span>
+    <button mat-stroked-button type="button" (click)="cancelar()" [disabled]="readonly || !hasChanges || isSaving">
+      {{ 'mapeamento.mapeamentoEditor.actions.cancelChanges' | translate }}
+    </button>
+    <button mat-flat-button color="primary" type="button" (click)="salvar()" [disabled]="readonly || isSaving || !hasChanges">
+      <mat-icon>save</mat-icon>
+      {{ 'mapeamento.mapeamentoEditor.actions.saveAll' | translate }}
+    </button>
   </div>
 </section>

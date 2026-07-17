@@ -10,6 +10,11 @@ namespace ExcelDoc.Server.Services.Interfaces
 
         Task<MapeamentoCampoResponseDto> AtualizarAsync(int id, MapeamentoCampoRequestDto request, CancellationToken cancellationToken = default);
 
+        Task<IReadOnlyCollection<MapeamentoCampoResponseDto>> SubstituirAsync(
+            int mapeamentoId,
+            AtualizarMapeamentoCamposRequestDto request,
+            CancellationToken cancellationToken = default);
+
         Task ExcluirAsync(int id, CancellationToken cancellationToken = default);
     }
 }

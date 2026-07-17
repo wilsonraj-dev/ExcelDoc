@@ -1,1 +1,213 @@
-<p></p>
+<section class="mapping-workspace">
+  <div class="context-bar">
+    <nav class="breadcrumbs" [attr.aria-label]="'mapeamento.workspace.breadcrumbs.ariaLabel' | translate">
+      <mat-icon>deployed_code</mat-icon>
+      <span>{{ 'mapeamento.workspace.breadcrumbs.mappings' | translate }}</span>
+      <mat-icon class="breadcrumbs__separator">chevron_right</mat-icon>
+      <span>{{ documentoAtual?.nomeDocumento || ('mapeamento.workspace.loading.document' | translate) }}</span>
+      <mat-icon class="breadcrumbs__separator">chevron_right</mat-icon>
+      <strong>{{ perfilAtual?.nome || ('mapeamento.workspace.loading.mapping' | translate) }}</strong>
+    </nav>
+
+    <div class="context-meta" *ngIf="perfilAtual as perfil">
+      <span class="scope-chip" [class.scope-chip--custom]="!perfil.isPadrao">
+        {{ (perfil.isPadrao ? 'mapeamento.common.scope.default' : 'mapeamento.common.scope.myCompany') | translate }}
+      </span>
+      <span>{{ 'mapeamento.workspace.meta.base' | translate }}: {{ 'mapeamento.workspace.meta.marketingDocuments' | translate }}</span>
+      <span class="context-meta__divider"></span>
+      <span>{{ 'mapeamento.workspace.meta.createdAt' | translate }}: {{ perfil.dataCriacao | date:'dd/MM/yyyy' }}</span>
+    </div>
+  </div>
+
+  <app-loading-spinner *ngIf="isLoadingDocumentos || isLoadingPerfis"></app-loading-spinner>
+
+  <section class="workspace-card" *ngIf="!isLoadingDocumentos && !isLoadingPerfis && documentoAtual as documento">
+    <header class="workspace-header">
+      <div class="workspace-header__copy">
+        <div class="workspace-header__title-row">
+          <h1>{{ documento.nomeDocumento }}</h1>
+          <span class="active-chip">
+            <span class="active-chip__dot"></span>
+            {{ 'mapeamento.workspace.status.active' | translate }}
+          </span>
+        </div>
+        <p>{{ 'mapeamento.workspace.header.description' | translate }}</p>
+
+        <div class="workspace-selectors">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'mapeamento.workspace.fields.document' | translate }}</mat-label>
+            <mat-select [value]="selectedDocumentoId" (selectionChange)="onDocumentoChange($event.value)">
+              <mat-option *ngFor="let option of documentos" [value]="option.id">
+                {{ option.nomeDocumento }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'mapeamento.workspace.fields.mapping' | translate }}</mat-label>
+            <mat-select [value]="selectedPerfilId" (selectionChange)="onPerfilChange($event.value)">
+              <mat-option *ngFor="let option of perfis" [value]="option.id">
+                {{ option.nome }} · {{ (option.isPadrao ? 'mapeamento.common.scope.default' : 'mapeamento.common.scope.myCompany') | translate }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="workspace-actions">
+        <button mat-stroked-button type="button" (click)="openExcelPreview()" [disabled]="!selectedMapeamento">
+          <mat-icon>upload_file</mat-icon>
+          {{ 'mapeamento.workspace.actions.excelPreview' | translate }}
+        </button>
+
+        <button mat-stroked-button
+                type="button"
+                (click)="cloneAndCustomize()"
+                [disabled]="!canClone || isCloning">
+          <mat-icon>content_copy</mat-icon>
+          {{ (isCloning ? 'mapeamento.workspace.actions.cloning' : 'mapeamento.workspace.actions.clone') | translate }}
+        </button>
+
+        <button mat-flat-button
+                color="primary"
+                type="button"
+                (click)="saveMapping()"
+                [disabled]="!canSave">
+          <mat-icon>save</mat-icon>
+          {{ (editorState.isSaving ? 'mapeamento.workspace.actions.saving' : 'mapeamento.workspace.actions.save') | translate }}
+        </button>
+      </div>
+    </header>
+
+    <nav class="workspace-tabs" [attr.aria-label]="'mapeamento.workspace.tabs.ariaLabel' | translate">
+      <button type="button" [class.is-active]="selectedTab === 'mapping'" (click)="selectTab('mapping')">
+        {{ 'mapeamento.workspace.tabs.mapping' | translate }}
+      </button>
+      <button type="button" [class.is-active]="selectedTab === 'document'" (click)="selectTab('document')">
+        {{ 'mapeamento.workspace.tabs.document' | translate }}
+      </button>
+      <span class="workspace-tabs__disabled" [matTooltip]="'mapeamento.workspace.tabs.historyHint' | translate">
+        {{ 'mapeamento.workspace.tabs.history' | translate }}
+        <span>{{ 'mapeamento.workspace.tabs.soon' | translate }}</span>
+      </span>
+    </nav>
+
+    <div class="protection-banner" *ngIf="isPadrao">
+      <mat-icon>verified_user</mat-icon>
+      <div>
+        <strong>{{ 'mapeamento.workspace.protection.title' | translate }}</strong>
+        <p>{{ 'mapeamento.workspace.protection.description' | translate }}</p>
+      </div>
+      <button mat-stroked-button type="button" (click)="cloneAndCustomize()" [disabled]="!canClone || isCloning">
+        {{ 'mapeamento.workspace.actions.cloneShort' | translate }}
+      </button>
+    </div>
+
+    <div class="protection-banner protection-banner--warning" *ngIf="isLegacySharedMapping">
+      <mat-icon>info</mat-icon>
+      <div>
+        <strong>{{ 'mapeamento.workspace.legacy.title' | translate }}</strong>
+        <p>{{ 'mapeamento.workspace.legacy.description' | translate }}</p>
+      </div>
+      <button mat-stroked-button type="button" (click)="cloneAndCustomize()" [disabled]="!canClone || isCloning">
+        {{ 'mapeamento.workspace.actions.cloneShort' | translate }}
+      </button>
+    </div>
+
+    <div class="mapping-layout" *ngIf="selectedTab === 'mapping'">
+      <aside class="structure-panel">
+        <header class="structure-panel__header">
+          <div>
+            <h2>{{ 'mapeamento.workspace.structure.title' | translate }}</h2>
+            <p>{{ 'mapeamento.workspace.structure.description' | translate }}</p>
+          </div>
+          <span>{{ collectionCount }} {{ 'mapeamento.workspace.structure.activeCollections' | translate }}</span>
+        </header>
+
+        <div class="structure-panel__summary">
+          <span><mat-icon>account_tree</mat-icon>{{ collectionCount }} {{ 'mapeamento.workspace.structure.collections' | translate }}</span>
+          <span><mat-icon>data_object</mat-icon>{{ totalFieldCount }} {{ 'mapeamento.workspace.structure.fields' | translate }}</span>
+        </div>
+
+        <div class="structure-tree" role="tree">
+          <button *ngFor="let treeItem of treeItems"
+                  type="button"
+                  role="treeitem"
+                  class="tree-item"
+                  [class.is-selected]="treeItem.item.id === selectedItemId"
+                  [style.padding-left.px]="14 + treeItem.depth * 24"
+                  (click)="selectCollection(treeItem)">
+            <span class="tree-item__connector" *ngIf="treeItem.depth > 0"></span>
+            <mat-icon class="tree-item__drag">drag_indicator</mat-icon>
+            <mat-icon class="tree-item__type">{{ getCollectionIcon(treeItem) }}</mat-icon>
+            <span class="tree-item__content">
+              <strong>{{ treeItem.item.nomeColecao }}</strong>
+              <small>{{ treeItem.item.quantidadeCampos ?? 0 }} {{ 'mapeamento.workspace.structure.mappedFields' | translate }}</small>
+            </span>
+            <mat-icon class="tree-item__status">check_circle</mat-icon>
+            <mat-icon class="tree-item__chevron">{{ treeItem.hasChildren ? 'expand_more' : 'chevron_right' }}</mat-icon>
+          </button>
+        </div>
+
+        <div class="structure-panel__footer">
+          <mat-icon>lock</mat-icon>
+          <span>{{ 'mapeamento.workspace.structure.fixedHint' | translate }}</span>
+        </div>
+      </aside>
+
+      <main class="fields-panel">
+        <app-mapeamento-editor *ngIf="selectedMapeamento && itemAtual as item"
+                               [colecaoId]="item.fk_IdColecao"
+                               [colecaoNome]="item.nomeColecao"
+                               [mapeamento]="selectedMapeamento"
+                               [readonly]="isReadOnly"
+                               [managedActions]="true"
+                               [nivel]="selectedLevel"
+                               (stateChanged)="onEditorStateChange($event)"
+                               (camposChanged)="onFieldsChanged()">
+        </app-mapeamento-editor>
+
+        <section class="fields-empty" *ngIf="!selectedMapeamento">
+          <mat-icon>schema</mat-icon>
+          <h3>{{ 'mapeamento.workspace.empty.selectCollectionTitle' | translate }}</h3>
+          <p>{{ 'mapeamento.workspace.empty.selectCollectionDescription' | translate }}</p>
+        </section>
+      </main>
+    </div>
+
+    <section class="document-info" *ngIf="selectedTab === 'document'">
+      <header>
+        <span class="document-info__icon"><mat-icon>description</mat-icon></span>
+        <div>
+          <h2>{{ 'mapeamento.workspace.documentInfo.title' | translate }}</h2>
+          <p>{{ 'mapeamento.workspace.documentInfo.description' | translate }}</p>
+        </div>
+      </header>
+
+      <div class="document-info__grid">
+        <article>
+          <span>{{ 'mapeamento.workspace.documentInfo.name' | translate }}</span>
+          <strong>{{ documento.nomeDocumento }}</strong>
+        </article>
+        <article>
+          <span>{{ 'mapeamento.workspace.documentInfo.endpoint' | translate }}</span>
+          <strong>{{ documento.endpoint }}</strong>
+        </article>
+        <article>
+          <span>{{ 'mapeamento.workspace.documentInfo.configuration' | translate }}</span>
+          <strong>{{ perfilAtual?.nome }}</strong>
+        </article>
+        <article>
+          <span>{{ 'mapeamento.workspace.documentInfo.scope' | translate }}</span>
+          <strong>{{ (isPadrao ? 'mapeamento.common.scope.default' : 'mapeamento.common.scope.myCompany') | translate }}</strong>
+        </article>
+      </div>
+    </section>
+  </section>
+
+  <section class="page-empty" *ngIf="!isLoadingDocumentos && !isLoadingPerfis && loadError">
+    <span><mat-icon>schema</mat-icon></span>
+    <h2>{{ 'mapeamento.workspace.empty.title' | translate }}</h2>
+    <p>{{ loadError }}</p>
+  </section>
+</section>

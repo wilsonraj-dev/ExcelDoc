@@ -1,20 +1,37 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild,
+  inject
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize, forkJoin, of } from 'rxjs';
+import { finalize } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { TranslateService } from '../../../../core/services/translate.service';
 import {
   Mapeamento,
   MapeamentoCampo,
-  MapeamentoCampoPayload,
+  AtualizarMapeamentoCamposPayload,
   MapeamentoCampoRow,
   MapeamentoRowErrors,
   TipoCampo,
   TIPO_CAMPO_OPTIONS
 } from '../../models/mapeamento.model';
 import { MapeamentoService } from '../../services/mapeamento.service';
+
+export interface MapeamentoEditorState {
+  hasChanges: boolean;
+  hasErrors: boolean;
+  isSaving: boolean;
+}
 
 @Component({
   selector: 'app-mapeamento-editor',
@@ -26,10 +43,15 @@ export class MapeamentoEditorComponent implements OnChanges {
   @Input() colecaoNome = '';
   @Input({ required: true }) mapeamento!: Mapeamento;
   @Input() readonly = false;
+  @Input() managedActions = false;
+  @Input() nivel = 1;
 
   @Output() camposChanged = new EventEmitter<void>();
+  @Output() stateChanged = new EventEmitter<MapeamentoEditorState>();
 
-  readonly displayedColumns: string[] = ['nomeCampo', 'indiceColuna', 'tipoCampo', 'formato', 'preview', 'acoes'];
+  @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
+
+  readonly displayedColumns: string[] = ['ordem', 'nomeCampo', 'indiceColuna', 'tipoCampo', 'formato', 'preview', 'acoes'];
   readonly tipoCampoOptions = TIPO_CAMPO_OPTIONS;
 
   rows: MapeamentoCampoRow[] = [];
@@ -37,8 +59,10 @@ export class MapeamentoEditorComponent implements OnChanges {
   isLoading = false;
   isSaving = false;
   excelPreviewData: string[] = [];
+  searchTerm = '';
 
   private readonly destroyRef = inject(DestroyRef);
+  private loadRequestVersion = 0;
 
   constructor(
     private readonly mapeamentoService: MapeamentoService,
@@ -58,11 +82,24 @@ export class MapeamentoEditorComponent implements OnChanges {
   }
 
   get hasChanges(): boolean {
-    return JSON.stringify(this.rows) !== JSON.stringify(this.originalRows);
+    return JSON.stringify(this.rows.map((row) => this.toComparableRow(row)))
+      !== JSON.stringify(this.originalRows.map((row) => this.toComparableRow(row)));
   }
 
   get hasErrors(): boolean {
     return this.rows.some((row) => !!(row.errors.nomeCampo || row.errors.indiceColuna || row.errors.tipoCampo || row.errors.formato));
+  }
+
+  get visibleRows(): MapeamentoCampoRow[] {
+    const term = this.searchTerm.trim().toLocaleLowerCase('pt-BR');
+    if (!term) {
+      return this.rows;
+    }
+
+    return this.rows.filter((row) =>
+      row.nomeCampo.toLocaleLowerCase('pt-BR').includes(term)
+      || String(row.indiceColuna ?? '').includes(term)
+    );
   }
 
   adicionarCampo(): void {
@@ -82,6 +119,7 @@ export class MapeamentoEditorComponent implements OnChanges {
     };
 
     this.rows = [...this.rows, newRow];
+    this.emitState();
   }
 
   removerCampo(index: number): void {
@@ -92,6 +130,14 @@ export class MapeamentoEditorComponent implements OnChanges {
     this.rows = this.rows.filter((_, currentIndex) => currentIndex !== index);
     this.validateAll();
     this.refreshPreview();
+    this.emitState();
+  }
+
+  removerCampoRow(row: MapeamentoCampoRow): void {
+    const index = this.rows.indexOf(row);
+    if (index >= 0) {
+      this.removerCampo(index);
+    }
   }
 
   onFieldChange(row: MapeamentoCampoRow): void {
@@ -105,6 +151,7 @@ export class MapeamentoEditorComponent implements OnChanges {
 
     this.validateRow(row);
     this.refreshPreview();
+    this.emitState();
   }
 
   salvar(): void {
@@ -125,32 +172,33 @@ export class MapeamentoEditorComponent implements OnChanges {
       }
 
       this.notificationService.showError(messages.length ? messages.join(' | ') : this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.fixErrors'));
+      this.emitState();
       return;
     }
 
-    const deletedIds = this.originalRows
-      .filter((original) => original.id !== null && !this.rows.some((row) => row.id === original.id))
-      .map((original) => original.id!);
-
-    const deletes$ = deletedIds.map((id) => this.mapeamentoService.deleteCampo(id));
-    const creates$ = this.rows
-      .filter((row) => row.isNew)
-      .map((row) => this.mapeamentoService.createCampo(this.toPayload(row)));
-    const updates$ = this.rows
-      .filter((row) => !row.isNew && row.id !== null)
-      .map((row) => this.mapeamentoService.updateCampo(row.id!, this.toPayload(row)));
-
-    const operations = [...deletes$, ...creates$, ...updates$];
-
-    if (!operations.length) {
+    if (!this.hasChanges) {
       this.notificationService.showInfo(this.translate.instant('mapeamento.mapeamentoEditor.feedback.info.noChanges'));
       return;
     }
 
+    const payload: AtualizarMapeamentoCamposPayload = {
+      campos: this.rows.map((row) => ({
+        id: row.id,
+        nomeCampo: row.nomeCampo.trim(),
+        indiceColuna: row.indiceColuna!,
+        tipoCampo: row.tipoCampo as number,
+        formato: row.tipoCampo === TipoCampo.DateTime ? (row.formato?.trim() || null) : null
+      }))
+    };
+
     this.isSaving = true;
-    forkJoin(operations.length ? operations : [of(null)])
+    this.emitState();
+    this.mapeamentoService.replaceCampos(this.mapeamento.id, payload)
       .pipe(
-        finalize(() => { this.isSaving = false; }),
+        finalize(() => {
+          this.isSaving = false;
+          this.emitState();
+        }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
@@ -168,6 +216,11 @@ export class MapeamentoEditorComponent implements OnChanges {
   cancelar(): void {
     this.rows = this.originalRows.map((row) => ({ ...row, errors: this.emptyErrors() }));
     this.refreshPreview();
+    this.emitState();
+  }
+
+  openExcelPreview(): void {
+    this.fileInput?.nativeElement.click();
   }
 
   onExcelUpload(event: Event): void {
@@ -212,27 +265,43 @@ export class MapeamentoEditorComponent implements OnChanges {
   }
 
   private loadCampos(showSuccess = false): void {
+    const requestVersion = ++this.loadRequestVersion;
+    const mapeamentoId = this.mapeamento.id;
     this.isLoading = true;
-    this.mapeamentoService.getCamposByMapeamento(this.mapeamento.id)
+    this.mapeamentoService.getCamposByMapeamento(mapeamentoId)
       .pipe(
-        finalize(() => { this.isLoading = false; }),
+        finalize(() => {
+          if (requestVersion === this.loadRequestVersion) {
+            this.isLoading = false;
+          }
+        }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: (campos) => {
+          if (requestVersion !== this.loadRequestVersion || this.mapeamento.id !== mapeamentoId) {
+            return;
+          }
+
           this.rows = campos
             .sort((left, right) => left.indiceColuna - right.indiceColuna)
             .map((campo) => this.toRow(campo));
           this.snapshotOriginal();
           this.refreshPreview();
+          this.emitState();
 
           if (showSuccess) {
             this.notificationService.showSuccess(this.translate.instant('mapeamento.mapeamentoEditor.feedback.success.updated'));
           }
         },
         error: (error: HttpErrorResponse) => {
+          if (requestVersion !== this.loadRequestVersion || this.mapeamento.id !== mapeamentoId) {
+            return;
+          }
+
           this.rows = [];
           this.originalRows = [];
+          this.emitState();
           this.notificationService.showError(error.error?.detail ?? this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.loadFields'));
         }
       });
@@ -295,18 +364,27 @@ export class MapeamentoEditorComponent implements OnChanges {
     };
   }
 
-  private toPayload(row: MapeamentoCampoRow): MapeamentoCampoPayload {
+  private snapshotOriginal(): void {
+    this.originalRows = this.rows.map((row) => ({ ...row, errors: this.emptyErrors() }));
+  }
+
+  private toComparableRow(row: MapeamentoCampoRow): object {
     return {
-      nomeCampo: row.nomeCampo.trim(),
-      indiceColuna: row.indiceColuna!,
-      tipoCampo: row.tipoCampo as number,
-      formato: row.tipoCampo === TipoCampo.DateTime ? (row.formato?.trim() || null) : null,
-      fk_IdMapeamento: this.mapeamento.id
+      id: row.id,
+      nomeCampo: row.nomeCampo,
+      indiceColuna: row.indiceColuna,
+      tipoCampo: row.tipoCampo,
+      formato: row.formato,
+      isNew: row.isNew
     };
   }
 
-  private snapshotOriginal(): void {
-    this.originalRows = this.rows.map((row) => ({ ...row, errors: this.emptyErrors() }));
+  private emitState(): void {
+    this.stateChanged.emit({
+      hasChanges: this.hasChanges,
+      hasErrors: this.hasErrors,
+      isSaving: this.isSaving
+    });
   }
 
   private emptyErrors(): MapeamentoRowErrors {

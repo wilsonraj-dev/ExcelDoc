@@ -24,6 +24,11 @@ namespace ExcelDoc.Server.Repositories.Interfaces
 
         void RemoveCampo(MapeamentoCampo campo);
 
+        Task ReplaceCamposAsync(
+            Mapeamento mapeamento,
+            IReadOnlyCollection<MapeamentoCampo> campos,
+            CancellationToken cancellationToken = default);
+
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

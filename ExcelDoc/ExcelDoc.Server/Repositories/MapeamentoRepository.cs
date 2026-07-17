@@ -85,6 +85,69 @@ namespace ExcelDoc.Server.Repositories
             _context.MapeamentoCampos.Remove(campo);
         }
 
+        public async Task ReplaceCamposAsync(
+            Mapeamento mapeamento,
+            IReadOnlyCollection<MapeamentoCampo> campos,
+            CancellationToken cancellationToken = default)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+
+            try
+            {
+                var camposExistentes = mapeamento.Campos.ToList();
+                var proximoIndiceTemporario = Math.Max(
+                    camposExistentes.Select(campo => campo.IndiceColuna).DefaultIfEmpty(0).Max() + campos.Count + 1,
+                    1_000_000);
+
+                foreach (var campoExistente in camposExistentes)
+                {
+                    campoExistente.IndiceColuna = proximoIndiceTemporario++;
+                }
+
+                if (camposExistentes.Count > 0)
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+
+                var existentesPorId = camposExistentes.ToDictionary(campo => campo.Id);
+                var idsMantidos = campos
+                    .Where(campo => campo.Id > 0)
+                    .Select(campo => campo.Id)
+                    .ToHashSet();
+
+                foreach (var campoRemovido in camposExistentes.Where(campo => !idsMantidos.Contains(campo.Id)).ToList())
+                {
+                    mapeamento.Campos.Remove(campoRemovido);
+                    _context.MapeamentoCampos.Remove(campoRemovido);
+                }
+
+                foreach (var campoDesejado in campos)
+                {
+                    if (campoDesejado.Id > 0)
+                    {
+                        var campoExistente = existentesPorId[campoDesejado.Id];
+                        campoExistente.NomeCampo = campoDesejado.NomeCampo;
+                        campoExistente.DescricaoCampo = campoDesejado.DescricaoCampo;
+                        campoExistente.IndiceColuna = campoDesejado.IndiceColuna;
+                        campoExistente.TipoCampo = campoDesejado.TipoCampo;
+                        campoExistente.Formato = campoDesejado.Formato;
+                        continue;
+                    }
+
+                    campoDesejado.FK_IdMapeamento = mapeamento.Id;
+                    mapeamento.Campos.Add(campoDesejado);
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
+
         public Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return _context.SaveChangesAsync(cancellationToken);

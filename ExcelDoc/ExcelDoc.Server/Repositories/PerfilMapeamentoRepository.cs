@@ -34,6 +34,7 @@ namespace ExcelDoc.Server.Repositories
                     .ThenInclude(x => x.Colecao)
                 .Include(x => x.Itens)
                     .ThenInclude(x => x.Mapeamento)
+                        .ThenInclude(x => x.Campos)
                 .Where(x => x.FK_IdDocumento == documentoId)
                 .OrderByDescending(x => x.IsPadrao)
                 .ThenBy(x => x.Nome)
@@ -82,6 +83,51 @@ namespace ExcelDoc.Server.Repositories
         public void Remove(PerfilMapeamento perfil)
         {
             _context.PerfilMapeamentos.Remove(perfil);
+        }
+
+        public async Task RemoveWithOrphanMappingsAsync(
+            PerfilMapeamento perfil,
+            CancellationToken cancellationToken = default)
+        {
+            var customMappingIds = perfil.Itens
+                .Where(item => !item.Mapeamento.IsPadrao)
+                .Select(item => item.FK_IdMapeamento)
+                .Distinct()
+                .ToList();
+
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+
+            try
+            {
+                _context.PerfilMapeamentos.Remove(perfil);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                if (customMappingIds.Count > 0)
+                {
+                    var orphanMappings = await _context.Mapeamentos
+                        .Include(mapping => mapping.Campos)
+                        .Where(mapping =>
+                            customMappingIds.Contains(mapping.Id) &&
+                            !mapping.IsPadrao &&
+                            !_context.PerfilMapeamentoItens.Any(item => item.FK_IdMapeamento == mapping.Id))
+                        .ToListAsync(cancellationToken);
+
+                    foreach (var mapping in orphanMappings)
+                    {
+                        _context.MapeamentoCampos.RemoveRange(mapping.Campos);
+                    }
+
+                    _context.Mapeamentos.RemoveRange(orphanMappings);
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+
+                await transaction.CommitAsync(cancellationToken);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
 
         public Task SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -55,6 +55,18 @@ export interface MapeamentoCampoPayload {
   fk_IdMapeamento: number;
 }
 
+export interface MapeamentoCampoBatchPayload {
+  id: number | null;
+  nomeCampo: string;
+  indiceColuna: number;
+  tipoCampo: number;
+  formato: string | null;
+}
+
+export interface AtualizarMapeamentoCamposPayload {
+  campos: MapeamentoCampoBatchPayload[];
+}
+
 export interface MapeamentoCampoRow {
   id: number | null;
   nomeCampo: string;

@@ -101,6 +101,7 @@ namespace ExcelDoc.Server.Services
                     .Select(campo => new MapeamentoCampo
                     {
                         NomeCampo = campo.NomeCampo,
+                        DescricaoCampo = campo.DescricaoCampo,
                         IndiceColuna = campo.IndiceColuna,
                         TipoCampo = campo.TipoCampo,
                         Formato = campo.Formato
@@ -127,11 +128,6 @@ namespace ExcelDoc.Server.Services
             if (mapeamento.FK_IdColecao != request.FK_IdColecao)
             {
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingCollectionCannotBeChanged));
-            }
-
-            if (mapeamento.IsPadrao && usuario.TipoUsuario != TipoUsuario.Administrador)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanChangeDefaultMappings));
             }
 
             mapeamento.Nome = request.Nome.Trim();
@@ -210,12 +206,17 @@ namespace ExcelDoc.Server.Services
         {
             EnsureCanAccessMapeamento(usuario, mapeamento);
 
+            if (mapeamento.IsPadrao)
+            {
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeMapping));
+            }
+
             if (usuario.TipoUsuario == TipoUsuario.Administrador)
             {
                 return;
             }
 
-            if (mapeamento.IsPadrao || mapeamento.FK_IdEmpresa != usuario.FK_IdEmpresa)
+            if (mapeamento.FK_IdEmpresa != usuario.FK_IdEmpresa)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeMapping));
             }

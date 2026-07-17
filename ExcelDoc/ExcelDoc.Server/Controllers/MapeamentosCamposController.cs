@@ -60,6 +60,23 @@ namespace ExcelDoc.Server.Controllers
             }
         }
 
+        [HttpPut("mapeamento/{mapeamentoId:int}")]
+        public async Task<IActionResult> ReplaceByMapeamento(
+            int mapeamentoId,
+            [FromBody] AtualizarMapeamentoCamposRequestDto request,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await _mapeamentoCampoService.SubstituirAsync(mapeamentoId, request, cancellationToken);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ToActionResult(ex);
+            }
+        }
+
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {

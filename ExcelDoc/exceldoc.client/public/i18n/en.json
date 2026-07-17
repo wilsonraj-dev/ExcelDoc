@@ -374,6 +374,90 @@
         "create": "Create"
       }
     },
+    "workspace": {
+      "breadcrumbs": {
+        "ariaLabel": "Mapping navigation",
+        "mappings": "Mappings"
+      },
+      "loading": {
+        "document": "Loading document",
+        "mapping": "Loading mapping"
+      },
+      "meta": {
+        "base": "Base",
+        "marketingDocuments": "Marketing documents",
+        "createdAt": "Created on"
+      },
+      "status": { "active": "Active" },
+      "header": {
+        "description": "Configure how Excel fields are imported into SAP Business One."
+      },
+      "fields": {
+        "document": "SAP document",
+        "mapping": "Mapping configuration"
+      },
+      "actions": {
+        "excelPreview": "Excel preview",
+        "clone": "Clone and customize",
+        "cloneShort": "Create my version",
+        "cloning": "Cloning...",
+        "save": "Save mapping",
+        "saving": "Saving..."
+      },
+      "tabs": {
+        "ariaLabel": "Mapping sections",
+        "mapping": "Mapping",
+        "document": "Document information",
+        "history": "Change history",
+        "historyHint": "Detailed history will be available in a future version.",
+        "soon": "Soon"
+      },
+      "protection": {
+        "title": "Protected default model",
+        "description": "This model works out of the box for marketing documents. Clone it only when your company needs different fields or columns."
+      },
+      "legacy": {
+        "title": "Legacy configuration in protected mode",
+        "description": "This configuration still shares fields with the default. Create a new version to edit it safely."
+      },
+      "structure": {
+        "title": "Document structure",
+        "description": "Collections defined by the SAP model",
+        "activeCollections": "active collections",
+        "collections": "collections",
+        "fields": "fields",
+        "mappedFields": "mapped fields",
+        "fixedHint": "The structure comes from the default model; customize fields within each collection."
+      },
+      "cloneDialog": {
+        "title": "Create custom mapping",
+        "label": "New configuration name",
+        "copySuffix": "My company"
+      },
+      "documentInfo": {
+        "title": "Document information",
+        "description": "Technical data used to send the document to SAP Business One.",
+        "name": "Document",
+        "endpoint": "Service Layer endpoint",
+        "configuration": "Configuration",
+        "scope": "Scope"
+      },
+      "empty": {
+        "title": "Mapping unavailable",
+        "noDocuments": "No SAP document has been configured.",
+        "noMappings": "This document does not have a default mapping yet.",
+        "selectCollectionTitle": "Select a collection",
+        "selectCollectionDescription": "Choose a structure item on the left to view its fields."
+      },
+      "feedback": {
+        "companyRequired": "Link the user to a company to create a custom version.",
+        "cloned": "Custom version created. Fields can now be edited safely.",
+        "cloneError": "The custom version could not be created.",
+        "loadDocumentsError": "Documents could not be loaded.",
+        "loadMappingsError": "Document mappings could not be loaded.",
+        "unsavedChanges": "Save or cancel your changes before switching document, configuration, or collection."
+      }
+    },
     "mapeamentoHome": {
       "header": {
         "eyebrow": "Field mapping",
@@ -434,6 +518,7 @@
       }
     },
     "mapeamentoEditor": {
+      "level": "Level",
       "actions": {
         "excelPreview": "Excel preview",
         "addField": "Add field",
@@ -442,14 +527,22 @@
       },
       "tooltips": {
         "uploadExcel": "Upload an Excel file to preview values",
-        "removeField": "Remove field"
+        "removeField": "Remove field",
+        "orderField": "Field order in the mapping",
+        "sapField": "Property sent to the SAP Business One API",
+        "excelColumn": "Spreadsheet column position, starting at 1",
+        "readOnlyField": "Protected default-model field"
+      },
+      "search": {
+        "label": "Search SAP field",
+        "placeholder": "Search SAP field..."
       },
       "table": {
         "header": {
-          "fieldName": "Field Name",
+          "fieldName": "SAP field",
           "excelColumn": "Excel Column",
           "type": "Type",
-          "format": "Format",
+          "format": "Format / Rule",
           "preview": "Preview",
           "actions": "Actions"
         }
@@ -467,7 +560,16 @@
         "datetime": "Date and time",
         "boolean": "Boolean"
       },
-      "empty": { "noFields": "No fields registered for this mapping." },
+      "empty": {
+        "noFields": "No fields registered for this mapping.",
+        "noSearchResults": "No field matches the search."
+      },
+      "footer": {
+        "cloneHint": "Clone the model to change these fields without affecting the default.",
+        "editHint": "Edit the fields and save the mapping when finished.",
+        "of": "of",
+        "fields": "fields"
+      },
       "preview": { "emptyColumn": "(empty column)" },
       "validation": {
         "fieldNameRequired": "Field name is required",
@@ -656,7 +758,10 @@
     },
     "processamentoUpload": {
       "title": "Import spreadsheet",
-      "fields": { "mappingProfile": "Mapping profile" },
+      "fields": {
+        "mappingProfile": "Mapping profile",
+        "mappingConfiguration": "Mapping configuration"
+      },
       "loading": { "profiles": "Loading profiles..." },
       "actions": {
         "selectFile": "Select .xlsx file",
@@ -753,6 +858,10 @@
         "collections": {
           "label": "Collections",
           "description": "Organize reusable sets."
+        },
+        "mappings": {
+          "label": "Mappings",
+          "description": "Use the SAP default or create a custom version."
         },
         "mappingProfile": {
           "label": "Mapping profile",

@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { HttpService } from '../../../core/services/http.service';
 import {
   Mapeamento,
+  AtualizarMapeamentoCamposPayload,
   MapeamentoCampo,
   MapeamentoCampoPayload,
   MapeamentoPayload
@@ -51,5 +52,12 @@ export class MapeamentoService {
 
   deleteCampo(id: number): Observable<void> {
     return this.httpService.delete<void>(`${this.mapeamentosCamposApiUrl}/${id}`);
+  }
+
+  replaceCampos(mapeamentoId: number, payload: AtualizarMapeamentoCamposPayload): Observable<MapeamentoCampo[]> {
+    return this.httpService.put<MapeamentoCampo[], AtualizarMapeamentoCamposPayload>(
+      `${this.mapeamentosCamposApiUrl}/mapeamento/${mapeamentoId}`,
+      payload
+    );
   }
 }

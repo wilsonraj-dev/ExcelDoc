@@ -14,6 +14,8 @@ export interface PerfilMapeamentoItem {
   nomeColecao: string;
   fk_IdMapeamento: number;
   nomeMapeamento: string;
+  quantidadeCampos?: number;
+  isMapeamentoPadrao?: boolean;
   fk_IdPerfilMapeamentoItemPai: number | null;
   fk_IdColecaoPai: number | null;
   nomeColecaoPai: string | null;

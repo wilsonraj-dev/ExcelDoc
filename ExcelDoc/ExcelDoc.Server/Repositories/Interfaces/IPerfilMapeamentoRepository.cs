@@ -20,6 +20,8 @@ namespace ExcelDoc.Server.Repositories.Interfaces
 
         void Remove(PerfilMapeamento perfil);
 
+        Task RemoveWithOrphanMappingsAsync(PerfilMapeamento perfil, CancellationToken cancellationToken = default);
+
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

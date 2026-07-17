@@ -28,6 +28,7 @@ export class ProcessamentoUploadComponent implements OnInit {
   isLoadingPerfis = false;
 
   private readonly destroyRef = inject(DestroyRef);
+  private perfisRequestVersion = 0;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -170,20 +171,45 @@ export class ProcessamentoUploadComponent implements OnInit {
   }
 
   private loadPerfis(documentoId: number): void {
+    const requestVersion = ++this.perfisRequestVersion;
     this.isLoadingPerfis = true;
     this.perfilService.getByDocumento(documentoId)
       .pipe(
-        finalize(() => { this.isLoadingPerfis = false; }),
+        finalize(() => {
+          if (requestVersion === this.perfisRequestVersion) {
+            this.isLoadingPerfis = false;
+          }
+        }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: (perfis) => {
-          this.perfisDisponiveis = perfis;
+          if (requestVersion !== this.perfisRequestVersion || this.form.controls['documentoId'].value !== documentoId) {
+            return;
+          }
+
+          this.perfisDisponiveis = [...perfis].sort((left, right) => {
+            if (left.isPadrao !== right.isPadrao) {
+              return left.isPadrao ? -1 : 1;
+            }
+
+            return left.nome.localeCompare(right.nome, 'pt-BR', { sensitivity: 'base' });
+          });
+
+          const perfisPadrao = this.perfisDisponiveis.filter((perfil) => perfil.isPadrao);
+          const perfilPadrao = perfisPadrao.length === 1 ? perfisPadrao[0] : null;
+
+          this.form.controls['perfilMapeamentoId'].setValue(perfilPadrao?.id ?? null, { emitEvent: false });
+
           if (!perfis.length) {
             this.notificationService.showInfo(this.translate.instant('processamento.processamentoUpload.feedback.info.noProfiles'));
           }
         },
         error: () => {
+          if (requestVersion !== this.perfisRequestVersion || this.form.controls['documentoId'].value !== documentoId) {
+            return;
+          }
+
           this.notificationService.showError(this.translate.instant('processamento.processamentoUpload.feedback.errors.loadProfiles'));
         }
       });

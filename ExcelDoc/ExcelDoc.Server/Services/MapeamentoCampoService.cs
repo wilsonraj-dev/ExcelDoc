@@ -82,6 +82,81 @@ namespace ExcelDoc.Server.Services
             return Map(campo);
         }
 
+        public async Task<IReadOnlyCollection<MapeamentoCampoResponseDto>> SubstituirAsync(
+            int mapeamentoId,
+            AtualizarMapeamentoCamposRequestDto request,
+            CancellationToken cancellationToken = default)
+        {
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(mapeamentoId, cancellationToken)
+                ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingNotFound));
+
+            EnsureCanEditMapeamento(usuario, mapeamento);
+
+            var indices = request.Campos.Select(campo => campo.IndiceColuna).ToList();
+            if (indices.Distinct().Count() != indices.Count)
+            {
+                var indiceDuplicado = indices
+                    .GroupBy(indice => indice)
+                    .First(grupo => grupo.Count() > 1)
+                    .Key;
+
+                throw new InvalidOperationException(
+                    _messageService.Get(MessageKeys.MappingFieldColumnIndexAlreadyExists, indiceDuplicado));
+            }
+
+            var idsInformados = request.Campos
+                .Where(campo => campo.Id.HasValue)
+                .Select(campo => campo.Id!.Value)
+                .ToList();
+
+            if (idsInformados.Distinct().Count() != idsInformados.Count)
+            {
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingFieldMappingCannotBeChanged));
+            }
+
+            var camposExistentesPorId = mapeamento.Campos.ToDictionary(campo => campo.Id);
+            if (idsInformados.Any(id => !camposExistentesPorId.ContainsKey(id)))
+            {
+                throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingFieldNotFound));
+            }
+
+            var camposDesejados = request.Campos.Select(campoRequest =>
+            {
+                if (!Enum.IsDefined(typeof(TipoCampo), campoRequest.TipoCampo))
+                {
+                    throw new InvalidOperationException(_messageService.Get(MessageKeys.FieldTypeRequired));
+                }
+
+                if (campoRequest.TipoCampo == TipoCampo.DateTime && string.IsNullOrWhiteSpace(campoRequest.Formato))
+                {
+                    throw new InvalidOperationException(_messageService.Get(MessageKeys.DateTimeFieldFormatRequired));
+                }
+
+                var descricao = campoRequest.Id.HasValue
+                    ? camposExistentesPorId[campoRequest.Id.Value].DescricaoCampo
+                    : string.Empty;
+
+                return new MapeamentoCampo
+                {
+                    Id = campoRequest.Id ?? 0,
+                    NomeCampo = campoRequest.NomeCampo.Trim(),
+                    DescricaoCampo = descricao,
+                    IndiceColuna = campoRequest.IndiceColuna,
+                    TipoCampo = campoRequest.TipoCampo,
+                    Formato = campoRequest.TipoCampo == TipoCampo.DateTime ? campoRequest.Formato?.Trim() : null,
+                    FK_IdMapeamento = mapeamento.Id
+                };
+            }).ToList();
+
+            await _mapeamentoRepository.ReplaceCamposAsync(mapeamento, camposDesejados, cancellationToken);
+
+            return mapeamento.Campos
+                .OrderBy(campo => campo.IndiceColuna)
+                .Select(Map)
+                .ToList();
+        }
+
         public async Task ExcluirAsync(int id, CancellationToken cancellationToken = default)
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
@@ -127,6 +202,11 @@ namespace ExcelDoc.Server.Services
         private void EnsureCanEditMapeamento(Usuario usuario, Mapeamento mapeamento)
         {
             EnsureCanAccessMapeamento(usuario, mapeamento);
+
+            if (mapeamento.IsPadrao)
+            {
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeMapping));
+            }
 
             if (usuario.TipoUsuario == TipoUsuario.Administrador)
             {
