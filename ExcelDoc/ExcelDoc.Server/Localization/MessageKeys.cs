@@ -46,6 +46,7 @@ public static class MessageKeys
     public const string CloneNameMaxLength = nameof(CloneNameMaxLength);
     public const string CloneNameRequired = nameof(CloneNameRequired);
     public const string InvalidBooleanValue = nameof(InvalidBooleanValue);
+    public const string InvalidExcelFile = nameof(InvalidExcelFile);
     public const string InvalidDocumentLinks = nameof(InvalidDocumentLinks);
     public const string InvalidIdExcelValueAtRow = nameof(InvalidIdExcelValueAtRow);
     public const string InvalidIntegerValue = nameof(InvalidIntegerValue);

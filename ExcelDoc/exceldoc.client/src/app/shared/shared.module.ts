@@ -18,20 +18,19 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
+import { ShellModule } from '../layout/shell.module';
 import { CloneNameDialogComponent } from './components/clone-name-dialog/clone-name-dialog.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
-import { LanguageSelectorComponent } from './components/language-selector/language-selector.component';
 import { LoadingSpinnerComponent } from './components/loading-spinner/loading-spinner.component';
-import { SideMenuComponent } from '../layout/side-menu/side-menu.component';
-import { TranslatePipe } from './pipes/translate.pipe';
 
 @NgModule({
-  declarations: [LoadingSpinnerComponent, ConfirmDialogComponent, CloneNameDialogComponent, LanguageSelectorComponent, SideMenuComponent, TranslatePipe],
+  declarations: [LoadingSpinnerComponent, ConfirmDialogComponent, CloneNameDialogComponent],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
+    ShellModule,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
@@ -70,12 +69,10 @@ import { TranslatePipe } from './pipes/translate.pipe';
     MatTableModule,
     MatToolbarModule,
     MatTooltipModule,
+    ShellModule,
     LoadingSpinnerComponent,
     ConfirmDialogComponent,
-    CloneNameDialogComponent,
-    LanguageSelectorComponent,
-    SideMenuComponent,
-    TranslatePipe
+    CloneNameDialogComponent
   ]
 })
 export class SharedModule {}

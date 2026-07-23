@@ -233,15 +233,32 @@
       "line": "Line"
     },
     "colecaoList": {
+      "breadcrumbs": {
+        "ariaLabel": "Collections navigation",
+        "administration": "Administration"
+      },
       "header": {
-        "title": "Collection registry",
-        "description": "Manage global and company-specific collections."
+        "title": "SAP collections",
+        "description": "Manage reusable structures for SAP Business One marketing documents.",
+        "adminOnly": "Administrators only"
+      },
+      "summary": {
+        "ariaLabel": "Collections summary",
+        "total": "Registered collections",
+        "defaults": "Default structures",
+        "company": "Company structures",
+        "results": "result(s)"
+      },
+      "adminInfo": {
+        "title": "Administrative structures",
+        "description": "These collections define the technical organization of SAP documents. End users receive ready-made templates and only customize cloned mappings."
       },
       "filters": {
         "nameLabel": "Filter by name",
         "namePlaceholder": "E.g.: Document items",
         "collectionTypeLabel": "Collection type",
-        "allTypes": "All types"
+        "allTypes": "All types",
+        "clear": "Clear filters"
       },
       "loading": {
         "collections": "Loading collections..."
@@ -251,7 +268,8 @@
         "configureFields": "Configure fields",
         "edit": "Edit",
         "delete": "Delete",
-        "deleting": "Deleting..."
+        "deleting": "Deleting...",
+        "retry": "Try again"
       },
       "table": {
         "header": {
@@ -259,10 +277,12 @@
           "description": "Description",
           "collectionType": "Collection Type",
           "type": "Type",
+          "documents": "Documents",
           "mappings": "Mappings",
           "actions": "Actions"
         },
-        "paginationAriaLabel": "Collections list pagination"
+        "paginationAriaLabel": "Collections list pagination",
+        "noDescription": "No description"
       },
       "scope": {
         "default": "Default",
@@ -270,7 +290,9 @@
       },
       "empty": {
         "title": "No collections found",
-        "description": "Register default or custom collections to reuse integration structures."
+        "description": "Register default or custom collections to reuse integration structures.",
+        "filteredTitle": "No results for these filters",
+        "filteredDescription": "Adjust your search or clear the filters to view all collections."
       },
       "confirmDelete": {
         "title": "Delete collection",
@@ -291,6 +313,11 @@
       }
     },
     "colecaoForm": {
+      "breadcrumbs": {
+        "ariaLabel": "Collection form navigation",
+        "administration": "Administration",
+        "collections": "SAP collections"
+      },
       "title": {
         "create": "New collection",
         "edit": "Edit collection"
@@ -331,10 +358,25 @@
         "createAsDefault": "Create as default collection"
       },
       "actions": {
+        "back": "Back to collections",
         "cancel": "Cancel",
         "saving": "Saving...",
         "saveChanges": "Save changes",
         "saveCollection": "Save collection"
+      },
+      "sections": {
+        "details": {
+          "title": "Structure details",
+          "description": "Define the technical name, level, and purpose of the collection."
+        },
+        "documents": {
+          "title": "Linked documents",
+          "description": "Choose where this structure will be available."
+        },
+        "scope": {
+          "description": "Control this collection's availability."
+        },
+        "footerHint": "Changes will apply to the documents linked to this collection."
       },
       "validation": {
         "collectionNameRequired": "Enter the collection name.",
@@ -530,6 +572,8 @@
         "removeField": "Remove field",
         "orderField": "Field order in the mapping",
         "sapField": "Property sent to the SAP Business One API",
+        "fieldStatus": "Inactive fields are not sent to SAP during processing",
+        "readOnlyStatus": "Default-field status is protected",
         "excelColumn": "Spreadsheet column position, starting at 1",
         "readOnlyField": "Protected default-model field"
       },
@@ -540,6 +584,7 @@
       "table": {
         "header": {
           "fieldName": "SAP field",
+          "status": "Status",
           "excelColumn": "Excel Column",
           "type": "Type",
           "format": "Format / Rule",
@@ -559,6 +604,12 @@
         "double": "Decimal",
         "datetime": "Date and time",
         "boolean": "Boolean"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "activate": "Activate field",
+        "deactivate": "Deactivate field"
       },
       "empty": {
         "noFields": "No fields registered for this mapping.",

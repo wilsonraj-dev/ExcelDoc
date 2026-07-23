@@ -53,11 +53,16 @@ namespace ExcelDoc.Server.Services
 
             foreach (var lineItem in rootLineItems)
             {
-                document[lineItem.Colecao.NomeColecao] = BuildLineCollection(
+                var lineCollection = BuildLineCollection(
                     perfil,
                     lineItem,
                     groupRows,
                     lineChildrenByParentId);
+
+                if (lineCollection.Count > 0)
+                {
+                    document[lineItem.Colecao.NomeColecao] = lineCollection;
+                }
             }
 
             return document;
@@ -80,18 +85,41 @@ namespace ExcelDoc.Server.Services
                 {
                     foreach (var childItem in childItems)
                     {
-                        linePayload[childItem.Colecao.NomeColecao] = BuildLineCollection(
+                        var childCollection = BuildLineCollection(
                             perfil,
                             childItem,
                             [row],
                             childrenByParentId);
+
+                        if (childCollection.Count > 0)
+                        {
+                            linePayload[childItem.Colecao.NomeColecao] = childCollection;
+                        }
                     }
                 }
 
-                collection.Add(linePayload);
+                // Coleções opcionais fazem parte do perfil SAP para ficarem disponíveis
+                // no clone, mas não devem gerar arrays/objetos sem conteúdo no payload.
+                // Um filho preenchido, por outro lado, torna a linha pai significativa.
+                if (HasMeaningfulContent(linePayload))
+                {
+                    collection.Add(linePayload);
+                }
             }
 
             return collection;
         }
+
+        private static bool HasMeaningfulContent(IDictionary<string, object?> payload) =>
+            payload.Values.Any(HasMeaningfulValue);
+
+        private static bool HasMeaningfulValue(object? value) =>
+            value switch
+            {
+                null => false,
+                string text => !string.IsNullOrWhiteSpace(text),
+                IEnumerable<IDictionary<string, object?>> children => children.Any(HasMeaningfulContent),
+                _ => true
+            };
     }
 }

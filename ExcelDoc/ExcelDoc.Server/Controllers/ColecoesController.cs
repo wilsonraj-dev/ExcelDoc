@@ -47,6 +47,7 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = AuthRoles.Administrador)]
         public async Task<IActionResult> Post([FromBody] ColecaoRequestDto request, CancellationToken cancellationToken)
         {
             try
@@ -61,6 +62,7 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpPut("{colecaoId:int}")]
+        [Authorize(Roles = AuthRoles.Administrador)]
         public async Task<IActionResult> Put(int colecaoId, [FromBody] ColecaoRequestDto request, CancellationToken cancellationToken)
         {
             try
@@ -75,6 +77,7 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpDelete("{colecaoId:int}")]
+        [Authorize(Roles = AuthRoles.Administrador)]
         public async Task<IActionResult> Delete(int colecaoId, CancellationToken cancellationToken)
         {
             try

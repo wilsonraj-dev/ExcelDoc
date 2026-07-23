@@ -20,6 +20,8 @@ namespace ExcelDoc.Server.DTOs.Mapeamentos
         [MaxLength(50, ErrorMessage = MessageKeys.FormatMaxLength)]
         public string? Formato { get; set; }
 
+        public bool Ativo { get; set; } = true;
+
         [Required(ErrorMessage = MessageKeys.MappingRequired)]
         [Range(1, int.MaxValue, ErrorMessage = MessageKeys.MappingInvalid)]
         public int FK_IdMapeamento { get; set; }

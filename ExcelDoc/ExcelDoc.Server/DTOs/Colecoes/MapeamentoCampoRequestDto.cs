@@ -23,5 +23,7 @@ namespace ExcelDoc.Server.DTOs.Colecoes
 
         [MaxLength(50)]
         public string? Formato { get; set; }
+
+        public bool Ativo { get; set; } = true;
     }
 }

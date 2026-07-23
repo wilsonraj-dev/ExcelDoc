@@ -46,7 +46,9 @@ namespace ExcelDoc.Server.Services
         {
             var payload = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var campo in mapeamento.Campos.OrderBy(x => x.IndiceColuna))
+            foreach (var campo in mapeamento.Campos
+                         .Where(x => x.Ativo)
+                         .OrderBy(x => x.IndiceColuna))
             {
                 rowValues.TryGetValue(campo.IndiceColuna, out var rawValue);
                 payload[campo.NomeCampo] = ConvertValue(rawValue, campo);

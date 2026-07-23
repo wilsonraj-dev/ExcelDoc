@@ -60,4 +60,14 @@ export class MapeamentoService {
       payload
     );
   }
+
+  previewExcel(arquivo: File): Observable<{ colunas: string[] }> {
+    const formData = new FormData();
+    formData.append('arquivo', arquivo);
+
+    return this.httpService.post<{ colunas: string[] }, FormData>(
+      `${this.mapeamentosApiUrl}/preview-excel`,
+      formData
+    );
+  }
 }

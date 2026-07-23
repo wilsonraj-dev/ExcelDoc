@@ -235,7 +235,11 @@ namespace ExcelDoc.Server.Data
                     .HasMaxLength(20);
 
                 entity.Property(e => e.Formato)
-                    .HasMaxLength(50);                
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Ativo)
+                    .HasDefaultValue(true)
+                    .HasSentinel(true);
 
                 entity.HasIndex(e => e.FK_IdMapeamento)
                     .HasDatabaseName("IX_MapeamentoCampos_FK_IdMapeamento");

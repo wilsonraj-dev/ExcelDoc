@@ -69,7 +69,7 @@ namespace ExcelDoc.Server.Services
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
             ValidateDocumentoPerfilMapeamento(documento, perfilMapeamento);
-            ValidateAccessToPerfilMapeamento(usuario, perfilMapeamento);
+            ValidateAccessToPerfilMapeamento(usuario, perfilMapeamento, request.EmpresaId);
 
             if (perfilMapeamento.Itens.Count == 0)
             {
@@ -77,8 +77,7 @@ namespace ExcelDoc.Server.Services
             }
 
             var extension = Path.GetExtension(request.Arquivo.FileName);
-            if (!string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(extension, ".xls", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.OnlyExcelFilesAccepted));
             }
@@ -134,17 +133,24 @@ namespace ExcelDoc.Server.Services
             var processamento = await _processamentoRepository.GetByIdAsync(processamentoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.ProcessingNotFound));
 
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(processamento.FK_IdEmpresa, false, cancellationToken);
+            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(processamento.FK_IdEmpresa, false, cancellationToken);
+            EnsureCanReadProcessamentoProfile(usuario, processamento.PerfilMapeamento);
             return Map(processamento);
         }
 
         public async Task<PagedResultDto<ProcessamentoResponseDto>> GetPagedAsync(ProcessamentoQueryDto query, CancellationToken cancellationToken = default)
         {
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(query.EmpresaId, false, cancellationToken);
+            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(query.EmpresaId, false, cancellationToken);
 
             var pageNumber = Math.Max(1, query.PageNumber);
             var pageSize = Math.Clamp(query.PageSize, 1, _processingOptions.MaxPageSize);
-            var result = await _processamentoRepository.GetPagedAsync(query.EmpresaId, query.Status, pageNumber, pageSize, cancellationToken);
+            var result = await _processamentoRepository.GetPagedAsync(
+                query.EmpresaId,
+                usuario.FK_IdEmpresa,
+                query.Status,
+                pageNumber,
+                pageSize,
+                cancellationToken);
 
             return new PagedResultDto<ProcessamentoResponseDto>
             {
@@ -160,7 +166,8 @@ namespace ExcelDoc.Server.Services
             var processamento = await _processamentoRepository.GetByIdAsync(processamentoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.ProcessingNotFound));
 
-            await _usuarioAcessoService.ValidarAcessoEmpresaAsync(processamento.FK_IdEmpresa, false, cancellationToken);
+            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(processamento.FK_IdEmpresa, false, cancellationToken);
+            EnsureCanReadProcessamentoProfile(usuario, processamento.PerfilMapeamento);
 
             var pageNumber = Math.Max(1, query.PageNumber);
             var pageSize = Math.Clamp(query.PageSize, 1, _processingOptions.MaxPageSize);
@@ -223,21 +230,38 @@ namespace ExcelDoc.Server.Services
             }
         }
 
-        private void ValidateAccessToPerfilMapeamento(Usuario usuario, PerfilMapeamento perfilMapeamento)
+        private void ValidateAccessToPerfilMapeamento(
+            Usuario usuario,
+            PerfilMapeamento perfilMapeamento,
+            int empresaProcessamentoId)
         {
-            if (usuario.TipoUsuario == TipoUsuario.Administrador)
+            if (perfilMapeamento.IsPadraoGlobal)
             {
                 return;
             }
 
-            if (perfilMapeamento.IsPadrao)
-            {
-                return;
-            }
-
-            if (usuario.FK_IdEmpresa != perfilMapeamento.FK_IdEmpresa)
+            if (!usuario.FK_IdEmpresa.HasValue ||
+                usuario.FK_IdEmpresa != perfilMapeamento.FK_IdEmpresa ||
+                perfilMapeamento.FK_IdEmpresa != empresaProcessamentoId)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMappingProfile));
+            }
+        }
+
+        private void EnsureCanReadProcessamentoProfile(
+            Usuario usuario,
+            PerfilMapeamento? perfilMapeamento)
+        {
+            if (perfilMapeamento is null || perfilMapeamento.IsPadraoGlobal)
+            {
+                return;
+            }
+
+            if (!usuario.FK_IdEmpresa.HasValue ||
+                perfilMapeamento.FK_IdEmpresa != usuario.FK_IdEmpresa)
+            {
+                throw new UnauthorizedAccessException(
+                    _messageService.Get(MessageKeys.UserDoesNotHaveAccessToMappingProfile));
             }
         }
 

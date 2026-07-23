@@ -64,9 +64,22 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("InitializeDefaults"))
+var databaseInitialization = app.Configuration.GetSection("DatabaseInitialization");
+
+if (databaseInitialization.GetValue<bool>("ApplyMigrationsOnStartup"))
 {
-    await ApplicationDbInitializer.InitializeAsync(app.Services);
+    await ApplicationDbInitializer.ApplyMigrationsAsync(app.Services);
+}
+
+if (databaseInitialization.GetValue<bool>("InstallSapDefaultsOnStartup"))
+{
+    await ApplicationDbInitializer.InstallSapDefaultsAsync(app.Services);
+}
+
+if (app.Environment.IsDevelopment() &&
+    databaseInitialization.GetValue<bool>("InstallDevelopmentSampleData"))
+{
+    await ApplicationDbInitializer.InstallDevelopmentSampleDataAsync(app.Services);
 }
 
 app.UseDefaultFiles();

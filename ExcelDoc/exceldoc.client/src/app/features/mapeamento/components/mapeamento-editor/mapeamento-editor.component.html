@@ -1,4 +1,7 @@
-<section class="mapping-editor" [class.mapping-editor--readonly]="readonly">
+<section class="mapping-editor"
+         [class.mapping-editor--readonly]="readonly"
+         [class.mapping-editor--saving]="isSaving"
+         [attr.aria-busy]="isSaving">
   <header class="collection-header">
     <div class="collection-header__identity">
       <span class="collection-header__icon" aria-hidden="true">
@@ -22,6 +25,7 @@
         <span class="sr-only">{{ 'mapeamento.mapeamentoEditor.search.label' | translate }}</span>
         <input type="search"
                [(ngModel)]="searchTerm"
+               [disabled]="isSaving"
                [placeholder]="'mapeamento.mapeamentoEditor.search.placeholder' | translate">
         <mat-icon>search</mat-icon>
       </label>
@@ -30,14 +34,14 @@
               color="primary"
               type="button"
               (click)="adicionarCampo()"
-              [disabled]="readonly">
+              [disabled]="isEditingLocked">
         <mat-icon>add</mat-icon>
         {{ 'mapeamento.mapeamentoEditor.actions.addField' | translate }}
       </button>
     </div>
   </header>
 
-  <input #fileInput type="file" accept=".xlsx,.xls" hidden (change)="onExcelUpload($event)">
+  <input #fileInput type="file" accept=".xlsx" hidden [disabled]="isSaving" (change)="onExcelUpload($event)">
 
   <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
 
@@ -65,10 +69,44 @@
               <input matInput
                      [(ngModel)]="row.nomeCampo"
                      (ngModelChange)="onFieldChange(row)"
+                     [disabled]="isSaving"
                      [placeholder]="'mapeamento.mapeamentoEditor.placeholders.fieldName' | translate">
               <mat-error *ngIf="row.errors.nomeCampo">{{ row.errors.nomeCampo }}</mat-error>
             </mat-form-field>
           </ng-template>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="ativo">
+        <th mat-header-cell *matHeaderCellDef>
+          {{ 'mapeamento.mapeamentoEditor.table.header.status' | translate }}
+          <mat-icon class="header-help" [matTooltip]="'mapeamento.mapeamentoEditor.tooltips.fieldStatus' | translate">info</mat-icon>
+        </th>
+        <td mat-cell *matCellDef="let row" class="status-column">
+          <button type="button"
+                  class="status-toggle"
+                  [class.status-toggle--active]="row.ativo"
+                  [disabled]="isEditingLocked"
+                  role="switch"
+                  [attr.aria-checked]="row.ativo"
+                  [attr.aria-label]="(row.ativo
+                    ? 'mapeamento.mapeamentoEditor.status.deactivate'
+                    : 'mapeamento.mapeamentoEditor.status.activate') | translate"
+                  [matTooltip]="(readonly
+                    ? 'mapeamento.mapeamentoEditor.tooltips.readOnlyStatus'
+                    : row.ativo
+                      ? 'mapeamento.mapeamentoEditor.status.deactivate'
+                      : 'mapeamento.mapeamentoEditor.status.activate') | translate"
+                  (click)="toggleAtivo(row)">
+            <span class="status-toggle__track" aria-hidden="true">
+              <span class="status-toggle__thumb"></span>
+            </span>
+            <span class="status-toggle__label">
+              {{ (row.ativo
+                ? 'mapeamento.mapeamentoEditor.status.active'
+                : 'mapeamento.mapeamentoEditor.status.inactive') | translate }}
+            </span>
+          </button>
         </td>
       </ng-container>
 
@@ -84,7 +122,7 @@
                    min="1"
                    [(ngModel)]="row.indiceColuna"
                    (ngModelChange)="onFieldChange(row)"
-                   [readonly]="readonly"
+                   [disabled]="isEditingLocked"
                    [placeholder]="'mapeamento.mapeamentoEditor.placeholders.excelColumn' | translate">
             <mat-error *ngIf="row.errors.indiceColuna">{{ row.errors.indiceColuna }}</mat-error>
           </mat-form-field>
@@ -97,7 +135,7 @@
           <mat-form-field appearance="outline" class="inline-field" subscriptSizing="dynamic">
             <mat-select [(ngModel)]="row.tipoCampo"
                         (ngModelChange)="onFieldChange(row)"
-                        [disabled]="readonly"
+                        [disabled]="isEditingLocked"
                         [placeholder]="'mapeamento.mapeamentoEditor.placeholders.select' | translate">
               <mat-option *ngFor="let opt of tipoCampoOptions" [value]="opt.value">
                 {{ ('mapeamento.mapeamentoEditor.fieldTypes.' + opt.label.toLowerCase()) | translate }}
@@ -140,6 +178,7 @@
                     color="warn"
                     type="button"
                     (click)="removerCampoRow(row)"
+                    [disabled]="isSaving"
                     [matTooltip]="'mapeamento.mapeamentoEditor.tooltips.removeField' | translate">
               <mat-icon>delete</mat-icon>
             </button>
@@ -150,6 +189,7 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row
           *matRowDef="let row; columns: displayedColumns"
+          [class.row-inactive]="!row.ativo"
           [class.row-error]="row.errors.nomeCampo || row.errors.indiceColuna || row.errors.tipoCampo || row.errors.formato"
           [class.row-new]="row.isNew"></tr>
     </table>
@@ -171,7 +211,7 @@
   </footer>
 
   <div class="standalone-actions" *ngIf="!managedActions && !isLoading">
-    <button mat-stroked-button type="button" (click)="openExcelPreview()">
+    <button mat-stroked-button type="button" (click)="openExcelPreview()" [disabled]="isSaving">
       <mat-icon>upload_file</mat-icon>
       {{ 'mapeamento.mapeamentoEditor.actions.excelPreview' | translate }}
     </button>

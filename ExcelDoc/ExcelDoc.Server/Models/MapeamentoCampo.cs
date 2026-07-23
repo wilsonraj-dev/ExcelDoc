@@ -21,6 +21,8 @@ namespace ExcelDoc.Server.Models
         [MaxLength(50)]
         public string? Formato { get; set; }
 
+        public bool Ativo { get; set; } = true;
+
         public int FK_IdMapeamento { get; set; }
 
         public Mapeamento Mapeamento { get; set; } = null!;

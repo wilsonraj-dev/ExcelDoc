@@ -55,9 +55,10 @@ namespace ExcelDoc.Server.Services
 
             EnsureCanCreate(usuario, request);
 
-            var empresaId = usuario.TipoUsuario == TipoUsuario.Administrador
-                ? request.FK_IdEmpresa
-                : usuario.FK_IdEmpresa;
+            // Perfis padrão são globais. Todo perfil customizado pertence
+            // obrigatoriamente à empresa do usuário, inclusive administradores.
+            var isPadraoGlobal = usuario.TipoUsuario == TipoUsuario.Administrador && request.IsPadrao;
+            var empresaId = isPadraoGlobal ? null : usuario.FK_IdEmpresa;
 
             await ValidarItensAsync(request.FK_IdDocumento, request.Itens, empresaId, cancellationToken);
 
@@ -66,7 +67,7 @@ namespace ExcelDoc.Server.Services
                 Nome = request.Nome.Trim(),
                 FK_IdDocumento = request.FK_IdDocumento,
                 FK_IdEmpresa = empresaId,
-                IsPadrao = usuario.TipoUsuario == TipoUsuario.Administrador && request.IsPadrao,
+                IsPadrao = isPadraoGlobal,
                 DataCriacao = DateTime.UtcNow,
                 Itens = CreatePerfilMapeamentoItems(request.Itens)
             };
@@ -92,19 +93,11 @@ namespace ExcelDoc.Server.Services
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingProfileDocumentCannotBeChanged));
             }
 
-            var empresaId = usuario.TipoUsuario == TipoUsuario.Administrador
-                ? request.FK_IdEmpresa
-                : usuario.FK_IdEmpresa;
+            var empresaId = perfil.FK_IdEmpresa;
 
             await ValidarItensAsync(request.FK_IdDocumento, request.Itens, empresaId, cancellationToken);
 
             perfil.Nome = request.Nome.Trim();
-
-            if (usuario.TipoUsuario == TipoUsuario.Administrador)
-            {
-                perfil.FK_IdEmpresa = request.FK_IdEmpresa;
-                perfil.IsPadrao = request.IsPadrao;
-            }
 
             perfil.Itens.Clear();
             foreach (var item in CreatePerfilMapeamentoItems(request.Itens))
@@ -285,7 +278,7 @@ namespace ExcelDoc.Server.Services
                     throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingDoesNotBelongToCollection, item.FK_IdMapeamento, item.FK_IdColecao));
                 }
 
-                if (!mapeamento.IsPadrao && mapeamento.FK_IdEmpresa != empresaId)
+                if (!mapeamento.IsPadraoGlobal && mapeamento.FK_IdEmpresa != empresaId)
                 {
                     throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMapping));
                 }
@@ -339,7 +332,8 @@ namespace ExcelDoc.Server.Services
                                 NomeCampo = campo.NomeCampo,
                                 DescricaoCampo = campo.DescricaoCampo,
                                 TipoCampo = campo.TipoCampo,
-                                Formato = campo.Formato
+                                Formato = campo.Formato,
+                                Ativo = campo.Ativo
                             })
                             .ToList()
                     }
@@ -356,7 +350,7 @@ namespace ExcelDoc.Server.Services
         private void EnsureCloneSourceIsConsistent(PerfilMapeamento origem)
         {
             var possuiMapeamentoDeOutraEmpresa = origem.Itens.Any(item =>
-                !item.Mapeamento.IsPadrao &&
+                !item.Mapeamento.IsPadraoGlobal &&
                 item.Mapeamento.FK_IdEmpresa != origem.FK_IdEmpresa);
 
             if (possuiMapeamentoDeOutraEmpresa)
@@ -374,9 +368,9 @@ namespace ExcelDoc.Server.Services
 
         private static bool PodeVisualizar(Usuario usuario, PerfilMapeamento perfil)
         {
-            if (usuario.TipoUsuario == TipoUsuario.Administrador) return true;
-            if (perfil.IsPadrao) return true;
-            return usuario.FK_IdEmpresa == perfil.FK_IdEmpresa;
+            if (perfil.IsPadraoGlobal) return true;
+            return usuario.FK_IdEmpresa.HasValue &&
+                   usuario.FK_IdEmpresa == perfil.FK_IdEmpresa;
         }
 
         private void EnsureCanAccess(Usuario usuario, PerfilMapeamento perfil)
@@ -391,14 +385,13 @@ namespace ExcelDoc.Server.Services
         {
             EnsureCanAccess(usuario, perfil);
 
-            if (perfil.IsPadrao)
+            if (perfil.IsPadraoGlobal)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeProfile));
             }
 
-            if (usuario.TipoUsuario == TipoUsuario.Administrador) return;
-
-            if (perfil.FK_IdEmpresa != usuario.FK_IdEmpresa)
+            if (!usuario.FK_IdEmpresa.HasValue ||
+                perfil.FK_IdEmpresa != usuario.FK_IdEmpresa)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeProfile));
             }
@@ -406,16 +399,19 @@ namespace ExcelDoc.Server.Services
 
         private void EnsureCanCreate(Usuario usuario, PerfilMapeamentoRequestDto request)
         {
-            if (usuario.TipoUsuario == TipoUsuario.Administrador) return;
+            if (request.IsPadrao)
+            {
+                if (usuario.TipoUsuario == TipoUsuario.Administrador)
+                {
+                    return;
+                }
+
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanCreateDefaultProfiles));
+            }
 
             if (!usuario.FK_IdEmpresa.HasValue)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotCreateProfiles));
-            }
-
-            if (request.IsPadrao)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanCreateDefaultProfiles));
             }
 
             if (request.FK_IdEmpresa.HasValue && request.FK_IdEmpresa != usuario.FK_IdEmpresa)
@@ -435,7 +431,7 @@ namespace ExcelDoc.Server.Services
                 Nome = perfil.Nome,
                 FK_IdDocumento = perfil.FK_IdDocumento,
                 FK_IdEmpresa = perfil.FK_IdEmpresa,
-                IsPadrao = perfil.IsPadrao,
+                IsPadrao = perfil.IsPadraoGlobal,
                 DataCriacao = perfil.DataCriacao,
                 Itens = itens.Select(i =>
                 {
@@ -452,7 +448,7 @@ namespace ExcelDoc.Server.Services
                         NomeColecao = i.Colecao?.NomeColecao ?? string.Empty,
                         FK_IdMapeamento = i.FK_IdMapeamento,
                         NomeMapeamento = i.Mapeamento?.Nome ?? string.Empty,
-                        IsMapeamentoPadrao = i.Mapeamento?.IsPadrao ?? false,
+                        IsMapeamentoPadrao = i.Mapeamento?.IsPadraoGlobal ?? false,
                         QuantidadeCampos = i.Mapeamento?.Campos.Count ?? 0,
                         FK_IdPerfilMapeamentoItemPai = i.FK_IdPerfilMapeamentoItemPai,
                         FK_IdColecaoPai = itemPai?.FK_IdColecao,

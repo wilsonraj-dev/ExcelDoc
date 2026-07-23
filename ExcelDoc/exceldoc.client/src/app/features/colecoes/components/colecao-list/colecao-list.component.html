@@ -1,109 +1,197 @@
-<div class="settings-page">
-  <div class="settings-header">
-    <div>
-      <h2>{{ 'colecoes.colecaoList.header.title' | translate }}</h2>
-      <p>{{ 'colecoes.colecaoList.header.description' | translate }}</p>
+<section class="collections-workspace">
+  <nav class="context-bar" [attr.aria-label]="'colecoes.colecaoList.breadcrumbs.ariaLabel' | translate">
+    <div class="breadcrumbs">
+      <mat-icon aria-hidden="true">settings</mat-icon>
+      <span>{{ 'colecoes.colecaoList.breadcrumbs.administration' | translate }}</span>
+      <mat-icon class="breadcrumbs__separator" aria-hidden="true">chevron_right</mat-icon>
+      <strong>{{ 'colecoes.colecaoList.header.title' | translate }}</strong>
     </div>
 
-    <div class="settings-header__actions">
-      <button type="button" mat-flat-button color="primary" (click)="novaColecao()">
+    <span class="admin-chip">
+      <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+      {{ 'colecoes.colecaoList.header.adminOnly' | translate }}
+    </span>
+  </nav>
+
+  <article class="workspace-card">
+    <header class="workspace-header">
+      <div class="workspace-header__copy">
+        <span class="workspace-header__icon" aria-hidden="true"><mat-icon>account_tree</mat-icon></span>
+        <div>
+          <h1>{{ 'colecoes.colecaoList.header.title' | translate }}</h1>
+          <p>{{ 'colecoes.colecaoList.header.description' | translate }}</p>
+        </div>
+      </div>
+
+      <button type="button" mat-flat-button color="primary" class="primary-action" (click)="novaColecao()">
         <mat-icon>add</mat-icon>
         {{ 'colecoes.colecaoList.actions.newCollection' | translate }}
       </button>
-    </div>
-  </div>
+    </header>
 
-  <mat-card class="settings-card colecao-page" appearance="outlined">
-    <mat-card-content class="colecao-page__content">
-      <p class="colecao-page__error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    <section class="summary-grid" [attr.aria-label]="'colecoes.colecaoList.summary.ariaLabel' | translate">
+      <article class="summary-card">
+        <span class="summary-card__icon summary-card__icon--blue"><mat-icon>folder_copy</mat-icon></span>
+        <div>
+          <strong>{{ totalColecoes }}</strong>
+          <span>{{ 'colecoes.colecaoList.summary.total' | translate }}</span>
+        </div>
+      </article>
 
-      <form class="colecao-page__filters" [formGroup]="filterForm">
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'colecoes.colecaoList.filters.nameLabel' | translate }}</mat-label>
-          <input matInput formControlName="termo" [placeholder]="'colecoes.colecaoList.filters.namePlaceholder' | translate" />
-        </mat-form-field>
+      <article class="summary-card">
+        <span class="summary-card__icon summary-card__icon--green"><mat-icon>verified</mat-icon></span>
+        <div>
+          <strong>{{ totalColecoesPadrao }}</strong>
+          <span>{{ 'colecoes.colecaoList.summary.defaults' | translate }}</span>
+        </div>
+      </article>
 
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'colecoes.colecaoList.filters.collectionTypeLabel' | translate }}</mat-label>
-          <mat-select formControlName="tipoColecao">
-            <mat-option *ngFor="let option of tipoColecaoOptions" [value]="option.value">
-              {{ option.value ? (('colecoes.collectionTypes.' + option.value.toLowerCase()) | translate) : ('colecoes.colecaoList.filters.allTypes' | translate) }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </form>
+      <article class="summary-card">
+        <span class="summary-card__icon summary-card__icon--purple"><mat-icon>domain</mat-icon></span>
+        <div>
+          <strong>{{ totalColecoesEmpresa }}</strong>
+          <span>{{ 'colecoes.colecaoList.summary.company' | translate }}</span>
+        </div>
+      </article>
+    </section>
 
-      <div class="loading-state loading-state--inline" *ngIf="isLoading">
+    <section class="admin-banner">
+      <mat-icon aria-hidden="true">info</mat-icon>
+      <div>
+        <strong>{{ 'colecoes.colecaoList.adminInfo.title' | translate }}</strong>
+        <p>{{ 'colecoes.colecaoList.adminInfo.description' | translate }}</p>
+      </div>
+    </section>
+
+    <section class="collections-panel">
+      <header class="collections-panel__toolbar">
+        <form class="collections-filters" [formGroup]="filterForm">
+          <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+            <mat-icon matPrefix aria-hidden="true">search</mat-icon>
+            <mat-label>{{ 'colecoes.colecaoList.filters.nameLabel' | translate }}</mat-label>
+            <input matInput
+                   formControlName="termo"
+                   [placeholder]="'colecoes.colecaoList.filters.namePlaceholder' | translate" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="type-field" subscriptSizing="dynamic">
+            <mat-label>{{ 'colecoes.colecaoList.filters.collectionTypeLabel' | translate }}</mat-label>
+            <mat-select formControlName="tipoColecao">
+              <mat-option *ngFor="let option of tipoColecaoOptions" [value]="option.value">
+                {{ option.value ? (('colecoes.collectionTypes.' + option.value.toLowerCase()) | translate) : ('colecoes.colecaoList.filters.allTypes' | translate) }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button *ngIf="hasActiveFilters"
+                  type="button"
+                  mat-button
+                  class="clear-filter"
+                  (click)="limparFiltros()">
+            <mat-icon>filter_alt_off</mat-icon>
+            {{ 'colecoes.colecaoList.filters.clear' | translate }}
+          </button>
+        </form>
+
+        <span class="result-count" *ngIf="!isLoading">
+          {{ dataSource.filteredData.length }} {{ 'colecoes.colecaoList.summary.results' | translate }}
+        </span>
+      </header>
+
+      <section class="feedback feedback--error" *ngIf="errorMessage" role="alert">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+        <button type="button" mat-button (click)="recarregar()">
+          {{ 'colecoes.colecaoList.actions.retry' | translate }}
+        </button>
+      </section>
+
+      <div class="loading-state" *ngIf="isLoading">
         <app-loading-spinner [message]="'colecoes.colecaoList.loading.collections' | translate"></app-loading-spinner>
       </div>
 
       <ng-container *ngIf="!isLoading">
-        <div class="colecao-page__table" *ngIf="hasColecoes; else emptyState">
+        <div class="collection-table" *ngIf="hasColecoes; else emptyState">
           <div class="table-wrapper">
-            <table mat-table [dataSource]="dataSource" class="colecao-page__table-content">
+            <table mat-table [dataSource]="dataSource" class="collection-table__content">
               <ng-container matColumnDef="nomeColecao">
                 <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.collectionName' | translate }}</th>
-                <td mat-cell *matCellDef="let colecao">{{ colecao.nomeColecao }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="descricao">
-                <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.description' | translate }}</th>
-                <td mat-cell *matCellDef="let colecao">{{ colecao.descricao || '-' }}</td>
+                <td mat-cell *matCellDef="let colecao">
+                  <div class="collection-identity">
+                    <span class="collection-identity__icon" [class.collection-identity__icon--line]="isLinha(colecao)">
+                      <mat-icon>{{ isLinha(colecao) ? 'format_list_bulleted' : 'view_agenda' }}</mat-icon>
+                    </span>
+                    <div>
+                      <strong>{{ colecao.nomeColecao }}</strong>
+                      <span>{{ colecao.descricao || ('colecoes.colecaoList.table.noDescription' | translate) }}</span>
+                    </div>
+                  </div>
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="tipoColecao">
                 <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.collectionType' | translate }}</th>
-                <td mat-cell *matCellDef="let colecao">{{ getTipoColecaoLabel(colecao) }}</td>
+                <td mat-cell *matCellDef="let colecao">
+                  <span class="type-chip">
+                    <span class="type-chip__dot"></span>
+                    {{ getTipoColecaoLabel(colecao) }}
+                  </span>
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="tipo">
                 <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.type' | translate }}</th>
                 <td mat-cell *matCellDef="let colecao">
-                  <div class="colecao-page__scope">
-                    <mat-chip-set>
-                      <mat-chip class="colecao-page__badge" [class.colecao-page__badge--padrao]="isPadrao(colecao)">
-                        {{ getEscopoLabel(colecao) }}
-                      </mat-chip>
-                    </mat-chip-set>
-                  </div>
+                  <span class="scope-chip" [class.scope-chip--default]="isPadrao(colecao)">
+                    <mat-icon>{{ isPadrao(colecao) ? 'verified' : 'domain' }}</mat-icon>
+                    {{ getEscopoLabel(colecao) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="documentos">
+                <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.documents' | translate }}</th>
+                <td mat-cell *matCellDef="let colecao">
+                  <span class="document-count">
+                    <mat-icon>description</mat-icon>
+                    {{ getDocumentoCount(colecao) }}
+                  </span>
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="mapeamentos">
                 <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.mappings' | translate }}</th>
-                <td mat-cell *matCellDef="let colecao" class="colecao-page__actions-cell">
-                  <div class="colecao-page__actions">
-                    <button type="button"
-                            mat-stroked-button
-                            color="primary"
-                            (click)="abrirMapeamento(colecao)">
-                      <mat-icon>settings</mat-icon>
-                      {{ 'colecoes.colecaoList.actions.configureFields' | translate }}
-                    </button>
-                  </div>
+                <td mat-cell *matCellDef="let colecao">
+                  <button type="button"
+                          mat-stroked-button
+                          color="primary"
+                          class="mapping-action"
+                          (click)="abrirMapeamento(colecao)">
+                    <mat-icon>tune</mat-icon>
+                    {{ 'colecoes.colecaoList.actions.configureFields' | translate }}
+                  </button>
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="acoes">
-                <th mat-header-cell *matHeaderCellDef>{{ 'colecoes.colecaoList.table.header.actions' | translate }}</th>
-                <td mat-cell *matCellDef="let colecao" class="colecao-page__actions-cell">
-                  <div class="colecao-page__actions">
+                <th mat-header-cell *matHeaderCellDef class="actions-header">{{ 'colecoes.colecaoList.table.header.actions' | translate }}</th>
+                <td mat-cell *matCellDef="let colecao" class="actions-cell">
+                  <div class="row-actions">
                     <button type="button"
-                            mat-stroked-button
-                            color="primary"
+                            mat-icon-button
                             [disabled]="!canManageColecao(colecao)"
+                            [matTooltip]="'colecoes.colecaoList.actions.edit' | translate"
                             (click)="editar(colecao)">
                       <mat-icon>edit</mat-icon>
-                      {{ 'colecoes.colecaoList.actions.edit' | translate }}
                     </button>
 
                     <button type="button"
-                            mat-stroked-button
-                            color="warn"
+                            mat-icon-button
+                            class="delete-action"
                             [disabled]="!canManageColecao(colecao) || deletingColecaoId === colecao.id"
+                            [matTooltip]="deletingColecaoId === colecao.id ? deletingLabel : deleteLabel"
                             (click)="excluir(colecao)">
-                      <mat-icon>delete</mat-icon>
-                      {{ deletingColecaoId === colecao.id ? deletingLabel : deleteLabel }}
+                      <mat-icon>{{ deletingColecaoId === colecao.id ? 'hourglass_top' : 'delete_outline' }}</mat-icon>
                     </button>
                   </div>
                 </td>
@@ -122,12 +210,20 @@
       </ng-container>
 
       <ng-template #emptyState>
-        <section class="colecao-page__empty-state">
-          <mat-icon>folder_copy</mat-icon>
-          <h3>{{ 'colecoes.colecaoList.empty.title' | translate }}</h3>
-          <p>{{ 'colecoes.colecaoList.empty.description' | translate }}</p>
+        <section class="empty-state">
+          <span class="empty-state__icon"><mat-icon>{{ hasAnyColecoes ? 'search_off' : 'account_tree' }}</mat-icon></span>
+          <h2>{{ (hasAnyColecoes ? 'colecoes.colecaoList.empty.filteredTitle' : 'colecoes.colecaoList.empty.title') | translate }}</h2>
+          <p>{{ (hasAnyColecoes ? 'colecoes.colecaoList.empty.filteredDescription' : 'colecoes.colecaoList.empty.description') | translate }}</p>
+          <button *ngIf="hasAnyColecoes" type="button" mat-stroked-button color="primary" (click)="limparFiltros()">
+            <mat-icon>filter_alt_off</mat-icon>
+            {{ 'colecoes.colecaoList.filters.clear' | translate }}
+          </button>
+          <button *ngIf="!hasAnyColecoes" type="button" mat-flat-button color="primary" (click)="novaColecao()">
+            <mat-icon>add</mat-icon>
+            {{ 'colecoes.colecaoList.actions.newCollection' | translate }}
+          </button>
         </section>
       </ng-template>
-    </mat-card-content>
-  </mat-card>
-</div>
+    </section>
+  </article>
+</section>

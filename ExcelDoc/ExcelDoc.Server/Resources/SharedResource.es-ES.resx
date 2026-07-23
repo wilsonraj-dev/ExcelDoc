@@ -48,6 +48,7 @@
   <data name="FormatMaxLength" xml:space="preserve"><value>El formato debe tener como m&#xE1;ximo 50 caracteres.</value></data>
   <data name="HeaderCollectionsCannotBeNested" xml:space="preserve"><value>Las colecciones de encabezado no pueden anidarse.</value></data>
   <data name="InvalidBooleanValue" xml:space="preserve"><value>Valor booleano inv&#xE1;lido: {0}</value></data>
+  <data name="InvalidExcelFile" xml:space="preserve"><value>El archivo Excel est&#xE1; vac&#xED;o, da&#xF1;ado o tiene un formato no v&#xE1;lido.</value></data>
   <data name="InvalidDocumentLinks" xml:space="preserve"><value>Los documentos informados para el v&#xED;nculo son inv&#xE1;lidos.</value></data>
   <data name="InvalidIdExcelValueAtRow" xml:space="preserve"><value>Valor inv&#xE1;lido en la columna '#' en la fila {0}: '{1}'. Informe un n&#xFA;mero entero.</value></data>
   <data name="InvalidIntegerValue" xml:space="preserve"><value>Valor entero inv&#xE1;lido: {0}</value></data>
@@ -75,7 +76,7 @@
   <data name="OnlyAdminsCanCreateDefaultProfiles" xml:space="preserve"><value>Solo los administradores pueden crear perfiles predeterminados.</value></data>
   <data name="OnlyAdminsCanExecuteAction" xml:space="preserve"><value>Solo los administradores pueden ejecutar esta acci&#xF3;n.</value></data>
   <data name="OnlyAdminsCanRegisterCompanies" xml:space="preserve"><value>Solo los administradores pueden registrar empresas.</value></data>
-  <data name="OnlyExcelFilesAccepted" xml:space="preserve"><value>Solo se aceptan archivos Excel .xls y .xlsx.</value></data>
+  <data name="OnlyExcelFilesAccepted" xml:space="preserve"><value>Solo se aceptan archivos Excel .xlsx.</value></data>
   <data name="OnlyLineCollectionsCanBeNested" xml:space="preserve"><value>Solo las colecciones de tipo line pueden anidarse.</value></data>
   <data name="OneOrMoreDocumentsNotFound" xml:space="preserve"><value>Uno o m&#xE1;s documentos informados no fueron encontrados.</value></data>
   <data name="PasswordResetCodeInvalidOrExpired" xml:space="preserve"><value>C&#xF3;digo inv&#xE1;lido o expirado.</value></data>

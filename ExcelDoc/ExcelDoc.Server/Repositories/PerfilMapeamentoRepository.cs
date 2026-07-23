@@ -36,7 +36,7 @@ namespace ExcelDoc.Server.Repositories
                     .ThenInclude(x => x.Mapeamento)
                         .ThenInclude(x => x.Campos)
                 .Where(x => x.FK_IdDocumento == documentoId)
-                .OrderByDescending(x => x.IsPadrao)
+                .OrderByDescending(x => x.IsPadrao && !x.FK_IdEmpresa.HasValue)
                 .ThenBy(x => x.Nome)
                 .ToListAsync(cancellationToken);
         }
@@ -90,7 +90,7 @@ namespace ExcelDoc.Server.Repositories
             CancellationToken cancellationToken = default)
         {
             var customMappingIds = perfil.Itens
-                .Where(item => !item.Mapeamento.IsPadrao)
+                .Where(item => !item.Mapeamento.IsPadraoGlobal)
                 .Select(item => item.FK_IdMapeamento)
                 .Distinct()
                 .ToList();
@@ -108,7 +108,7 @@ namespace ExcelDoc.Server.Repositories
                         .Include(mapping => mapping.Campos)
                         .Where(mapping =>
                             customMappingIds.Contains(mapping.Id) &&
-                            !mapping.IsPadrao &&
+                            !(mapping.IsPadrao && !mapping.FK_IdEmpresa.HasValue) &&
                             !_context.PerfilMapeamentoItens.Any(item => item.FK_IdMapeamento == mapping.Id))
                         .ToListAsync(cancellationToken);
 

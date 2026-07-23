@@ -65,6 +65,8 @@ namespace ExcelDoc.Server.Services
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.ProcessingWithoutMappingProfileNotSupported));
             }
 
+            ValidateMappingTenant(processamento);
+
             IReadOnlyList<Background.ExcelDocumentGroup> groups;
             try
             {
@@ -215,6 +217,24 @@ namespace ExcelDoc.Server.Services
         private static string? GetExceptionData(Exception exception, string key)
         {
             return exception.Data.Contains(key) ? exception.Data[key]?.ToString() : null;
+        }
+
+        private void ValidateMappingTenant(Processamento processamento)
+        {
+            var perfil = processamento.PerfilMapeamento!;
+            if (!perfil.IsPadraoGlobal && perfil.FK_IdEmpresa != processamento.FK_IdEmpresa)
+            {
+                throw new UnauthorizedAccessException(
+                    _messageService.Get(MessageKeys.UserDoesNotHaveAccessToMappingProfile));
+            }
+
+            if (perfil.Itens.Any(item =>
+                    !item.Mapeamento.IsPadraoGlobal &&
+                    item.Mapeamento.FK_IdEmpresa != processamento.FK_IdEmpresa))
+            {
+                throw new UnauthorizedAccessException(
+                    _messageService.Get(MessageKeys.UserDoesNotHaveAccessToMapping));
+            }
         }
 
         private Configuracao DecryptConfiguration(Configuracao configuracao)

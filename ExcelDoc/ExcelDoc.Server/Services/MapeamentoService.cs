@@ -57,13 +57,14 @@ namespace ExcelDoc.Server.Services
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.CollectionNotFound));
 
             EnsureCanCreateMapeamento(usuario, request, colecao);
+            var isPadraoGlobal = usuario.TipoUsuario == TipoUsuario.Administrador && request.IsPadrao;
 
             var mapeamento = new Mapeamento
             {
                 Nome = request.Nome.Trim(),
                 FK_IdColecao = request.FK_IdColecao,
-                FK_IdEmpresa = usuario.TipoUsuario == TipoUsuario.Administrador ? request.FK_IdEmpresa : usuario.FK_IdEmpresa,
-                IsPadrao = usuario.TipoUsuario == TipoUsuario.Administrador && request.IsPadrao,
+                FK_IdEmpresa = isPadraoGlobal ? null : usuario.FK_IdEmpresa,
+                IsPadrao = isPadraoGlobal,
                 DataCriacao = DateTime.UtcNow,
                 Colecao = colecao
             };
@@ -84,7 +85,7 @@ namespace ExcelDoc.Server.Services
 
             EnsureCanAccessMapeamento(usuario, origem);
 
-            if (!usuario.FK_IdEmpresa.HasValue && usuario.TipoUsuario != TipoUsuario.Administrador)
+            if (!usuario.FK_IdEmpresa.HasValue)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotCloneMappings));
             }
@@ -93,7 +94,7 @@ namespace ExcelDoc.Server.Services
             {
                 Nome = request.Nome.Trim(),
                 FK_IdColecao = origem.FK_IdColecao,
-                FK_IdEmpresa = usuario.TipoUsuario == TipoUsuario.Administrador ? usuario.FK_IdEmpresa : usuario.FK_IdEmpresa,
+                FK_IdEmpresa = usuario.FK_IdEmpresa.Value,
                 IsPadrao = false,
                 DataCriacao = DateTime.UtcNow,
                 Campos = origem.Campos
@@ -104,7 +105,8 @@ namespace ExcelDoc.Server.Services
                         DescricaoCampo = campo.DescricaoCampo,
                         IndiceColuna = campo.IndiceColuna,
                         TipoCampo = campo.TipoCampo,
-                        Formato = campo.Formato
+                        Formato = campo.Formato,
+                        Ativo = campo.Ativo
                     })
                     .ToList()
             };
@@ -132,12 +134,6 @@ namespace ExcelDoc.Server.Services
 
             mapeamento.Nome = request.Nome.Trim();
 
-            if (usuario.TipoUsuario == TipoUsuario.Administrador)
-            {
-                mapeamento.FK_IdEmpresa = request.FK_IdEmpresa;
-                mapeamento.IsPadrao = request.IsPadrao;
-            }
-
             await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
             return Map(mapeamento);
         }
@@ -150,7 +146,7 @@ namespace ExcelDoc.Server.Services
 
             EnsureCanEditMapeamento(usuario, mapeamento);
 
-            if (mapeamento.IsPadrao)
+            if (mapeamento.IsPadraoGlobal)
             {
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.DefaultMappingsCannotBeDeleted));
             }
@@ -161,26 +157,17 @@ namespace ExcelDoc.Server.Services
 
         private static bool PodeVisualizarMapeamento(Usuario usuario, Mapeamento mapeamento)
         {
-            if (usuario.TipoUsuario == TipoUsuario.Administrador)
+            if (mapeamento.IsPadraoGlobal)
             {
                 return true;
             }
 
-            if (mapeamento.IsPadrao)
-            {
-                return true;
-            }
-
-            return usuario.FK_IdEmpresa == mapeamento.FK_IdEmpresa;
+            return usuario.FK_IdEmpresa.HasValue &&
+                   usuario.FK_IdEmpresa == mapeamento.FK_IdEmpresa;
         }
 
         private void EnsureCanAccessColecao(Usuario usuario, Colecao colecao)
         {
-            if (usuario.TipoUsuario == TipoUsuario.Administrador)
-            {
-                return;
-            }
-
             if (!colecao.FK_IdEmpresa.HasValue)
             {
                 return;
@@ -206,17 +193,13 @@ namespace ExcelDoc.Server.Services
         {
             EnsureCanAccessMapeamento(usuario, mapeamento);
 
-            if (mapeamento.IsPadrao)
+            if (mapeamento.IsPadraoGlobal)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeMapping));
             }
 
-            if (usuario.TipoUsuario == TipoUsuario.Administrador)
-            {
-                return;
-            }
-
-            if (mapeamento.FK_IdEmpresa != usuario.FK_IdEmpresa)
+            if (!usuario.FK_IdEmpresa.HasValue ||
+                mapeamento.FK_IdEmpresa != usuario.FK_IdEmpresa)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeMapping));
             }
@@ -226,19 +209,19 @@ namespace ExcelDoc.Server.Services
         {
             EnsureCanAccessColecao(usuario, colecao);
 
-            if (usuario.TipoUsuario == TipoUsuario.Administrador)
+            if (request.IsPadrao)
             {
-                return;
+                if (usuario.TipoUsuario == TipoUsuario.Administrador)
+                {
+                    return;
+                }
+
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanCreateDefaultMappings));
             }
 
             if (!usuario.FK_IdEmpresa.HasValue)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotCreateMappings));
-            }
-
-            if (request.IsPadrao)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanCreateDefaultMappings));
             }
 
             if (request.FK_IdEmpresa.HasValue && request.FK_IdEmpresa != usuario.FK_IdEmpresa)
@@ -255,7 +238,7 @@ namespace ExcelDoc.Server.Services
                 Nome = mapeamento.Nome,
                 FK_IdColecao = mapeamento.FK_IdColecao,
                 FK_IdEmpresa = mapeamento.FK_IdEmpresa,
-                IsPadrao = mapeamento.IsPadrao,
+                IsPadrao = mapeamento.IsPadraoGlobal,
                 QuantidadeCampos = mapeamento.Campos.Count
             };
         }

@@ -1,82 +1,183 @@
-<mat-card class="colecao-form" appearance="outlined">
-  <mat-card-header>
-    <mat-card-title>{{ pageTitle }}</mat-card-title>
-    <mat-card-subtitle>{{ pageSubtitle }}</mat-card-subtitle>
-  </mat-card-header>
-
-  <mat-card-content class="colecao-form__content">
-    <div class="colecao-form__loading" *ngIf="isLoading">
-      <app-loading-spinner [message]="'colecoes.colecaoForm.loading.collection' | translate"></app-loading-spinner>
+<section class="collection-form-workspace">
+  <nav class="context-bar" [attr.aria-label]="'colecoes.colecaoForm.breadcrumbs.ariaLabel' | translate">
+    <div class="breadcrumbs">
+      <button type="button"
+              mat-icon-button
+              class="back-button"
+              [attr.aria-label]="'colecoes.colecaoForm.actions.back' | translate"
+              (click)="cancel()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span>{{ 'colecoes.colecaoForm.breadcrumbs.administration' | translate }}</span>
+      <mat-icon class="breadcrumbs__separator" aria-hidden="true">chevron_right</mat-icon>
+      <span>{{ 'colecoes.colecaoForm.breadcrumbs.collections' | translate }}</span>
+      <mat-icon class="breadcrumbs__separator" aria-hidden="true">chevron_right</mat-icon>
+      <strong>{{ pageTitle }}</strong>
     </div>
 
-    <form class="colecao-form__fields" [formGroup]="form" (ngSubmit)="submit()" *ngIf="!isLoading">
-      <p class="colecao-form__error" *ngIf="apiError">{{ apiError }}</p>
-      <p class="colecao-form__error" *ngIf="documentoError">{{ documentoError }}</p>
-      <p class="colecao-form__info" *ngIf="permissionMessage">{{ permissionMessage }}</p>
-      <p class="colecao-form__warning" *ngIf="hasCompanyScopeUnavailable">
-        {{ 'colecoes.colecaoForm.scope.companyUnavailableWarning' | translate }}
-      </p>
+    <span class="admin-chip">
+      <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+      {{ 'colecoes.colecaoList.header.adminOnly' | translate }}
+    </span>
+  </nav>
 
-      <div class="colecao-form__grid">
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'colecoes.colecaoForm.fields.collectionName' | translate }}</mat-label>
-          <input matInput formControlName="nomeColecao" [placeholder]="'colecoes.colecaoForm.placeholders.collectionName' | translate" />
-          <mat-error *ngIf="isInvalid('nomeColecao')">{{ getErrorMessage('nomeColecao') }}</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'colecoes.colecaoForm.fields.collectionType' | translate }}</mat-label>
-          <mat-select formControlName="tipoColecao">
-            <mat-option *ngFor="let option of tipoColecaoOptions" [value]="option.value">
-              {{ ('colecoes.collectionTypes.' + option.value.toLowerCase()) | translate }}
-            </mat-option>
-          </mat-select>
-          <mat-error *ngIf="isInvalid('tipoColecao')">{{ getErrorMessage('tipoColecao') }}</mat-error>
-        </mat-form-field>
+  <form class="workspace-card" [formGroup]="form" (ngSubmit)="submit()">
+    <header class="workspace-header">
+      <div class="workspace-header__copy">
+        <span class="workspace-header__icon"><mat-icon>{{ isEditMode ? 'edit_note' : 'create_new_folder' }}</mat-icon></span>
+        <div>
+          <div class="workspace-header__title-row">
+            <h1>{{ pageTitle }}</h1>
+            <span class="scope-chip" [class.scope-chip--default]="isColecaoPadraoSelecionada">
+              <mat-icon>{{ isColecaoPadraoSelecionada ? 'verified' : 'domain' }}</mat-icon>
+              {{ escopoBadgeLabel }}
+            </span>
+          </div>
+          <p>{{ pageSubtitle }}</p>
+        </div>
       </div>
 
-      <mat-form-field appearance="outline">
-        <mat-label>{{ 'colecoes.colecaoForm.fields.description' | translate }}</mat-label>
-        <textarea matInput formControlName="descricao" rows="3" [placeholder]="'colecoes.colecaoForm.placeholders.description' | translate"></textarea>
-        <mat-error *ngIf="isInvalid('descricao')">{{ getErrorMessage('descricao') }}</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>{{ 'colecoes.colecaoForm.fields.linkedDocuments' | translate }}</mat-label>
-        <mat-select formControlName="documentoIds" multiple>
-          <mat-select-trigger>{{ selectedDocumentosLabel }}</mat-select-trigger>
-          <mat-option *ngFor="let documento of documentos" [value]="documento.id">
-            {{ documento.nomeDocumento }}
-          </mat-option>
-        </mat-select>
-        <mat-hint>{{ documentosHint }}</mat-hint>
-      </mat-form-field>
-
-      <section class="colecao-form__scope">
-        <div>
-          <h3>{{ 'colecoes.colecaoForm.scope.title' | translate }}</h3>
-          <p>{{ escopoBadgeDescription }}</p>
-        </div>
-
-        <mat-chip-set>
-          <mat-chip class="colecao-form__badge" [class.colecao-form__badge--padrao]="isColecaoPadraoSelecionada">
-            {{ escopoBadgeLabel }}
-          </mat-chip>
-        </mat-chip-set>
-      </section>
-
-      <mat-checkbox *ngIf="isAdministrator" formControlName="criarComoPadrao">
-        {{ 'colecoes.colecaoForm.scope.createAsDefault' | translate }}
-      </mat-checkbox>
-
-      <div class="colecao-form__actions">
+      <div class="workspace-header__actions">
         <button type="button" mat-stroked-button (click)="cancel()" [disabled]="isSaving">
           {{ 'colecoes.colecaoForm.actions.cancel' | translate }}
         </button>
         <button type="submit" mat-flat-button color="primary" [disabled]="!canSubmit">
+          <mat-icon>{{ isSaving ? 'hourglass_top' : 'save' }}</mat-icon>
           {{ submitLabel }}
         </button>
       </div>
-    </form>
-  </mat-card-content>
-</mat-card>
+    </header>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <app-loading-spinner [message]="'colecoes.colecaoForm.loading.collection' | translate"></app-loading-spinner>
+    </div>
+
+    <div class="form-content" *ngIf="!isLoading">
+      <div class="feedback-stack" *ngIf="apiError || documentoError || permissionMessage || hasCompanyScopeUnavailable">
+        <section class="feedback feedback--error" *ngIf="apiError" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ apiError }}</span>
+        </section>
+        <section class="feedback feedback--error" *ngIf="documentoError" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ documentoError }}</span>
+        </section>
+        <section class="feedback feedback--info" *ngIf="permissionMessage">
+          <mat-icon>info</mat-icon>
+          <span>{{ permissionMessage }}</span>
+        </section>
+        <section class="feedback feedback--warning" *ngIf="hasCompanyScopeUnavailable">
+          <mat-icon>warning_amber</mat-icon>
+          <span>{{ 'colecoes.colecaoForm.scope.companyUnavailableWarning' | translate }}</span>
+        </section>
+      </div>
+
+      <div class="form-layout">
+        <main class="form-panel form-panel--details">
+          <header class="form-panel__header">
+            <span><mat-icon>data_object</mat-icon></span>
+            <div>
+              <h2>{{ 'colecoes.colecaoForm.sections.details.title' | translate }}</h2>
+              <p>{{ 'colecoes.colecaoForm.sections.details.description' | translate }}</p>
+            </div>
+          </header>
+
+          <div class="form-panel__body details-grid">
+            <mat-form-field appearance="outline" class="name-field">
+              <mat-label>{{ 'colecoes.colecaoForm.fields.collectionName' | translate }}</mat-label>
+              <input matInput
+                     formControlName="nomeColecao"
+                     [placeholder]="'colecoes.colecaoForm.placeholders.collectionName' | translate" />
+              <mat-icon matSuffix>account_tree</mat-icon>
+              <mat-error *ngIf="isInvalid('nomeColecao')">{{ getErrorMessage('nomeColecao') }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="type-field">
+              <mat-label>{{ 'colecoes.colecaoForm.fields.collectionType' | translate }}</mat-label>
+              <mat-select formControlName="tipoColecao">
+                <mat-option *ngFor="let option of tipoColecaoOptions" [value]="option.value">
+                  {{ ('colecoes.collectionTypes.' + option.value.toLowerCase()) | translate }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="isInvalid('tipoColecao')">{{ getErrorMessage('tipoColecao') }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="description-field">
+              <mat-label>{{ 'colecoes.colecaoForm.fields.description' | translate }}</mat-label>
+              <textarea matInput
+                        formControlName="descricao"
+                        rows="5"
+                        [placeholder]="'colecoes.colecaoForm.placeholders.description' | translate"></textarea>
+              <mat-hint align="end">{{ form.controls.descricao.getRawValue().length }}/500</mat-hint>
+              <mat-error *ngIf="isInvalid('descricao')">{{ getErrorMessage('descricao') }}</mat-error>
+            </mat-form-field>
+          </div>
+        </main>
+
+        <aside class="form-sidebar">
+          <section class="form-panel documents-panel">
+            <header class="form-panel__header">
+              <span><mat-icon>description</mat-icon></span>
+              <div>
+                <h2>{{ 'colecoes.colecaoForm.sections.documents.title' | translate }}</h2>
+                <p>{{ 'colecoes.colecaoForm.sections.documents.description' | translate }}</p>
+              </div>
+              <strong class="selection-count">{{ selectedDocumentosCount }}</strong>
+            </header>
+
+            <div class="form-panel__body">
+              <mat-form-field appearance="outline">
+                <mat-label>{{ 'colecoes.colecaoForm.fields.linkedDocuments' | translate }}</mat-label>
+                <mat-select formControlName="documentoIds" multiple>
+                  <mat-select-trigger>{{ selectedDocumentosLabel }}</mat-select-trigger>
+                  <mat-option *ngFor="let documento of documentos" [value]="documento.id">
+                    {{ documento.nomeDocumento }}
+                  </mat-option>
+                </mat-select>
+                <mat-hint>{{ documentosHint }}</mat-hint>
+              </mat-form-field>
+            </div>
+          </section>
+
+          <section class="form-panel scope-panel">
+            <header class="form-panel__header">
+              <span><mat-icon>shield</mat-icon></span>
+              <div>
+                <h2>{{ 'colecoes.colecaoForm.scope.title' | translate }}</h2>
+                <p>{{ 'colecoes.colecaoForm.sections.scope.description' | translate }}</p>
+              </div>
+            </header>
+
+            <div class="form-panel__body">
+              <div class="scope-preview">
+                <span class="scope-preview__icon" [class.scope-preview__icon--default]="isColecaoPadraoSelecionada">
+                  <mat-icon>{{ isColecaoPadraoSelecionada ? 'public' : 'domain' }}</mat-icon>
+                </span>
+                <div>
+                  <strong>{{ escopoBadgeLabel }}</strong>
+                  <p>{{ escopoBadgeDescription }}</p>
+                </div>
+              </div>
+
+              <mat-checkbox *ngIf="isAdministrator" formControlName="criarComoPadrao" class="default-checkbox">
+                {{ 'colecoes.colecaoForm.scope.createAsDefault' | translate }}
+              </mat-checkbox>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <footer class="form-footer">
+        <span><mat-icon>info</mat-icon>{{ 'colecoes.colecaoForm.sections.footerHint' | translate }}</span>
+        <div>
+          <button type="button" mat-stroked-button (click)="cancel()" [disabled]="isSaving">
+            {{ 'colecoes.colecaoForm.actions.cancel' | translate }}
+          </button>
+          <button type="submit" mat-flat-button color="primary" [disabled]="!canSubmit">
+            {{ submitLabel }}
+          </button>
+        </div>
+      </footer>
+    </div>
+  </form>
+</section>

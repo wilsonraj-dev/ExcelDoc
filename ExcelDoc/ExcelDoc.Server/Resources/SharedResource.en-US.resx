@@ -48,6 +48,7 @@
   <data name="FormatMaxLength" xml:space="preserve"><value>Format must be at most 50 characters.</value></data>
   <data name="HeaderCollectionsCannotBeNested" xml:space="preserve"><value>Header collections cannot be nested.</value></data>
   <data name="InvalidBooleanValue" xml:space="preserve"><value>Invalid boolean value: {0}</value></data>
+  <data name="InvalidExcelFile" xml:space="preserve"><value>The Excel file is empty, corrupted, or in an invalid format.</value></data>
   <data name="InvalidDocumentLinks" xml:space="preserve"><value>The documents informed for linking are invalid.</value></data>
   <data name="InvalidIdExcelValueAtRow" xml:space="preserve"><value>Invalid value in column '#' at row {0}: '{1}'. Enter an integer.</value></data>
   <data name="InvalidIntegerValue" xml:space="preserve"><value>Invalid integer value: {0}</value></data>
@@ -75,7 +76,7 @@
   <data name="OnlyAdminsCanCreateDefaultProfiles" xml:space="preserve"><value>Only administrators can create default profiles.</value></data>
   <data name="OnlyAdminsCanExecuteAction" xml:space="preserve"><value>Only administrators can execute this action.</value></data>
   <data name="OnlyAdminsCanRegisterCompanies" xml:space="preserve"><value>Only administrators can register companies.</value></data>
-  <data name="OnlyExcelFilesAccepted" xml:space="preserve"><value>Only Excel .xls and .xlsx files are accepted.</value></data>
+  <data name="OnlyExcelFilesAccepted" xml:space="preserve"><value>Only Excel .xlsx files are accepted.</value></data>
   <data name="OnlyLineCollectionsCanBeNested" xml:space="preserve"><value>Only line collections can be nested.</value></data>
   <data name="OneOrMoreDocumentsNotFound" xml:space="preserve"><value>One or more informed documents were not found.</value></data>
   <data name="PasswordResetCodeInvalidOrExpired" xml:space="preserve"><value>Invalid or expired code.</value></data>

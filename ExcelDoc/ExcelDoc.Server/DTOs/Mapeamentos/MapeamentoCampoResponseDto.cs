@@ -13,5 +13,7 @@ namespace ExcelDoc.Server.DTOs.Mapeamentos
         public TipoCampo TipoCampo { get; set; }
 
         public string? Formato { get; set; }
+
+        public bool Ativo { get; set; }
     }
 }

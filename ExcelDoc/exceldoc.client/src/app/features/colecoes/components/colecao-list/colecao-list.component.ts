@@ -32,7 +32,7 @@ interface ColecaoListFilter {
   styleUrl: './colecao-list.component.css'
 })
 export class ColecaoListComponent implements OnInit {
-  readonly displayedColumns: string[] = ['nomeColecao', 'descricao', 'tipoColecao', 'tipo', 'mapeamentos', 'acoes'];
+  readonly displayedColumns: string[] = ['nomeColecao', 'tipoColecao', 'tipo', 'documentos', 'mapeamentos', 'acoes'];
   readonly pageSizeOptions = [5, 10, 20];
   readonly dataSource = new MatTableDataSource<Colecao>([]);
   readonly filterForm = new FormGroup({
@@ -74,6 +74,27 @@ export class ColecaoListComponent implements OnInit {
     return this.dataSource.filteredData.length > 0;
   }
 
+  get hasAnyColecoes(): boolean {
+    return this.dataSource.data.length > 0;
+  }
+
+  get hasActiveFilters(): boolean {
+    return !!this.filterForm.controls.termo.getRawValue().trim()
+      || !!this.filterForm.controls.tipoColecao.getRawValue();
+  }
+
+  get totalColecoes(): number {
+    return this.dataSource.data.length;
+  }
+
+  get totalColecoesPadrao(): number {
+    return this.dataSource.data.filter((colecao) => isColecaoPadrao(colecao)).length;
+  }
+
+  get totalColecoesEmpresa(): number {
+    return this.totalColecoes - this.totalColecoesPadrao;
+  }
+
   get deleteLabel(): string {
     return this.translate.instant('colecoes.colecaoList.actions.delete');
   }
@@ -94,6 +115,14 @@ export class ColecaoListComponent implements OnInit {
 
   novaColecao(): void {
     void this.router.navigate(['/colecoes/nova']);
+  }
+
+  limparFiltros(): void {
+    this.filterForm.reset({ termo: '', tipoColecao: '' });
+  }
+
+  recarregar(): void {
+    this.loadColecoes();
   }
 
   editar(colecao: Colecao): void {
@@ -150,6 +179,17 @@ export class ColecaoListComponent implements OnInit {
 
   isPadrao(colecao: Colecao): boolean {
     return isColecaoPadrao(colecao);
+  }
+
+  isLinha(colecao: Colecao): boolean {
+    return resolveTipoColecao(colecao.tipoColecao) === TipoColecao.Line;
+  }
+
+  getDocumentoCount(colecao: Colecao): number {
+    return new Set([
+      ...(colecao.documentoIds ?? []),
+      ...(colecao.documentos ?? []).map((documento) => documento.id)
+    ]).size;
   }
 
   private applyFilter(): void {

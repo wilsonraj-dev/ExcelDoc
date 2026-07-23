@@ -27,11 +27,10 @@ namespace ExcelDoc.Server.Services
         {
             var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
 
-            var includeAllCompanies = usuario.TipoUsuario == TipoUsuario.Administrador && !empresaId.HasValue;
-            var empresaConsulta = includeAllCompanies ? null : ResolveEmpresaId(usuario, empresaId, false);
+            var empresaConsulta = ResolveEmpresaConsulta(usuario, empresaId);
 
-            var colecoes = await _colecaoRepository.GetByEmpresaIdAsync(empresaConsulta, includeAllCompanies, cancellationToken);
-            return colecoes.Select(Map).ToList();
+            var colecoes = await _colecaoRepository.GetByEmpresaIdAsync(empresaConsulta, false, cancellationToken);
+            return colecoes.Select(colecao => Map(colecao, usuario.FK_IdEmpresa)).ToList();
         }
 
         public async Task<ColecaoResponseDto> GetByIdAsync(int colecaoId, CancellationToken cancellationToken = default)
@@ -42,7 +41,7 @@ namespace ExcelDoc.Server.Services
 
             EnsureCanAccessColecao(usuario, colecao);
 
-            return Map(colecao);
+            return Map(colecao, usuario.FK_IdEmpresa);
         }
 
         public async Task<ColecaoResponseDto> CriarAsync(ColecaoRequestDto request, CancellationToken cancellationToken = default)
@@ -75,7 +74,7 @@ namespace ExcelDoc.Server.Services
             await _colecaoRepository.AddAsync(colecao, cancellationToken);
             await _colecaoRepository.SaveChangesAsync(cancellationToken);
 
-            return Map(colecao);
+            return Map(colecao, usuario.FK_IdEmpresa);
         }
 
         public async Task<ColecaoResponseDto> AtualizarAsync(int colecaoId, ColecaoRequestDto request, CancellationToken cancellationToken = default)
@@ -106,7 +105,7 @@ namespace ExcelDoc.Server.Services
 
             await _colecaoRepository.SaveChangesAsync(cancellationToken);
 
-            return Map(colecao);
+            return Map(colecao, usuario.FK_IdEmpresa);
         }
 
         public async Task ExcluirAsync(int colecaoId, CancellationToken cancellationToken = default)
@@ -203,7 +202,7 @@ namespace ExcelDoc.Server.Services
         {
             if (empresaId.HasValue)
             {
-                if (usuario.TipoUsuario != TipoUsuario.Administrador && usuario.FK_IdEmpresa != empresaId)
+                if (usuario.FK_IdEmpresa != empresaId)
                 {
                     throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToCompany));
                 }
@@ -224,13 +223,18 @@ namespace ExcelDoc.Server.Services
             return usuario.FK_IdEmpresa;
         }
 
-        private void EnsureCanAccessColecao(Usuario usuario, Colecao colecao)
+        private int? ResolveEmpresaConsulta(Usuario usuario, int? empresaId)
         {
-            if (usuario.TipoUsuario == TipoUsuario.Administrador)
+            if (empresaId.HasValue && usuario.FK_IdEmpresa != empresaId)
             {
-                return;
+                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToCompany));
             }
 
+            return usuario.FK_IdEmpresa;
+        }
+
+        private void EnsureCanAccessColecao(Usuario usuario, Colecao colecao)
+        {
             if (!colecao.FK_IdEmpresa.HasValue)
             {
                 return;
@@ -252,9 +256,9 @@ namespace ExcelDoc.Server.Services
             }
         }
 
-        private static ColecaoResponseDto Map(Colecao colecao)
+        private static ColecaoResponseDto Map(Colecao colecao, int? empresaId)
         {
-            var campos = ObterCamposDoMapeamentoPadrao(colecao);
+            var campos = ObterCamposDoMapeamentoVisivel(colecao, empresaId);
 
             return new ColecaoResponseDto
             {
@@ -287,16 +291,23 @@ namespace ExcelDoc.Server.Services
                         NomeCampo = x.NomeCampo,
                         DescricaoCampo = x.DescricaoCampo,
                         TipoCampo = x.TipoCampo,
-                        Formato = x.Formato
+                        Formato = x.Formato,
+                        Ativo = x.Ativo
                     })
                     .ToList()
             };
         }
 
-        private static IReadOnlyCollection<MapeamentoCampo> ObterCamposDoMapeamentoPadrao(Colecao colecao)
+        private static IReadOnlyCollection<MapeamentoCampo> ObterCamposDoMapeamentoVisivel(Colecao colecao, int? empresaId)
         {
-            var mapeamentoPadrao = colecao.Mapeamentos.FirstOrDefault(x => x.IsPadrao)
-                ?? colecao.Mapeamentos.OrderBy(x => x.Id).FirstOrDefault();
+            var mapeamentosVisiveis = colecao.Mapeamentos
+                .Where(x => !x.FK_IdEmpresa.HasValue || x.FK_IdEmpresa == empresaId)
+                .ToList();
+
+            var mapeamentoPadrao = mapeamentosVisiveis
+                .FirstOrDefault(x => x.IsPadrao && !x.FK_IdEmpresa.HasValue)
+                ?? mapeamentosVisiveis.Where(x => !x.FK_IdEmpresa.HasValue).OrderBy(x => x.Id).FirstOrDefault()
+                ?? mapeamentosVisiveis.OrderBy(x => x.Id).FirstOrDefault();
 
             return mapeamentoPadrao is null ? Array.Empty<MapeamentoCampo>() : mapeamentoPadrao.Campos.ToList();
         }

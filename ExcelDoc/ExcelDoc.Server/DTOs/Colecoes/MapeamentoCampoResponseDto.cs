@@ -15,5 +15,7 @@ namespace ExcelDoc.Server.DTOs.Colecoes
         public TipoCampo TipoCampo { get; set; }
 
         public string? Formato { get; set; }
+
+        public bool Ativo { get; set; }
     }
 }

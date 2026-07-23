@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExcelDoc.Server.Models
 {
@@ -15,6 +16,9 @@ namespace ExcelDoc.Server.Models
         public int? FK_IdEmpresa { get; set; }
 
         public bool IsPadrao { get; set; }
+
+        [NotMapped]
+        public bool IsPadraoGlobal => IsPadrao && !FK_IdEmpresa.HasValue;
 
         public DateTime DataCriacao { get; set; }
 

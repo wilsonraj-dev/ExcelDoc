@@ -13,7 +13,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
-import * as XLSX from 'xlsx';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { TranslateService } from '../../../../core/services/translate.service';
 import {
@@ -51,7 +50,7 @@ export class MapeamentoEditorComponent implements OnChanges {
 
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
 
-  readonly displayedColumns: string[] = ['ordem', 'nomeCampo', 'indiceColuna', 'tipoCampo', 'formato', 'preview', 'acoes'];
+  readonly displayedColumns: string[] = ['ordem', 'nomeCampo', 'ativo', 'indiceColuna', 'tipoCampo', 'formato', 'preview', 'acoes'];
   readonly tipoCampoOptions = TIPO_CAMPO_OPTIONS;
 
   rows: MapeamentoCampoRow[] = [];
@@ -90,6 +89,10 @@ export class MapeamentoEditorComponent implements OnChanges {
     return this.rows.some((row) => !!(row.errors.nomeCampo || row.errors.indiceColuna || row.errors.tipoCampo || row.errors.formato));
   }
 
+  get isEditingLocked(): boolean {
+    return this.readonly || this.isSaving;
+  }
+
   get visibleRows(): MapeamentoCampoRow[] {
     const term = this.searchTerm.trim().toLocaleLowerCase('pt-BR');
     if (!term) {
@@ -103,7 +106,7 @@ export class MapeamentoEditorComponent implements OnChanges {
   }
 
   adicionarCampo(): void {
-    if (this.readonly) {
+    if (this.isEditingLocked) {
       return;
     }
 
@@ -113,6 +116,7 @@ export class MapeamentoEditorComponent implements OnChanges {
       indiceColuna: null,
       tipoCampo: '',
       formato: '',
+      ativo: true,
       isNew: true,
       previewValue: '',
       errors: this.emptyErrors()
@@ -123,7 +127,7 @@ export class MapeamentoEditorComponent implements OnChanges {
   }
 
   removerCampo(index: number): void {
-    if (this.readonly) {
+    if (this.isEditingLocked) {
       return;
     }
 
@@ -141,7 +145,7 @@ export class MapeamentoEditorComponent implements OnChanges {
   }
 
   onFieldChange(row: MapeamentoCampoRow): void {
-    if (this.readonly) {
+    if (this.isEditingLocked) {
       return;
     }
 
@@ -154,8 +158,17 @@ export class MapeamentoEditorComponent implements OnChanges {
     this.emitState();
   }
 
+  toggleAtivo(row: MapeamentoCampoRow): void {
+    if (this.isEditingLocked) {
+      return;
+    }
+
+    row.ativo = !row.ativo;
+    this.emitState();
+  }
+
   salvar(): void {
-    if (this.readonly) {
+    if (this.isEditingLocked) {
       return;
     }
 
@@ -187,7 +200,8 @@ export class MapeamentoEditorComponent implements OnChanges {
         nomeCampo: row.nomeCampo.trim(),
         indiceColuna: row.indiceColuna!,
         tipoCampo: row.tipoCampo as number,
-        formato: row.tipoCampo === TipoCampo.DateTime ? (row.formato?.trim() || null) : null
+        formato: row.tipoCampo === TipoCampo.DateTime ? (row.formato?.trim() || null) : null,
+        ativo: row.ativo
       }))
     };
 
@@ -214,50 +228,67 @@ export class MapeamentoEditorComponent implements OnChanges {
   }
 
   cancelar(): void {
+    if (this.isEditingLocked) {
+      return;
+    }
+
     this.rows = this.originalRows.map((row) => ({ ...row, errors: this.emptyErrors() }));
     this.refreshPreview();
     this.emitState();
   }
 
   openExcelPreview(): void {
+    if (this.isSaving) {
+      return;
+    }
+
     this.fileInput?.nativeElement.click();
   }
 
   onExcelUpload(event: Event): void {
     const input = event.target as HTMLInputElement;
+
+    if (this.isSaving) {
+      input.value = '';
+      return;
+    }
+
     const file = input?.files?.[0];
 
     if (!file) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (loadEvent: ProgressEvent<FileReader>) => {
-      try {
-        const data = new Uint8Array(loadEvent.target!.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json<string[]>(firstSheet, { header: 1 });
+    this.mapeamentoService.previewExcel(file)
+      .pipe(
+        finalize(() => {
+          input.value = '';
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: ({ colunas }) => {
+          if (this.isSaving) {
+            return;
+          }
 
-        if (jsonData.length > 0) {
-          this.excelPreviewData = (jsonData[0] as unknown[]).map((value) => value !== null && value !== undefined ? String(value) : '');
+          if (colunas.length === 0) {
+            this.notificationService.showError(this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.emptyExcel'));
+            return;
+          }
+
+          this.excelPreviewData = colunas;
           this.refreshPreview();
           this.notificationService.showSuccess(`${this.translate.instant('mapeamento.mapeamentoEditor.feedback.success.previewLoadedPrefix')} ${this.excelPreviewData.length} ${this.translate.instant('mapeamento.mapeamentoEditor.feedback.success.previewLoadedSuffix')}`);
-        } else {
-          this.notificationService.showError(this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.emptyExcel'));
+        },
+        error: (error: HttpErrorResponse) => {
+          this.notificationService.showError(error.error?.detail ?? this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.readExcel'));
         }
-      } catch {
-        this.notificationService.showError(this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.readExcel'));
-      }
-
-      input.value = '';
-    };
-
-    reader.readAsArrayBuffer(file);
+      });
   }
 
   isFormatoEnabled(row: MapeamentoCampoRow): boolean {
-    return !this.readonly && row.tipoCampo === TipoCampo.DateTime;
+    return !this.isEditingLocked && row.tipoCampo === TipoCampo.DateTime;
   }
 
   trackByRow(_: number, row: MapeamentoCampoRow): number | string {
@@ -358,6 +389,7 @@ export class MapeamentoEditorComponent implements OnChanges {
       indiceColuna: campo.indiceColuna,
       tipoCampo: campo.tipoCampo,
       formato: campo.formato ?? '',
+      ativo: campo.ativo,
       isNew: false,
       previewValue: '',
       errors: this.emptyErrors()
@@ -375,6 +407,7 @@ export class MapeamentoEditorComponent implements OnChanges {
       indiceColuna: row.indiceColuna,
       tipoCampo: row.tipoCampo,
       formato: row.formato,
+      ativo: row.ativo,
       isNew: row.isNew
     };
   }

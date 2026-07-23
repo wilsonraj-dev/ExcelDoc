@@ -13,7 +13,7 @@ namespace ExcelDoc.Server.Data
         private const string UsuarioEmailPadrao = "wilson.assis.junior@gmail.com";
         private const string MapeamentoCabecalhoNomePadrao = "Mapeamento Padrão - Cabeçalho";
         private const string MapeamentoDocumentLinesNomePadrao = "Mapeamento Padrão - DocumentLines";
-        private const string MapeamentoParcelasNomePadrao = "Mapeamento Padrão - Parcelas";
+        private const string MapeamentoParcelasNomePadrao = "Mapeamento Padrão - DocumentInstallments";
         private const string PerfilDocumentosDeMarketingPadrao = "Documentos de Marketing";
 
         private static readonly string[] MarketingDocumentEndpoints =
@@ -37,7 +37,123 @@ namespace ExcelDoc.Server.Data
             "ReturnRequest"
         };
 
-        public static async Task InitializeAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
+        public static async Task ApplyMigrationsAsync(
+            IServiceProvider serviceProvider,
+            CancellationToken cancellationToken = default)
+        {
+            await using var scope = serviceProvider.CreateAsyncScope();
+            var scopedProvider = scope.ServiceProvider;
+            var dbContext = scopedProvider.GetRequiredService<ExcelDocDbContext>();
+            var logger = scopedProvider.GetRequiredService<ILoggerFactory>().CreateLogger("ApplicationDbInitializer");
+
+            await ExecuteWithDatabaseLockAsync(
+                dbContext,
+                "ExcelDoc:ApplyMigrations",
+                async () =>
+                {
+                    await dbContext.Database.MigrateAsync(cancellationToken);
+                    await EnsurePerfilMapeamentoItemPaiSchemaAsync(dbContext, logger, cancellationToken);
+                },
+                logger,
+                cancellationToken);
+        }
+
+        public static async Task InstallSapDefaultsAsync(
+            IServiceProvider serviceProvider,
+            CancellationToken cancellationToken = default)
+        {
+            await using var scope = serviceProvider.CreateAsyncScope();
+            var scopedProvider = scope.ServiceProvider;
+            var dbContext = scopedProvider.GetRequiredService<ExcelDocDbContext>();
+            var logger = scopedProvider.GetRequiredService<ILoggerFactory>().CreateLogger("ApplicationDbInitializer");
+
+            await ExecuteWithDatabaseLockAsync(
+                dbContext,
+                "ExcelDoc:InstallSapDefaults",
+                async () =>
+                {
+                    var documentos = await EnsureDocumentosAsync(dbContext, logger, cancellationToken);
+                    var colecoes = await EnsureColecoesAsync(dbContext, logger, cancellationToken);
+
+                    await EnsureDocumentoColecoesAsync(dbContext, documentos, colecoes, logger, cancellationToken);
+
+                    var mapeamentos = await EnsureMapeamentosAsync(dbContext, colecoes, logger, cancellationToken);
+                    await EnsurePerfilMapeamentoAsync(dbContext, documentos, colecoes, mapeamentos, logger, cancellationToken);
+                },
+                logger,
+                cancellationToken);
+        }
+
+        private static async Task ExecuteWithDatabaseLockAsync(
+            ExcelDocDbContext dbContext,
+            string lockName,
+            Func<Task> action,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            var connection = dbContext.Database.GetDbConnection();
+            var shouldCloseConnection = connection.State != ConnectionState.Open;
+            var lockAcquired = false;
+
+            if (shouldCloseConnection)
+            {
+                await connection.OpenAsync(cancellationToken);
+            }
+
+            try
+            {
+                await using (var acquireCommand = connection.CreateCommand())
+                {
+                    acquireCommand.CommandText = "SELECT GET_LOCK(@lockName, @timeoutSeconds);";
+
+                    var lockNameParameter = acquireCommand.CreateParameter();
+                    lockNameParameter.ParameterName = "@lockName";
+                    lockNameParameter.Value = lockName;
+                    acquireCommand.Parameters.Add(lockNameParameter);
+
+                    var timeoutParameter = acquireCommand.CreateParameter();
+                    timeoutParameter.ParameterName = "@timeoutSeconds";
+                    timeoutParameter.Value = 60;
+                    acquireCommand.Parameters.Add(timeoutParameter);
+
+                    var result = await acquireCommand.ExecuteScalarAsync(cancellationToken);
+                    lockAcquired = result is not null && result != DBNull.Value && Convert.ToInt32(result) == 1;
+                }
+
+                if (!lockAcquired)
+                {
+                    throw new TimeoutException($"Não foi possível obter o lock de inicialização '{lockName}'.");
+                }
+
+                logger.LogInformation("Lock de inicialização {LockName} obtido.", lockName);
+                await action();
+            }
+            finally
+            {
+                if (lockAcquired)
+                {
+                    await using var releaseCommand = connection.CreateCommand();
+                    releaseCommand.CommandText = "SELECT RELEASE_LOCK(@lockName);";
+
+                    var lockNameParameter = releaseCommand.CreateParameter();
+                    lockNameParameter.ParameterName = "@lockName";
+                    lockNameParameter.Value = lockName;
+                    releaseCommand.Parameters.Add(lockNameParameter);
+
+                    await releaseCommand.ExecuteScalarAsync(CancellationToken.None);
+                    logger.LogInformation("Lock de inicialização {LockName} liberado.", lockName);
+                }
+
+                if (shouldCloseConnection)
+                {
+                    await connection.CloseAsync();
+                }
+            }
+        }
+
+        public static async Task InstallDevelopmentSampleDataAsync(
+            IServiceProvider serviceProvider,
+            CancellationToken cancellationToken = default)
         {
             await using var scope = serviceProvider.CreateAsyncScope();
             var scopedProvider = scope.ServiceProvider;
@@ -46,20 +162,8 @@ namespace ExcelDoc.Server.Data
             var encryptionService = scopedProvider.GetRequiredService<IEncryptionService>();
             var logger = scopedProvider.GetRequiredService<ILoggerFactory>().CreateLogger("ApplicationDbInitializer");
 
-            await dbContext.Database.MigrateAsync(cancellationToken);
-            await EnsurePerfilMapeamentoItemPaiSchemaAsync(dbContext, logger, cancellationToken);
-
             var empresa = await EnsureEmpresaAsync(dbContext, logger, cancellationToken);
             await EnsureConfiguracaoAsync(dbContext, encryptionService, empresa.Id, logger, cancellationToken);
-
-            var documentos = await EnsureDocumentosAsync(dbContext, logger, cancellationToken);
-            var colecoes = await EnsureColecoesAsync(dbContext, empresa.Id, logger, cancellationToken);
-
-            await EnsureDocumentoColecoesAsync(dbContext, documentos, colecoes, logger, cancellationToken);
-
-            var mapeamentos = await EnsureMapeamentosAsync(dbContext, empresa.Id, colecoes, logger, cancellationToken);
-            await EnsurePerfilMapeamentoAsync(dbContext, empresa.Id, documentos, colecoes, mapeamentos, logger, cancellationToken);
-
             await EnsureUsuarioPadraoAsync(dbContext, passwordHasherService, empresa.Id, logger, cancellationToken);
         }
 
@@ -294,9 +398,23 @@ namespace ExcelDoc.Server.Data
             var endpoints = seeds.Select(x => x.Endpoint)
                                  .ToHashSet(StringComparer.Ordinal);
 
-            var documentosExistentes = (await dbContext.Documentos.ToListAsync(cancellationToken))
-                                                                  .Where(x => endpoints.Contains(x.Endpoint))
-                                                                  .ToDictionary(x => x.Endpoint);
+            var gruposDeDocumentos = (await dbContext.Documentos.ToListAsync(cancellationToken))
+                .Where(x => endpoints.Contains(x.Endpoint))
+                .GroupBy(x => x.Endpoint, StringComparer.Ordinal)
+                .ToList();
+
+            foreach (var grupoDuplicado in gruposDeDocumentos.Where(grupo => grupo.Count() > 1))
+            {
+                logger.LogWarning(
+                    "Foram encontrados {Quantidade} documentos com o endpoint SAP {DocumentoEndpoint}; o registro mais antigo será usado pelo bootstrap.",
+                    grupoDuplicado.Count(),
+                    grupoDuplicado.Key);
+            }
+
+            var documentosExistentes = gruposDeDocumentos.ToDictionary(
+                grupo => grupo.Key,
+                grupo => grupo.OrderBy(documento => documento.Id).First(),
+                StringComparer.Ordinal);
 
             foreach (var seed in seeds)
             {
@@ -321,41 +439,63 @@ namespace ExcelDoc.Server.Data
             return documentosExistentes;
         }
 
-        private static async Task<Dictionary<string, Colecao>> EnsureColecoesAsync(ExcelDocDbContext dbContext, int empresaId,
-                                                                                   ILogger logger, CancellationToken cancellationToken)
+        private static async Task<Dictionary<string, Colecao>> EnsureColecoesAsync(
+            ExcelDocDbContext dbContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             var seeds = new[]
             {
-                new ColecaoSeed("Cabeçalho Documentos de Marketing", TipoColecao.Header),
-                new ColecaoSeed("DocumentLines", TipoColecao.Line),
-                new ColecaoSeed("DocumentInstallments", TipoColecao.Line),
+                new ColecaoSeed("Cabeçalho Documentos de Marketing", "Document: campos do cabeçalho do documento.", TipoColecao.Header),
+                new ColecaoSeed("DocumentLines", "Linhas do documento de marketing.", TipoColecao.Line),
+                new ColecaoSeed("DocumentInstallments", "Parcelas do documento.", TipoColecao.Line),
+                new ColecaoSeed("DocumentAdditionalExpenses", "Despesas adicionais do documento.", TipoColecao.Line),
+                new ColecaoSeed("DocumentLineAdditionalExpenses", "Despesas adicionais vinculadas a uma DocumentLine.", TipoColecao.Line),
+                new ColecaoSeed("DocumentSpecialLines", "Linhas especiais do documento.", TipoColecao.Line),
+                new ColecaoSeed("DocumentLinesBinAllocations", "Alocações de posição vinculadas a uma DocumentLine.", TipoColecao.Line),
+                new ColecaoSeed("BatchNumbers", "Lotes vinculados a uma DocumentLine.", TipoColecao.Line),
+                new ColecaoSeed("SerialNumbers", "Números de série vinculados a uma DocumentLine.", TipoColecao.Line),
+                new ColecaoSeed("WithholdingTaxDataCollection", "Dados de imposto retido do documento.", TipoColecao.Line),
+                new ColecaoSeed("WithholdingTaxDataWTXCollection", "Dados WTX de imposto retido do documento.", TipoColecao.Line)
             };
 
             var nomes = seeds.Select(x => x.NomeColecao)
                              .ToHashSet(StringComparer.Ordinal);
 
-            var colecoesExistentes = (await dbContext.Colecoes
-                    .Where(x => !x.FK_IdEmpresa.HasValue || x.FK_IdEmpresa == empresaId)
+            var gruposDeColecoes = (await dbContext.Colecoes
+                    .Where(x => !x.FK_IdEmpresa.HasValue)
                     .ToListAsync(cancellationToken))
                 .Where(x => nomes.Contains(x.NomeColecao))
                 .GroupBy(x => x.NomeColecao, StringComparer.Ordinal)
-                .ToDictionary(
-                    group => group.Key,
-                    group => group.OrderBy(x => x.FK_IdEmpresa.HasValue).ThenBy(x => x.Id).First(),
-                    StringComparer.Ordinal);
+                .ToList();
+
+            foreach (var grupoDuplicado in gruposDeColecoes.Where(grupo => grupo.Count() > 1))
+            {
+                logger.LogWarning(
+                    "Foram encontradas {Quantidade} coleções SAP globais com o nome {ColecaoNome}; o registro mais antigo será usado pelo bootstrap.",
+                    grupoDuplicado.Count(),
+                    grupoDuplicado.Key);
+            }
+
+            var colecoesExistentes = gruposDeColecoes.ToDictionary(
+                grupo => grupo.Key,
+                grupo => grupo.OrderBy(colecao => colecao.Id).First(),
+                StringComparer.Ordinal);
 
             foreach (var seed in seeds)
             {
-                if (colecoesExistentes.ContainsKey(seed.NomeColecao))
+                if (colecoesExistentes.TryGetValue(seed.NomeColecao, out var existente))
                 {
-                    colecoesExistentes[seed.NomeColecao].TipoColecao = seed.TipoColecao;
-                    logger.LogInformation("Coleção padrão {ColecaoNome} já existente para a empresa {EmpresaId}.", seed.NomeColecao, empresaId);
+                    existente.TipoColecao = seed.TipoColecao;
+                    existente.Descricao = seed.Descricao;
+                    logger.LogInformation("Coleção SAP global {ColecaoNome} já existente.", seed.NomeColecao);
                     continue;
                 }
 
                 var colecao = new Colecao
                 {
                     NomeColecao = seed.NomeColecao,
+                    Descricao = seed.Descricao,
                     TipoColecao = seed.TipoColecao,
                     FK_IdEmpresa = null
                 };
@@ -363,7 +503,7 @@ namespace ExcelDoc.Server.Data
                 await dbContext.Colecoes.AddAsync(colecao, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken);
                 colecoesExistentes[colecao.NomeColecao] = colecao;
-                logger.LogInformation("Coleção padrão {ColecaoNome} criada com Id {ColecaoId}.", colecao.NomeColecao, colecao.Id);
+                logger.LogInformation("Coleção SAP global {ColecaoNome} criada com Id {ColecaoId}.", colecao.NomeColecao, colecao.Id);
             }
 
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -374,53 +514,53 @@ namespace ExcelDoc.Server.Data
                                                                IReadOnlyDictionary<string, Colecao> colecoes, ILogger logger,
                                                                CancellationToken cancellationToken)
         {
-            var collectionNames = new[]
-            {
-                "Cabeçalho Documentos de Marketing",
-                "DocumentLines",
-                "DocumentInstallments"
-            };
-
-            var seeds = MarketingDocumentEndpoints
-                .SelectMany(endpoint => collectionNames.Select(collectionName =>
-                    new DocumentoColecaoSeed(endpoint, collectionName)))
+            var vinculosEsperados = MarketingDocumentEndpoints
+                .SelectMany(endpoint => colecoes.Values.Select(colecao =>
+                    (DocumentoId: documentos[endpoint].Id, ColecaoId: colecao.Id)))
+                .Distinct()
                 .ToList();
 
-            foreach (var seed in seeds)
+            var documentoIds = vinculosEsperados.Select(vinculo => vinculo.DocumentoId).Distinct().ToList();
+            var colecaoIds = vinculosEsperados.Select(vinculo => vinculo.ColecaoId).Distinct().ToList();
+            var vinculosExistentes = (await dbContext.DocumentoColecoes
+                    .Where(vinculo =>
+                        documentoIds.Contains(vinculo.FK_IdDocumento) &&
+                        colecaoIds.Contains(vinculo.FK_IdColecao))
+                    .Select(vinculo => new
+                    {
+                        DocumentoId = vinculo.FK_IdDocumento,
+                        ColecaoId = vinculo.FK_IdColecao
+                    })
+                    .ToListAsync(cancellationToken))
+                .Select(vinculo => (vinculo.DocumentoId, vinculo.ColecaoId))
+                .ToHashSet();
+
+            var novosVinculos = vinculosEsperados
+                .Where(vinculo => !vinculosExistentes.Contains(vinculo))
+                .Select(vinculo => new DocumentoColecao
+                {
+                    FK_IdDocumento = vinculo.DocumentoId,
+                    FK_IdColecao = vinculo.ColecaoId
+                })
+                .ToList();
+
+            if (novosVinculos.Count > 0)
             {
-                var documento = documentos[seed.DocumentoEndpoint];
-                var colecao = colecoes[seed.ColecaoNome];
-
-                var relacionamentoExiste = await dbContext.DocumentoColecoes.AnyAsync(
-                    x => x.FK_IdDocumento == documento.Id && x.FK_IdColecao == colecao.Id,
-                    cancellationToken);
-
-                if (relacionamentoExiste)
-                {
-                    logger.LogInformation(
-                        "Vínculo entre documento {DocumentoId} e coleção {ColecaoId} já existente.",
-                        documento.Id,
-                        colecao.Id);
-                    continue;
-                }
-
-                await dbContext.DocumentoColecoes.AddAsync(new DocumentoColecao
-                {
-                    FK_IdDocumento = documento.Id,
-                    FK_IdColecao = colecao.Id
-                }, cancellationToken);
-
+                await dbContext.DocumentoColecoes.AddRangeAsync(novosVinculos, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken);
-                logger.LogInformation(
-                    "Vínculo entre documento {DocumentoId} e coleção {ColecaoId} criado.",
-                    documento.Id,
-                    colecao.Id);
             }
+
+            logger.LogInformation(
+                "Catálogo SAP reconciliado: {TotalVinculos} vínculos documento-coleção verificados e {NovosVinculos} criados.",
+                vinculosEsperados.Count,
+                novosVinculos.Count);
         }
 
-        private static async Task<Dictionary<string, Mapeamento>> EnsureMapeamentosAsync(ExcelDocDbContext dbContext, int empresaId,
-                                                                                         IReadOnlyDictionary<string, Colecao> colecoes,
-                                                                                         ILogger logger, CancellationToken cancellationToken)
+        private static async Task<Dictionary<string, Mapeamento>> EnsureMapeamentosAsync(
+            ExcelDocDbContext dbContext,
+            IReadOnlyDictionary<string, Colecao> colecoes,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             var agora = DateTime.UtcNow;
             var seeds = new[]
@@ -460,19 +600,48 @@ namespace ExcelDoc.Server.Data
                         new MapeamentoCampoSeed("InstallmentId", "Id da Parcela", 20, TipoCampo.Int, null),
                         new MapeamentoCampoSeed("DueDate", "Data de Vencimento da Parcela", 21, TipoCampo.DateTime, "yyyy-MM-dd"),
                         new MapeamentoCampoSeed("Total", "Total da Parcela",22, TipoCampo.Double, null),
-                    })
+                    }),
+                new MapeamentoSeed(
+                    "Mapeamento Padrão - DocumentAdditionalExpenses",
+                    "DocumentAdditionalExpenses",
+                    Array.Empty<MapeamentoCampoSeed>()),
+                new MapeamentoSeed(
+                    "Mapeamento Padrão - DocumentLineAdditionalExpenses",
+                    "DocumentLineAdditionalExpenses",
+                    Array.Empty<MapeamentoCampoSeed>()),
+                new MapeamentoSeed(
+                    "Mapeamento Padrão - DocumentSpecialLines",
+                    "DocumentSpecialLines",
+                    Array.Empty<MapeamentoCampoSeed>()),
+                new MapeamentoSeed(
+                    "Mapeamento Padrão - DocumentLinesBinAllocations",
+                    "DocumentLinesBinAllocations",
+                    Array.Empty<MapeamentoCampoSeed>()),
+                new MapeamentoSeed(
+                    "Mapeamento Padrão - BatchNumbers",
+                    "BatchNumbers",
+                    Array.Empty<MapeamentoCampoSeed>()),
+                new MapeamentoSeed(
+                    "Mapeamento Padrão - SerialNumbers",
+                    "SerialNumbers",
+                    Array.Empty<MapeamentoCampoSeed>()),
+                new MapeamentoSeed(
+                    "Mapeamento Padrão - WithholdingTaxDataCollection",
+                    "WithholdingTaxDataCollection",
+                    Array.Empty<MapeamentoCampoSeed>()),
+                new MapeamentoSeed(
+                    "Mapeamento Padrão - WithholdingTaxDataWTXCollection",
+                    "WithholdingTaxDataWTXCollection",
+                    Array.Empty<MapeamentoCampoSeed>())
             };
 
-            var nomes = seeds.Select(x => x.Nome)
-                             .ToHashSet(StringComparer.Ordinal);
+            var mapeamentosPadraoExistentes = await dbContext.Mapeamentos
+                .Include(x => x.Campos)
+                .Where(x => x.IsPadrao && !x.FK_IdEmpresa.HasValue)
+                .OrderBy(x => x.Id)
+                .ToListAsync(cancellationToken);
 
-            var mapeamentosExistentes = (await dbContext.Mapeamentos
-                    .Include(x => x.Campos)
-                    .Where(x => x.FK_IdEmpresa == empresaId)
-                    .ToListAsync(cancellationToken))
-                .Where(x => nomes.Contains(x.Nome))
-                .GroupBy(x => x.Nome, StringComparer.Ordinal)
-                .ToDictionary(group => group.Key, group => group.OrderBy(x => x.Id).First(), StringComparer.Ordinal);
+            var result = new Dictionary<string, Mapeamento>(StringComparer.Ordinal);
 
             await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
@@ -480,76 +649,95 @@ namespace ExcelDoc.Server.Data
             {
                 foreach (var seed in seeds)
                 {
-                    if (!mapeamentosExistentes.TryGetValue(seed.Nome, out var mapeamento))
+                    var colecao = colecoes[seed.ColecaoNome];
+                    var mapeamento = mapeamentosPadraoExistentes.FirstOrDefault(existing =>
+                            string.Equals(existing.Nome, seed.Nome, StringComparison.Ordinal))
+                        ?? mapeamentosPadraoExistentes.FirstOrDefault(existing =>
+                            existing.FK_IdColecao == colecao.Id &&
+                            string.Equals(seed.ColecaoNome, "DocumentInstallments", StringComparison.Ordinal));
+
+                    if (mapeamento is null)
                     {
                         mapeamento = new Mapeamento
                         {
                             Nome = seed.Nome,
-                            FK_IdColecao = colecoes[seed.ColecaoNome].Id,
-                            FK_IdEmpresa = empresaId,
+                            FK_IdColecao = colecao.Id,
+                            FK_IdEmpresa = null,
                             IsPadrao = true,
-                            DataCriacao = agora
+                            DataCriacao = agora,
+                            Campos = seed.Campos.Select(fieldSeed => new MapeamentoCampo
+                            {
+                                NomeCampo = fieldSeed.NomeCampo,
+                                DescricaoCampo = fieldSeed.DescricaoCampo,
+                                IndiceColuna = fieldSeed.IndiceColuna,
+                                TipoCampo = fieldSeed.TipoCampo,
+                                Formato = fieldSeed.Formato,
+                                Ativo = true
+                            }).ToList()
                         };
 
                         await dbContext.Mapeamentos.AddAsync(mapeamento, cancellationToken);
                         await dbContext.SaveChangesAsync(cancellationToken);
-                        mapeamentosExistentes[mapeamento.Nome] = mapeamento;
-                        logger.LogInformation("Mapeamento padrão {MapeamentoNome} criado com Id {MapeamentoId}.", mapeamento.Nome, mapeamento.Id);
+                        mapeamentosPadraoExistentes.Add(mapeamento);
+                        logger.LogInformation("Mapeamento SAP global {MapeamentoNome} criado com Id {MapeamentoId}.", mapeamento.Nome, mapeamento.Id);
                     }
                     else
                     {
-                        mapeamento.FK_IdColecao = colecoes[seed.ColecaoNome].Id;
-                        mapeamento.FK_IdEmpresa = empresaId;
+                        mapeamento.Nome = seed.Nome;
+                        mapeamento.FK_IdColecao = colecao.Id;
+                        mapeamento.FK_IdEmpresa = null;
                         mapeamento.IsPadrao = true;
-                        logger.LogInformation("Mapeamento padrão {MapeamentoNome} reconciliado com Id {MapeamentoId}.", mapeamento.Nome, mapeamento.Id);
-                    }
-
-                    var existingFields = mapeamento.Campos.ToList();
-                    if (existingFields.Count > 0)
-                    {
-                        var temporaryStart = Math.Max(
-                            existingFields.Max(field => field.IndiceColuna),
-                            seed.Campos.Max(field => field.IndiceColuna)) + 10_000;
-
-                        foreach (var indexedField in existingFields.OrderBy(field => field.Id).Select((field, index) => (field, index)))
+                        var existingFields = mapeamento.Campos.ToList();
+                        foreach (var fieldSeed in seed.Campos)
                         {
-                            indexedField.field.IndiceColuna = temporaryStart + indexedField.index;
+                            var field = existingFields.FirstOrDefault(candidate =>
+                                string.Equals(candidate.NomeCampo, fieldSeed.NomeCampo, StringComparison.OrdinalIgnoreCase));
+
+                            if (field is null)
+                            {
+                                if (existingFields.Any(candidate => candidate.IndiceColuna == fieldSeed.IndiceColuna))
+                                {
+                                    logger.LogWarning(
+                                        "Campo SAP {CampoNome} não foi adicionado ao mapeamento {MapeamentoId}: o índice {IndiceColuna} já está ocupado.",
+                                        fieldSeed.NomeCampo,
+                                        mapeamento.Id,
+                                        fieldSeed.IndiceColuna);
+                                    continue;
+                                }
+
+                                field = new MapeamentoCampo
+                                {
+                                    FK_IdMapeamento = mapeamento.Id,
+                                    NomeCampo = fieldSeed.NomeCampo,
+                                    DescricaoCampo = fieldSeed.DescricaoCampo,
+                                    IndiceColuna = fieldSeed.IndiceColuna,
+                                    TipoCampo = fieldSeed.TipoCampo,
+                                    Formato = fieldSeed.Formato,
+                                    Ativo = true
+                                };
+                                await dbContext.MapeamentoCampos.AddAsync(field, cancellationToken);
+                                existingFields.Add(field);
+                                continue;
+                            }
+
+                            // Não reindexa nem remove campos existentes no startup. Apenas
+                            // mantém os metadados do catálogo padrão e garante que ele esteja ativo.
+                            field.NomeCampo = fieldSeed.NomeCampo;
+                            field.DescricaoCampo = fieldSeed.DescricaoCampo;
+                            field.TipoCampo = fieldSeed.TipoCampo;
+                            field.Formato = fieldSeed.Formato;
+                            field.Ativo = true;
                         }
 
                         await dbContext.SaveChangesAsync(cancellationToken);
+                        logger.LogInformation("Mapeamento SAP global {MapeamentoNome} verificado com Id {MapeamentoId}.", mapeamento.Nome, mapeamento.Id);
                     }
 
-                    var retainedFields = new HashSet<MapeamentoCampo>();
-                    foreach (var fieldSeed in seed.Campos)
-                    {
-                        var field = existingFields.FirstOrDefault(candidate =>
-                            !retainedFields.Contains(candidate) &&
-                            string.Equals(candidate.NomeCampo, fieldSeed.NomeCampo, StringComparison.OrdinalIgnoreCase));
-
-                        if (field is null)
-                        {
-                            field = new MapeamentoCampo
-                            {
-                                FK_IdMapeamento = mapeamento.Id
-                            };
-                            await dbContext.MapeamentoCampos.AddAsync(field, cancellationToken);
-                        }
-
-                        field.NomeCampo = fieldSeed.NomeCampo;
-                        field.DescricaoCampo = fieldSeed.DescricaoCampo;
-                        field.IndiceColuna = fieldSeed.IndiceColuna;
-                        field.TipoCampo = fieldSeed.TipoCampo;
-                        field.Formato = fieldSeed.Formato;
-                        retainedFields.Add(field);
-                    }
-
-                    var obsoleteFields = existingFields.Where(field => !retainedFields.Contains(field)).ToList();
-                    dbContext.MapeamentoCampos.RemoveRange(obsoleteFields);
-                    await dbContext.SaveChangesAsync(cancellationToken);
+                    result[seed.Nome] = mapeamento;
                 }
 
                 await transaction.CommitAsync(cancellationToken);
-                return mapeamentosExistentes;
+                return result;
             }
             catch
             {
@@ -558,11 +746,13 @@ namespace ExcelDoc.Server.Data
             }
         }
 
-        private static async Task EnsurePerfilMapeamentoAsync(ExcelDocDbContext dbContext, int empresaId,
-                                                              IReadOnlyDictionary<string, Documento> documentos,
-                                                              IReadOnlyDictionary<string, Colecao> colecoes,
-                                                              IReadOnlyDictionary<string, Mapeamento> mapeamentos,
-                                                              ILogger logger, CancellationToken cancellationToken)
+        private static async Task EnsurePerfilMapeamentoAsync(
+            ExcelDocDbContext dbContext,
+            IReadOnlyDictionary<string, Documento> documentos,
+            IReadOnlyDictionary<string, Colecao> colecoes,
+            IReadOnlyDictionary<string, Mapeamento> mapeamentos,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             var documentosParaPerfil = MarketingDocumentEndpoints;
 
@@ -570,7 +760,25 @@ namespace ExcelDoc.Server.Data
             {
                 new PerfilMapeamentoItemSeed("Cabeçalho Documentos de Marketing", MapeamentoCabecalhoNomePadrao),
                 new PerfilMapeamentoItemSeed("DocumentLines", MapeamentoDocumentLinesNomePadrao),
-                new PerfilMapeamentoItemSeed("DocumentInstallments", MapeamentoParcelasNomePadrao)
+                new PerfilMapeamentoItemSeed("DocumentInstallments", MapeamentoParcelasNomePadrao),
+                new PerfilMapeamentoItemSeed("DocumentAdditionalExpenses", "Mapeamento Padrão - DocumentAdditionalExpenses"),
+                new PerfilMapeamentoItemSeed(
+                    "DocumentLineAdditionalExpenses",
+                    "Mapeamento Padrão - DocumentLineAdditionalExpenses",
+                    "DocumentLines"),
+                new PerfilMapeamentoItemSeed("DocumentSpecialLines", "Mapeamento Padrão - DocumentSpecialLines"),
+                new PerfilMapeamentoItemSeed(
+                    "DocumentLinesBinAllocations",
+                    "Mapeamento Padrão - DocumentLinesBinAllocations",
+                    "DocumentLines"),
+                new PerfilMapeamentoItemSeed("BatchNumbers", "Mapeamento Padrão - BatchNumbers", "DocumentLines"),
+                new PerfilMapeamentoItemSeed("SerialNumbers", "Mapeamento Padrão - SerialNumbers", "DocumentLines"),
+                new PerfilMapeamentoItemSeed(
+                    "WithholdingTaxDataCollection",
+                    "Mapeamento Padrão - WithholdingTaxDataCollection"),
+                new PerfilMapeamentoItemSeed(
+                    "WithholdingTaxDataWTXCollection",
+                    "Mapeamento Padrão - WithholdingTaxDataWTXCollection")
             };
 
             foreach (var documentoEndpoint in documentosParaPerfil)
@@ -584,7 +792,8 @@ namespace ExcelDoc.Server.Data
                 var perfil = await dbContext.PerfilMapeamentos
                     .Include(x => x.Itens)
                     .FirstOrDefaultAsync(
-                        x => x.FK_IdEmpresa == empresaId &&
+                        x => x.IsPadrao &&
+                             !x.FK_IdEmpresa.HasValue &&
                              x.FK_IdDocumento == documento.Id &&
                              x.Nome == PerfilDocumentosDeMarketingPadrao,
                         cancellationToken);
@@ -595,7 +804,7 @@ namespace ExcelDoc.Server.Data
                     {
                         Nome = PerfilDocumentosDeMarketingPadrao,
                         FK_IdDocumento = documento.Id,
-                        FK_IdEmpresa = empresaId,
+                        FK_IdEmpresa = null,
                         IsPadrao = true,
                         DataCriacao = DateTime.UtcNow
                     };
@@ -606,20 +815,12 @@ namespace ExcelDoc.Server.Data
                 }
                 else
                 {
+                    perfil.Nome = PerfilDocumentosDeMarketingPadrao;
                     perfil.IsPadrao = true;
-                    perfil.FK_IdEmpresa = empresaId;
-                    logger.LogInformation("Perfil de mapeamento padrão {PerfilNome} reconciliado para o documento {DocumentoId} com Id {PerfilId}.", perfil.Nome, documento.Id, perfil.Id);
+                    perfil.FK_IdEmpresa = null;
+                    logger.LogInformation("Perfil de mapeamento SAP global {PerfilNome} verificado para o documento {DocumentoId} com Id {PerfilId}.", perfil.Nome, documento.Id, perfil.Id);
                 }
 
-                foreach (var existingItem in perfil.Itens)
-                {
-                    existingItem.FK_IdPerfilMapeamentoItemPai = null;
-                    existingItem.ItemPai = null;
-                }
-
-                await dbContext.SaveChangesAsync(cancellationToken);
-
-                var retainedItems = new HashSet<PerfilMapeamentoItem>();
                 foreach (var itemSeed in itens)
                 {
                     var colecao = colecoes[itemSeed.ColecaoNome];
@@ -637,17 +838,25 @@ namespace ExcelDoc.Server.Data
                     }
 
                     item.FK_IdMapeamento = mapeamento.Id;
-                    item.FK_IdPerfilMapeamentoItemPai = null;
-                    retainedItems.Add(item);
-                    logger.LogInformation(
-                        "Item do perfil {PerfilId} para a coleção {ColecaoId} reconciliado.",
-                        perfil.Id,
-                        colecao.Id);
                 }
 
-                var obsoleteItems = perfil.Itens.Where(item => !retainedItems.Contains(item)).ToList();
-                dbContext.PerfilMapeamentoItens.RemoveRange(obsoleteItems);
                 await dbContext.SaveChangesAsync(cancellationToken);
+
+                var itensPorColecao = perfil.Itens.ToDictionary(item => item.FK_IdColecao);
+                foreach (var itemSeed in itens)
+                {
+                    var item = itensPorColecao[colecoes[itemSeed.ColecaoNome].Id];
+                    item.FK_IdPerfilMapeamentoItemPai = itemSeed.ColecaoPaiNome is null
+                        ? null
+                        : itensPorColecao[colecoes[itemSeed.ColecaoPaiNome].Id].Id;
+                }
+
+                await dbContext.SaveChangesAsync(cancellationToken);
+                logger.LogInformation(
+                    "Perfil SAP {PerfilId} do documento {DocumentoEndpoint} reconciliado com {TotalEstruturas} estruturas.",
+                    perfil.Id,
+                    documentoEndpoint,
+                    itens.Length);
             }
         }
 
@@ -686,14 +895,15 @@ namespace ExcelDoc.Server.Data
 
         private sealed record DocumentoSeed(string NomeDocumento, string Endpoint);
 
-        private sealed record ColecaoSeed(string NomeColecao, TipoColecao TipoColecao);
-
-        private sealed record DocumentoColecaoSeed(string DocumentoEndpoint, string ColecaoNome);
+        private sealed record ColecaoSeed(string NomeColecao, string Descricao, TipoColecao TipoColecao);
 
         private sealed record MapeamentoSeed(string Nome, string ColecaoNome, IReadOnlyCollection<MapeamentoCampoSeed> Campos);
 
         private sealed record MapeamentoCampoSeed(string NomeCampo, string DescricaoCampo, int IndiceColuna, TipoCampo TipoCampo, string? Formato);
 
-        private sealed record PerfilMapeamentoItemSeed(string ColecaoNome, string MapeamentoNome);
+        private sealed record PerfilMapeamentoItemSeed(
+            string ColecaoNome,
+            string MapeamentoNome,
+            string? ColecaoPaiNome = null);
     }
 }

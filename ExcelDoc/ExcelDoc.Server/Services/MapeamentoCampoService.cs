@@ -49,6 +49,7 @@ namespace ExcelDoc.Server.Services
                 IndiceColuna = request.IndiceColuna,
                 TipoCampo = request.TipoCampo,
                 Formato = request.TipoCampo == TipoCampo.DateTime ? request.Formato?.Trim() : null,
+                Ativo = request.Ativo,
                 FK_IdMapeamento = request.FK_IdMapeamento
             };
 
@@ -77,6 +78,7 @@ namespace ExcelDoc.Server.Services
             campo.IndiceColuna = request.IndiceColuna;
             campo.TipoCampo = request.TipoCampo;
             campo.Formato = request.TipoCampo == TipoCampo.DateTime ? request.Formato?.Trim() : null;
+            campo.Ativo = request.Ativo;
 
             await _mapeamentoRepository.SaveChangesAsync(cancellationToken);
             return Map(campo);
@@ -145,6 +147,7 @@ namespace ExcelDoc.Server.Services
                     IndiceColuna = campoRequest.IndiceColuna,
                     TipoCampo = campoRequest.TipoCampo,
                     Formato = campoRequest.TipoCampo == TipoCampo.DateTime ? campoRequest.Formato?.Trim() : null,
+                    Ativo = campoRequest.Ativo,
                     FK_IdMapeamento = mapeamento.Id
                 };
             }).ToList();
@@ -183,17 +186,13 @@ namespace ExcelDoc.Server.Services
 
         private void EnsureCanAccessMapeamento(Usuario usuario, Mapeamento mapeamento)
         {
-            if (usuario.TipoUsuario == TipoUsuario.Administrador)
+            if (mapeamento.IsPadraoGlobal)
             {
                 return;
             }
 
-            if (mapeamento.IsPadrao)
-            {
-                return;
-            }
-
-            if (usuario.FK_IdEmpresa != mapeamento.FK_IdEmpresa)
+            if (!usuario.FK_IdEmpresa.HasValue ||
+                usuario.FK_IdEmpresa != mapeamento.FK_IdEmpresa)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMapping));
             }
@@ -203,17 +202,13 @@ namespace ExcelDoc.Server.Services
         {
             EnsureCanAccessMapeamento(usuario, mapeamento);
 
-            if (mapeamento.IsPadrao)
+            if (mapeamento.IsPadraoGlobal)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeMapping));
             }
 
-            if (usuario.TipoUsuario == TipoUsuario.Administrador)
-            {
-                return;
-            }
-
-            if (mapeamento.IsPadrao || usuario.FK_IdEmpresa != mapeamento.FK_IdEmpresa)
+            if (!usuario.FK_IdEmpresa.HasValue ||
+                usuario.FK_IdEmpresa != mapeamento.FK_IdEmpresa)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeMapping));
             }
@@ -228,6 +223,7 @@ namespace ExcelDoc.Server.Services
                 IndiceColuna = campo.IndiceColuna,
                 TipoCampo = campo.TipoCampo,
                 Formato = campo.Formato,
+                Ativo = campo.Ativo
             };
         }
     }

@@ -27,5 +27,7 @@ namespace ExcelDoc.Server.DTOs.Mapeamentos
 
         [MaxLength(50, ErrorMessage = MessageKeys.FormatMaxLength)]
         public string? Formato { get; set; }
+
+        public bool Ativo { get; set; } = true;
     }
 }

@@ -1,4 +1,5 @@
 using ExcelDoc.Server.DTOs.Mapeamentos;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Security;
 using ExcelDoc.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -11,11 +12,46 @@ namespace ExcelDoc.Server.Controllers
     [Authorize(Roles = AuthRoles.All)]
     public class MapeamentosController : ControllerBase
     {
+        private readonly IExcelReaderService _excelReaderService;
         private readonly IMapeamentoService _mapeamentoService;
+        private readonly IMessageService _messageService;
 
-        public MapeamentosController(IMapeamentoService mapeamentoService)
+        public MapeamentosController(
+            IMapeamentoService mapeamentoService,
+            IExcelReaderService excelReaderService,
+            IMessageService messageService)
         {
             _mapeamentoService = mapeamentoService;
+            _excelReaderService = excelReaderService;
+            _messageService = messageService;
+        }
+
+        [HttpPost("preview-excel")]
+        [RequestSizeLimit(10_000_000)]
+        public async Task<IActionResult> PreviewExcel(
+            [FromForm] IFormFile? arquivo,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (arquivo is null || arquivo.Length == 0)
+                {
+                    throw new FormatException(_messageService.Get(MessageKeys.FileRequired));
+                }
+
+                if (!string.Equals(Path.GetExtension(arquivo.FileName), ".xlsx", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new FormatException(_messageService.Get(MessageKeys.OnlyExcelFilesAccepted));
+                }
+
+                await using var stream = arquivo.OpenReadStream();
+                var columns = await _excelReaderService.ReadFirstRowAsync(stream, cancellationToken);
+                return Ok(new ExcelPreviewResponseDto { Colunas = columns });
+            }
+            catch (Exception ex)
+            {
+                return ToActionResult(ex);
+            }
         }
 
         [HttpGet("colecao/{colecaoId:int}")]
@@ -108,6 +144,7 @@ namespace ExcelDoc.Server.Controllers
             {
                 KeyNotFoundException => NotFound(new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status404NotFound }),
                 UnauthorizedAccessException => StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status403Forbidden }),
+                FormatException => BadRequest(new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status400BadRequest }),
                 InvalidOperationException => Conflict(new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status409Conflict }),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status500InternalServerError })
             };

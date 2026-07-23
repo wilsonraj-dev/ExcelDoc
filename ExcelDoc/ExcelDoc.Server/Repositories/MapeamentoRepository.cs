@@ -26,7 +26,7 @@ namespace ExcelDoc.Server.Repositories
                 .AsNoTracking()
                 .Include(x => x.Campos)
                 .Where(x => x.FK_IdColecao == colecaoId)
-                .OrderByDescending(x => x.IsPadrao)
+                .OrderByDescending(x => x.IsPadrao && !x.FK_IdEmpresa.HasValue)
                 .ThenBy(x => x.Nome)
                 .ToListAsync(cancellationToken);
         }
@@ -131,6 +131,7 @@ namespace ExcelDoc.Server.Repositories
                         campoExistente.IndiceColuna = campoDesejado.IndiceColuna;
                         campoExistente.TipoCampo = campoDesejado.TipoCampo;
                         campoExistente.Formato = campoDesejado.Formato;
+                        campoExistente.Ativo = campoDesejado.Ativo;
                         continue;
                     }
 

@@ -90,7 +90,11 @@ export class ColecaoFormComponent implements OnInit {
   }
 
   get canSubmit(): boolean {
-    return !this.readOnlyMode && !this.isSaving;
+    return !this.readOnlyMode && !this.isLoading && !this.isSaving;
+  }
+
+  get selectedDocumentosCount(): number {
+    return this.form.controls.documentoIds.getRawValue().length;
   }
 
   get documentosHint(): string {

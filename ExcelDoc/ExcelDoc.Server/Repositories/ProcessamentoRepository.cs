@@ -46,11 +46,22 @@ namespace ExcelDoc.Server.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
-        public async Task<(IReadOnlyCollection<Processamento> Items, int TotalCount)> GetPagedAsync(int empresaId, StatusProcessamento? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        public async Task<(IReadOnlyCollection<Processamento> Items, int TotalCount)> GetPagedAsync(
+            int empresaId,
+            int? empresaUsuarioId,
+            StatusProcessamento? status,
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken = default)
         {
             var query = _context.Processamentos
                 .AsNoTracking()
-                .Where(x => x.FK_IdEmpresa == empresaId);
+                .Where(x =>
+                    x.FK_IdEmpresa == empresaId &&
+                    (x.PerfilMapeamento == null ||
+                     (x.PerfilMapeamento.IsPadrao && !x.PerfilMapeamento.FK_IdEmpresa.HasValue) ||
+                     (empresaUsuarioId.HasValue &&
+                      x.PerfilMapeamento.FK_IdEmpresa == empresaUsuarioId.Value)));
 
             if (status.HasValue)
             {

@@ -233,15 +233,32 @@
       "line": "Linha"
     },
     "colecaoList": {
+      "breadcrumbs": {
+        "ariaLabel": "Navegação das coleções",
+        "administration": "Administração"
+      },
       "header": {
-        "title": "Cadastro de coleções",
-        "description": "Gerencie coleções globais e customizadas por empresa."
+        "title": "Coleções SAP",
+        "description": "Gerencie as estruturas reutilizáveis dos documentos de marketing do SAP Business One.",
+        "adminOnly": "Somente administradores"
+      },
+      "summary": {
+        "ariaLabel": "Resumo das coleções",
+        "total": "Coleções cadastradas",
+        "defaults": "Estruturas padrão",
+        "company": "Estruturas de empresas",
+        "results": "resultado(s)"
+      },
+      "adminInfo": {
+        "title": "Estruturas administrativas",
+        "description": "Estas coleções definem a organização técnica dos documentos SAP. Os usuários finais recebem os modelos prontos e personalizam apenas os mapeamentos clonados."
       },
       "filters": {
         "nameLabel": "Filtrar por nome",
         "namePlaceholder": "Ex.: Itens do documento",
         "collectionTypeLabel": "Tipo da coleção",
-        "allTypes": "Todos os tipos"
+        "allTypes": "Todos os tipos",
+        "clear": "Limpar filtros"
       },
       "loading": {
         "collections": "Carregando coleções..."
@@ -251,7 +268,8 @@
         "configureFields": "Configurar campos",
         "edit": "Editar",
         "delete": "Excluir",
-        "deleting": "Excluindo..."
+        "deleting": "Excluindo...",
+        "retry": "Tentar novamente"
       },
       "table": {
         "header": {
@@ -259,10 +277,12 @@
           "description": "Descrição",
           "collectionType": "Tipo da coleção",
           "type": "Tipo",
+          "documents": "Documentos",
           "mappings": "Mapeamentos",
           "actions": "Ações"
         },
-        "paginationAriaLabel": "Paginação da lista de coleções"
+        "paginationAriaLabel": "Paginação da lista de coleções",
+        "noDescription": "Sem descrição"
       },
       "scope": {
         "default": "Padrão",
@@ -270,7 +290,9 @@
       },
       "empty": {
         "title": "Nenhuma coleção encontrada",
-        "description": "Cadastre coleções padrão ou personalizadas para reutilizar estruturas de integração."
+        "description": "Cadastre coleções padrão ou personalizadas para reutilizar estruturas de integração.",
+        "filteredTitle": "Nenhum resultado para os filtros",
+        "filteredDescription": "Ajuste a busca ou limpe os filtros para visualizar todas as coleções."
       },
       "confirmDelete": {
         "title": "Excluir coleção",
@@ -291,6 +313,11 @@
       }
     },
     "colecaoForm": {
+      "breadcrumbs": {
+        "ariaLabel": "Navegação do cadastro de coleção",
+        "administration": "Administração",
+        "collections": "Coleções SAP"
+      },
       "title": {
         "create": "Nova coleção",
         "edit": "Editar coleção"
@@ -331,10 +358,25 @@
         "createAsDefault": "Criar como coleção padrão"
       },
       "actions": {
+        "back": "Voltar para coleções",
         "cancel": "Cancelar",
         "saving": "Salvando...",
         "saveChanges": "Salvar alterações",
         "saveCollection": "Salvar coleção"
+      },
+      "sections": {
+        "details": {
+          "title": "Dados da estrutura",
+          "description": "Defina o nome técnico, o nível e a finalidade da coleção."
+        },
+        "documents": {
+          "title": "Documentos vinculados",
+          "description": "Escolha onde esta estrutura estará disponível."
+        },
+        "scope": {
+          "description": "Controle a disponibilidade desta coleção."
+        },
+        "footerHint": "As alterações serão aplicadas aos documentos vinculados a esta coleção."
       },
       "validation": {
         "collectionNameRequired": "Informe o nome da coleção.",
@@ -532,6 +574,8 @@
         "removeField": "Remover campo",
         "orderField": "Ordem do campo no mapeamento",
         "sapField": "Propriedade enviada para a API do SAP Business One",
+        "fieldStatus": "Campos inativos não serão enviados ao SAP durante o processamento",
+        "readOnlyStatus": "O status dos campos padrão é protegido",
         "excelColumn": "Posição da coluna na planilha, começando em 1",
         "readOnlyField": "Campo protegido do modelo padrão"
       },
@@ -542,6 +586,7 @@
       "table": {
         "header": {
           "fieldName": "Campo SAP",
+          "status": "Status",
           "excelColumn": "Coluna Excel",
           "type": "Tipo",
           "format": "Formato / Regra",
@@ -561,6 +606,12 @@
         "double": "Decimal",
         "datetime": "Data e hora",
         "boolean": "Booleano"
+      },
+      "status": {
+        "active": "Ativo",
+        "inactive": "Inativo",
+        "activate": "Ativar campo",
+        "deactivate": "Desativar campo"
       },
       "empty": {
         "noFields": "Nenhum campo cadastrado para este mapeamento.",

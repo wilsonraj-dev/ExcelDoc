@@ -16,7 +16,7 @@ const routes: Routes = [
     path: ':colecaoId',
     component: MapeamentoHomeComponent,
     canActivate: [AuthGuard],
-    data: { roles: [AUTH_ROLES.administrator, AUTH_ROLES.user] }
+    data: { roles: [AUTH_ROLES.administrator] }
   }
 ];
 

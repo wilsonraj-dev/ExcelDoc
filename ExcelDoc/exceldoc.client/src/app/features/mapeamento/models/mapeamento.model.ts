@@ -44,6 +44,7 @@ export interface MapeamentoCampo {
   indiceColuna: number;
   tipoCampo: TipoCampo;
   formato: string | null;
+  ativo: boolean;
   fk_IdMapeamento: number;
 }
 
@@ -52,6 +53,7 @@ export interface MapeamentoCampoPayload {
   indiceColuna: number;
   tipoCampo: number;
   formato: string | null;
+  ativo: boolean;
   fk_IdMapeamento: number;
 }
 
@@ -61,6 +63,7 @@ export interface MapeamentoCampoBatchPayload {
   indiceColuna: number;
   tipoCampo: number;
   formato: string | null;
+  ativo: boolean;
 }
 
 export interface AtualizarMapeamentoCamposPayload {
@@ -73,6 +76,7 @@ export interface MapeamentoCampoRow {
   indiceColuna: number | null;
   tipoCampo: TipoCampo | '';
   formato: string;
+  ativo: boolean;
   isNew: boolean;
   previewValue: string;
   errors: MapeamentoRowErrors;

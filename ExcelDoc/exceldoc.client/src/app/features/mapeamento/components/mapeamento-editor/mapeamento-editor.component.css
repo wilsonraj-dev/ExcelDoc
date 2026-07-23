@@ -3,6 +3,78 @@
   min-width: 0;
 }
 
+.status-column {
+  min-width: 112px;
+}
+
+.status-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  color: #64748b;
+  background: #f8fafc;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.status-toggle:not(:disabled):hover {
+  border-color: #94a3b8;
+}
+
+.status-toggle--active {
+  border-color: #bbf7d0;
+  color: #15803d;
+  background: #f0fdf4;
+}
+
+.status-toggle:disabled {
+  cursor: default;
+}
+
+.status-toggle__track {
+  position: relative;
+  width: 28px;
+  height: 16px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: background-color 160ms ease;
+}
+
+.status-toggle__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 20%);
+  transition: transform 160ms ease;
+}
+
+.status-toggle--active .status-toggle__track {
+  background: #22c55e;
+}
+
+.status-toggle--active .status-toggle__thumb {
+  transform: translateX(12px);
+}
+
+.mapping-table .row-inactive {
+  background: #f8fafc;
+}
+
+.mapping-table .row-inactive td:not(.status-column) {
+  opacity: 0.58;
+}
+
 .mapping-editor {
   overflow: hidden;
   border: 1px solid #dfe5ef;
