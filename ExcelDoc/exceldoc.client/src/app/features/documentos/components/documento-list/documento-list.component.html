@@ -1,44 +1,73 @@
-<div class="settings-page">
-  <div class="settings-header">
-    <div>
-      <h2>{{ 'documentos.documentoList.header.title' | translate }}</h2>
-      <p>{{ 'documentos.documentoList.header.description' | translate }}</p>
-    </div>
+<section class="documents-workspace">
+  <div class="context-bar">
+    <nav class="breadcrumbs" [attr.aria-label]="'documentos.documentoList.header.title' | translate">
+      <mat-icon>folder_open</mat-icon>
+      <span>{{ 'documentos.documentoList.header.title' | translate }}</span>
+      <mat-icon class="breadcrumbs__separator">chevron_right</mat-icon>
+      <strong>{{ 'documentos.documentoList.table.header.documentName' | translate }}</strong>
+    </nav>
 
-    <div class="settings-header__actions">
-      <button type="button" mat-flat-button color="primary" (click)="novoDocumento()">
-        <mat-icon>add</mat-icon>
-        {{ 'documentos.documentoList.actions.newDocument' | translate }}
-      </button>
-    </div>
+    <span class="context-count" *ngIf="!isLoading && hasDocumentos">
+      {{ dataSource.data.length }}
+      <mat-icon>description</mat-icon>
+    </span>
   </div>
 
-  <mat-card class="settings-card documento-page" appearance="outlined">
-    <mat-card-content>
-      <p class="documento-page__error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <section class="workspace-card">
+    <header class="workspace-header">
+      <div class="workspace-header__copy">
+        <div class="workspace-header__title-row">
+          <span class="workspace-header__icon"><mat-icon>description</mat-icon></span>
+          <div>
+            <h1>{{ 'documentos.documentoList.header.title' | translate }}</h1>
+            <p>{{ 'documentos.documentoList.header.description' | translate }}</p>
+          </div>
+        </div>
+      </div>
 
-      <div class="loading-state loading-state--inline" *ngIf="isLoading">
+      <div class="workspace-actions">
+        <button type="button" mat-flat-button color="primary" (click)="novoDocumento()">
+          <mat-icon>add</mat-icon>
+          {{ 'documentos.documentoList.actions.newDocument' | translate }}
+        </button>
+      </div>
+    </header>
+
+    <div class="document-panel">
+      <div class="error-banner" *ngIf="errorMessage">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <div class="loading-state" *ngIf="isLoading">
         <app-loading-spinner [message]="'documentos.documentoList.loading.documents' | translate"></app-loading-spinner>
       </div>
 
       <ng-container *ngIf="!isLoading">
-        <div class="documento-page__table" *ngIf="hasDocumentos; else emptyState">
+        <div class="document-table" *ngIf="hasDocumentos; else emptyState">
           <div class="table-wrapper">
-            <table mat-table [dataSource]="dataSource" class="documento-page__table-content">
+            <table mat-table [dataSource]="dataSource" class="document-table__content">
               <ng-container matColumnDef="nomeDocumento">
                 <th mat-header-cell *matHeaderCellDef>{{ 'documentos.documentoList.table.header.documentName' | translate }}</th>
-                <td mat-cell *matCellDef="let documento">{{ documento.nomeDocumento }}</td>
+                <td mat-cell *matCellDef="let documento">
+                  <div class="document-name">
+                    <span class="document-name__icon"><mat-icon>description</mat-icon></span>
+                    <strong>{{ documento.nomeDocumento }}</strong>
+                  </div>
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="endpoint">
                 <th mat-header-cell *matHeaderCellDef>{{ 'documentos.documentoList.table.header.endpoint' | translate }}</th>
-                <td mat-cell *matCellDef="let documento">{{ documento.endpoint }}</td>
+                <td mat-cell *matCellDef="let documento">
+                  <span class="endpoint-value">{{ documento.endpoint }}</span>
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="acoes">
                 <th mat-header-cell *matHeaderCellDef>{{ 'documentos.documentoList.table.header.actions' | translate }}</th>
-                <td mat-cell *matCellDef="let documento" class="documento-page__actions-cell">
-                  <div class="documento-page__actions">
+                <td mat-cell *matCellDef="let documento" class="actions-cell">
+                  <div class="row-actions">
                     <button type="button"
                             mat-stroked-button
                             color="primary"
@@ -72,12 +101,16 @@
       </ng-container>
 
       <ng-template #emptyState>
-        <section class="documento-page__empty-state">
-          <mat-icon>description</mat-icon>
-          <h3>{{ 'documentos.documentoList.empty.title' | translate }}</h3>
+        <section class="empty-state">
+          <span class="empty-state__icon"><mat-icon>description</mat-icon></span>
+          <h2>{{ 'documentos.documentoList.empty.title' | translate }}</h2>
           <p>{{ 'documentos.documentoList.empty.description' | translate }}</p>
+          <button type="button" mat-flat-button color="primary" (click)="novoDocumento()">
+            <mat-icon>add</mat-icon>
+            {{ 'documentos.documentoList.actions.newDocument' | translate }}
+          </button>
         </section>
       </ng-template>
-    </mat-card-content>
-  </mat-card>
-</div>
+    </div>
+  </section>
+</section>

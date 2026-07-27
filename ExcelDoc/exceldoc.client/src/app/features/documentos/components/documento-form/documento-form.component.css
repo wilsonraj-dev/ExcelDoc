@@ -1,51 +1,232 @@
 :host {
   display: block;
+  min-width: 0;
 }
 
-.documento-form {
-  display: grid;
-  gap: 1.5rem;
+.document-form-workspace {
+  min-width: 0;
+  color: #101828;
 }
 
-.documento-form__content {
-  display: grid;
-}
-
-.documento-form__fields {
-  display: grid;
-  gap: 1rem;
-}
-
-.documento-form__actions {
+.context-bar,
+.breadcrumbs,
+.workspace-header__title-row,
+.form-panel__header,
+.error-banner,
+.form-actions {
   display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
+  align-items: center;
 }
 
-.documento-form__loading {
-  display: flex;
-  justify-content: center;
-  padding: 2rem 0;
+.context-bar {
+  min-height: 54px;
+  padding: 0 2px 16px;
+  color: #475467;
+  font-size: 0.78rem;
 }
 
-.documento-form__error {
-  background: rgba(239, 68, 68, 0.12);
-  border-radius: 0.75rem;
-  color: #b91c1c;
+.breadcrumbs {
+  min-width: 0;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+  .breadcrumbs > span,
+  .breadcrumbs > strong {
+    overflow: hidden;
+    max-width: 260px;
+    text-overflow: ellipsis;
+  }
+
+  .breadcrumbs > mat-icon:first-child,
+  .breadcrumbs__separator {
+    width: 17px;
+    height: 17px;
+    font-size: 17px;
+  }
+
+  .breadcrumbs > mat-icon:first-child {
+    color: #344054;
+  }
+
+.breadcrumbs__separator {
+  color: #98a2b3;
+}
+
+.breadcrumbs strong {
+  color: #1d2939;
+  font-weight: 650;
+}
+
+.workspace-card {
+  overflow: hidden;
+  border: 1px solid #dfe5ef;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 14px 38px rgba(16, 24, 40, 0.05);
+}
+
+.workspace-header {
+  min-height: 126px;
+  padding: 26px;
+  border-bottom: 1px solid #e7ebf2;
+}
+
+.workspace-header__title-row {
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.workspace-header__icon,
+.form-panel__icon {
+  display: grid;
+  place-items: center;
+  background: #eaf1ff;
+  color: #155eef;
+}
+
+.workspace-header__icon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  border-radius: 12px;
+}
+
+.workspace-header h1,
+.workspace-header p,
+.form-panel h2,
+.form-panel p {
   margin: 0;
-  padding: 0.75rem 1rem;
 }
 
-mat-form-field {
-  width: 100%;
+.workspace-header h1 {
+  color: #0b1739;
+  font-size: clamp(1.55rem, 2vw, 2rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
 }
 
-@media (max-width: 768px) {
-  .documento-form__actions {
+.workspace-header p {
+  margin-top: 8px;
+  color: #667085;
+  font-size: 0.88rem;
+}
+
+.loading-state {
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+}
+
+.document-form {
+  padding: 20px 24px 24px;
+}
+
+.error-banner {
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid #fecdca;
+  border-radius: 10px;
+  background: #fef3f2;
+  color: #b42318;
+  font-size: 0.8rem;
+}
+
+  .error-banner mat-icon {
+    flex: 0 0 auto;
+  }
+
+.form-panel {
+  overflow: hidden;
+  border: 1px solid #e0e6ef;
+  border-radius: 13px;
+  background: #fbfcfe;
+}
+
+.form-panel__header {
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e0e6ef;
+}
+
+.form-panel__icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 10px;
+}
+
+.form-panel h2 {
+  color: #1d2939;
+  font-size: 0.95rem;
+}
+
+.form-panel p {
+  margin-top: 3px;
+  color: #667085;
+  font-size: 0.75rem;
+}
+
+.form-panel__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding: 24px 20px;
+  background: #fff;
+}
+
+  .form-panel__fields mat-form-field {
+    width: 100%;
+  }
+
+:host ::ng-deep .form-panel__fields .mat-mdc-text-field-wrapper {
+  border-radius: 9px;
+}
+
+:host ::ng-deep .form-panel__fields .mat-mdc-form-field-icon-prefix {
+  padding: 0 10px 0 0;
+  color: #8091ab;
+}
+
+  :host ::ng-deep .form-panel__fields .mat-mdc-form-field-icon-prefix mat-icon {
+    width: 19px;
+    height: 19px;
+    font-size: 19px;
+  }
+
+.form-actions {
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 20px;
+}
+
+  .form-actions button {
+    min-height: 42px;
+    border-radius: 9px;
+    padding-inline: 20px;
+  }
+
+@media (max-width: 760px) {
+  .workspace-header {
+    padding: 20px 16px;
+  }
+
+  .document-form {
+    padding: 14px;
+  }
+
+  .form-panel__fields {
+    grid-template-columns: 1fr;
+    padding: 18px 14px;
+  }
+
+  .form-actions {
+    align-items: stretch;
     flex-direction: column-reverse;
   }
 
-    .documento-form__actions button {
+    .form-actions button {
       width: 100%;
     }
 }

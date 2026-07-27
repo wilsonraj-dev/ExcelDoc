@@ -1,41 +1,73 @@
-<mat-card class="documento-form" appearance="outlined">
-  <mat-card-header>
-    <mat-card-title>{{ pageTitle }}</mat-card-title>
-    <mat-card-subtitle>{{ 'documentos.documentoForm.subtitle' | translate }}</mat-card-subtitle>
-  </mat-card-header>
+<section class="document-form-workspace">
+  <div class="context-bar">
+    <nav class="breadcrumbs" [attr.aria-label]="pageTitle">
+      <mat-icon>folder_open</mat-icon>
+      <span>{{ 'documentos.documentoList.header.title' | translate }}</span>
+      <mat-icon class="breadcrumbs__separator">chevron_right</mat-icon>
+      <strong>{{ pageTitle }}</strong>
+    </nav>
+  </div>
 
-  <mat-card-content class="documento-form__content">
-    <div class="documento-form__loading" *ngIf="isLoading">
+  <section class="workspace-card">
+    <header class="workspace-header">
+      <div class="workspace-header__title-row">
+        <span class="workspace-header__icon"><mat-icon>{{ isEditMode ? 'edit_document' : 'note_add' }}</mat-icon></span>
+        <div>
+          <h1>{{ pageTitle }}</h1>
+          <p>{{ 'documentos.documentoForm.subtitle' | translate }}</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="loading-state" *ngIf="isLoading">
       <app-loading-spinner [message]="'documentos.documentoForm.loading.document' | translate"></app-loading-spinner>
     </div>
 
-    <form class="documento-form__fields" [formGroup]="form" (ngSubmit)="submit()" *ngIf="!isLoading">
-      <p class="documento-form__error" *ngIf="apiError">{{ apiError }}</p>
+    <form class="document-form" [formGroup]="form" (ngSubmit)="submit()" *ngIf="!isLoading">
+      <div class="error-banner" *ngIf="apiError">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ apiError }}</span>
+      </div>
 
-      <mat-form-field appearance="outline">
-        <mat-label>{{ 'documentos.documentoForm.fields.documentName' | translate }}</mat-label>
-        <input matInput
-               formControlName="nomeDocumento"
-               [placeholder]="'documentos.documentoForm.placeholders.documentName' | translate" />
-        <mat-error *ngIf="isInvalid('nomeDocumento')">{{ getErrorMessage('nomeDocumento') }}</mat-error>
-      </mat-form-field>
+      <section class="form-panel">
+        <header class="form-panel__header">
+          <span class="form-panel__icon"><mat-icon>description</mat-icon></span>
+          <div>
+            <h2>{{ pageTitle }}</h2>
+            <p>{{ 'documentos.documentoForm.subtitle' | translate }}</p>
+          </div>
+        </header>
 
-      <mat-form-field appearance="outline">
-        <mat-label>{{ 'documentos.documentoForm.fields.endpoint' | translate }}</mat-label>
-        <input matInput
-               formControlName="endpoint"
-               [placeholder]="'documentos.documentoForm.placeholders.endpoint' | translate" />
-        <mat-error *ngIf="isInvalid('endpoint')">{{ getErrorMessage('endpoint') }}</mat-error>
-      </mat-form-field>
+        <div class="form-panel__fields">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'documentos.documentoForm.fields.documentName' | translate }}</mat-label>
+            <input matInput
+                   formControlName="nomeDocumento"
+                   [placeholder]="'documentos.documentoForm.placeholders.documentName' | translate" />
+            <mat-icon matPrefix>article</mat-icon>
+            <mat-error *ngIf="isInvalid('nomeDocumento')">{{ getErrorMessage('nomeDocumento') }}</mat-error>
+          </mat-form-field>
 
-      <div class="documento-form__actions">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'documentos.documentoForm.fields.endpoint' | translate }}</mat-label>
+            <input matInput
+                   formControlName="endpoint"
+                   [placeholder]="'documentos.documentoForm.placeholders.endpoint' | translate" />
+            <mat-icon matPrefix>link</mat-icon>
+            <mat-error *ngIf="isInvalid('endpoint')">{{ getErrorMessage('endpoint') }}</mat-error>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <footer class="form-actions">
         <button type="button" mat-stroked-button (click)="cancel()" [disabled]="isSaving">
           {{ 'documentos.documentoForm.actions.cancel' | translate }}
         </button>
         <button type="submit" mat-flat-button color="primary" [disabled]="isSaving">
+          <mat-icon>save</mat-icon>
           {{ submitLabel }}
         </button>
-      </div>
+      </footer>
     </form>
-  </mat-card-content>
-</mat-card>
+  </section>
+</section>
