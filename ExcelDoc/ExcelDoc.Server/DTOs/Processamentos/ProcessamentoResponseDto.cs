@@ -6,9 +6,7 @@ namespace ExcelDoc.Server.DTOs.Processamentos
     {
         public int Id { get; set; }
 
-        public int UsuarioId { get; set; }
-
-        public int EmpresaId { get; set; }
+        public string UsuarioSAP { get; set; } = string.Empty;
 
         public int DocumentoId { get; set; }
 

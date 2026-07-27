@@ -10,27 +10,9 @@ namespace ExcelDoc.Server.Models
         [MaxLength(150)]
         public string NomeUsuario { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(500)]
-        public string SenhaHash { get; set; } = string.Empty;
-
-        [MaxLength(200)]
-        public string? Email { get; set; }
-
-        [MaxLength(20)]
-        public string? ResetPasswordCode { get; set; }
-
-        public DateTime? ResetPasswordCodeExpiresAtUtc { get; set; }
-
         public TipoUsuario TipoUsuario { get; set; }
 
-        public int? FK_IdEmpresa { get; set; }
-
         public bool Ativo { get; set; } = true;
-
-        public Empresa? Empresa { get; set; }
-
-        public ICollection<Processamento> Processamentos { get; set; } = new List<Processamento>();
 
         [Required]
         [MaxLength(5)]

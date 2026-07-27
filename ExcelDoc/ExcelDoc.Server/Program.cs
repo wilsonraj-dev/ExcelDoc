@@ -1,34 +1,80 @@
-using ExcelDoc.Server.Data;
-using ExcelDoc.Server.Security;
-using ExcelDoc.Server.Options;
 using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using ExcelDoc.Server;
 using ExcelDoc.Server.IoC;
+using ExcelDoc.Server.Options;
+using ExcelDoc.Server.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
-var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
-    ?? throw new InvalidOperationException("Seção de configuração 'Jwt' não configurada.");
+var jwtOptions = builder.Configuration
+    .GetSection(JwtOptions.SectionName)
+    .Get<JwtOptions>()
+    ?? throw new InvalidOperationException(
+        "Seção de configuração 'Jwt' não configurada.");
+var jwtValidation = new JwtOptionsValidator().Validate(null, jwtOptions);
+if (jwtValidation.Failed)
+{
+    throw new InvalidOperationException(
+        string.Join(Environment.NewLine, jwtValidation.Failures));
+}
 
-// Add services to the container.
+var allowInvalidSapCertificate = builder.Configuration.GetValue<bool>(
+    $"{SapServiceLayerOptions.SectionName}:AllowInvalidServerCertificate");
+if (allowInvalidSapCertificate && !builder.Environment.IsDevelopment())
+{
+    throw new InvalidOperationException(
+        "AllowInvalidServerCertificate somente pode ser habilitado no ambiente Development.");
+}
 
-builder.Services.Configure<ProcessingOptions>(builder.Configuration.GetSection(ProcessingOptions.SectionName));
-builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(StorageOptions.SectionName));
-builder.Services.Configure<EncryptionOptions>(builder.Configuration.GetSection(EncryptionOptions.SectionName));
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
-builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
+builder.Services.Configure<ProcessingOptions>(
+    builder.Configuration.GetSection(ProcessingOptions.SectionName));
+builder.Services.Configure<StorageOptions>(
+    builder.Configuration.GetSection(StorageOptions.SectionName));
+builder.Services
+    .AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
+    .ValidateOnStart();
+builder.Services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
+builder.Services
+    .AddOptions<SapServiceLayerOptions>()
+    .Bind(builder.Configuration.GetSection(SapServiceLayerOptions.SectionName))
+    .ValidateOnStart();
+builder.Services.AddSingleton<
+    IValidateOptions<SapServiceLayerOptions>,
+    SapServiceLayerOptionsValidator>();
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.AddInfrastructureLanguages();
 
-builder.Services.AddDbContext<ExcelDocDbContext>(options =>
-    options.UseMySQL(connectionString));
+builder.Services
+    .AddHttpClient("sap-service-layer")
+    .ConfigureHttpClient((serviceProvider, client) =>
+    {
+        var options = serviceProvider
+            .GetRequiredService<IOptions<SapServiceLayerOptions>>()
+            .Value;
+        client.Timeout = TimeSpan.FromSeconds(options.RequestTimeoutSeconds);
+    })
+    .ConfigurePrimaryHttpMessageHandler(serviceProvider =>
+    {
+        var options = serviceProvider
+            .GetRequiredService<IOptions<SapServiceLayerOptions>>()
+            .Value;
+        var handler = new HttpClientHandler
+        {
+            UseCookies = false
+        };
+        if (options.AllowInvalidServerCertificate)
+        {
+            handler.ServerCertificateCustomValidationCallback =
+                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        }
 
-builder.Services.AddHttpClient("sap-service-layer");
+        return handler;
+    });
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -41,65 +87,48 @@ builder.Services
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtOptions.Issuer,
             ValidAudience = jwtOptions.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
         };
     });
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy(AuthRoles.Administrador, policy => policy.RequireRole(AuthRoles.Administrador));
-    options.AddPolicy(AuthRoles.Usuario, policy => policy.RequireRole(AuthRoles.Usuario));
+    options.AddPolicy(
+        AuthRoles.Administrador,
+        policy => policy.RequireRole(AuthRoles.Administrador));
+    options.AddPolicy(
+        AuthRoles.Usuario,
+        policy => policy.RequireRole(AuthRoles.Usuario));
 });
 
 builder.Services.AddInfrastructureRepositories();
 
-builder.Services.AddControllers()
+builder.Services
+    .AddControllers()
     .AddDataAnnotationsLocalization(options =>
     {
         options.DataAnnotationLocalizerProvider = (_, factory) =>
             factory.Create(typeof(SharedResource));
     });
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-var databaseInitialization = app.Configuration.GetSection("DatabaseInitialization");
-
-if (databaseInitialization.GetValue<bool>("ApplyMigrationsOnStartup"))
-{
-    await ApplicationDbInitializer.ApplyMigrationsAsync(app.Services);
-}
-
-if (databaseInitialization.GetValue<bool>("InstallSapDefaultsOnStartup"))
-{
-    await ApplicationDbInitializer.InstallSapDefaultsAsync(app.Services);
-}
-
-if (app.Environment.IsDevelopment() &&
-    databaseInitialization.GetValue<bool>("InstallDevelopmentSampleData"))
-{
-    await ApplicationDbInitializer.InstallDevelopmentSampleDataAsync(app.Services);
-}
-
 app.UseDefaultFiles();
+app.UseStaticFiles();
 app.MapStaticAssets();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
-
 app.UseRequestLocalization();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.MapFallbackToFile("/index.html");
 
 app.Run();

@@ -10,8 +10,7 @@ export interface Colecao {
   nomeColecao: string;
   descricao?: string | null;
   tipoColecao: TipoColecao | string | number;
-  fk_IdEmpresa?: number | null;
-  empresaId?: number | null;
+  isPadrao: boolean;
   padraoSistema?: boolean;
   documentos?: Documento[];
   documentoIds?: number[];
@@ -22,7 +21,7 @@ export interface ColecaoPayload {
   nomeColecao: string;
   descricao: string | null;
   tipoColecao: number;
-  fk_IdEmpresa: number | null;
+  isPadrao: boolean;
   documentoIds: number[];
 }
 
@@ -52,16 +51,12 @@ export function toTipoColecaoRequestValue(value: TipoColecao | string | number |
   return resolveTipoColecao(value) === TipoColecao.Line ? 2 : 1;
 }
 
-export function getColecaoEmpresaId(colecao: Colecao): number | null {
-  return colecao.fk_IdEmpresa ?? colecao.empresaId ?? null;
-}
-
 export function isColecaoPadrao(colecao: Colecao): boolean {
   if (typeof colecao.padraoSistema === 'boolean') {
     return colecao.padraoSistema;
   }
 
-  return getColecaoEmpresaId(colecao) === null;
+  return colecao.isPadrao;
 }
 
 export function getColecaoDocumentoIds(colecao: Colecao): number[] {

@@ -99,11 +99,12 @@ export class MapeamentoListComponent implements OnInit {
   }
 
   get isReadOnly(): boolean {
-    return this.isPadrao || this.isLegacySharedMapping;
+    return !this.authService.isAdministrator()
+      && (this.isPadrao || this.isLegacySharedMapping);
   }
 
   get canClone(): boolean {
-    return !!this.perfilAtual && this.authService.getSession()?.empresaId != null;
+    return !!this.perfilAtual;
   }
 
   get canSave(): boolean {
@@ -164,7 +165,6 @@ export class MapeamentoListComponent implements OnInit {
   cloneAndCustomize(): void {
     const perfil = this.perfilAtual;
     if (!perfil || !this.canClone) {
-      this.notificationService.showInfo(this.translate.instant('mapeamento.workspace.feedback.companyRequired'));
       return;
     }
 
@@ -346,7 +346,6 @@ export class MapeamentoListComponent implements OnInit {
       id: item.fk_IdMapeamento,
       nome: item.nomeMapeamento,
       fk_IdColecao: item.fk_IdColecao,
-      fk_IdEmpresa: this.perfilAtual?.fk_IdEmpresa ?? null,
       isPadrao: item.isMapeamentoPadrao ?? this.isPadrao,
       quantidadeCampos: item.quantidadeCampos ?? 0
     };

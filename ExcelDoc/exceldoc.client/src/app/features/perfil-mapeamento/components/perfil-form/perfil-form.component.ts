@@ -74,10 +74,6 @@ export class PerfilFormComponent implements OnInit {
     return this.authService.isAdministrator();
   }
 
-  get empresaId(): number | null {
-    return this.authService.getSession()?.empresaId ?? null;
-  }
-
   get headerColecaoControl(): FormControl<number | null> {
     return this.form.controls['headerColecaoId'] as FormControl<number | null>;
   }
@@ -201,13 +197,13 @@ export class PerfilFormComponent implements OnInit {
   }
 
   getMapeamentoBadgeClass(mapeamento: Mapeamento): string {
-    return mapeamento.isPadrao ? 'mapping-chip mapping-chip--padrao' : 'mapping-chip mapping-chip--empresa';
+    return mapeamento.isPadrao ? 'mapping-chip mapping-chip--padrao' : 'mapping-chip mapping-chip--custom';
   }
 
   getMapeamentoBadgeLabel(mapeamento: Mapeamento): string {
     return mapeamento.isPadrao
       ? this.translate.instant('perfilMapeamento.common.scope.default')
-      : this.translate.instant('perfilMapeamento.common.scope.company');
+      : this.translate.instant('perfilMapeamento.common.scope.custom');
   }
 
   onLineColecaoSelectionChange(group: LineColecaoMapeamentoGroup): void {

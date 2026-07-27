@@ -6,6 +6,8 @@ namespace ExcelDoc.Server.Background
 
         public string FilePath { get; set; } = string.Empty;
 
+        public string SessionKey { get; set; } = string.Empty;
+
         public int Attempt { get; set; }
     }
 }

@@ -1,38 +1,55 @@
 using System.Security.Claims;
-using ExcelDoc.Server.Localization;
+using System.Security.Cryptography;
+using System.Text;
+using ExcelDoc.Server.Models;
+using ExcelDoc.Server.Security;
 using ExcelDoc.Server.Services.Interfaces;
 
-namespace ExcelDoc.Server.Services
+namespace ExcelDoc.Server.Services;
+
+public sealed class CurrentUserService : ICurrentUserService
 {
-    public class CurrentUserService : ICurrentUserService
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IMessageService _messageService;
+        _httpContextAccessor = httpContextAccessor;
+    }
 
-        public CurrentUserService(IHttpContextAccessor httpContextAccessor, IMessageService messageService)
+    public Usuario GetRequiredUser()
+    {
+        var principal = _httpContextAccessor.HttpContext?.User;
+        if (principal?.Identity?.IsAuthenticated != true)
         {
-            _httpContextAccessor = httpContextAccessor;
-            _messageService = messageService;
+            throw new UnauthorizedAccessException("Usuário não autenticado.");
         }
 
-        public int GetRequiredUserId()
+        var userName = principal.FindFirstValue(ClaimTypes.GivenName)
+            ?? principal.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? throw new UnauthorizedAccessException(
+                "O token não contém o usuário SAP.");
+        var roleValue = principal.FindFirstValue(ClaimTypes.Role);
+
+        if (!Enum.TryParse<TipoUsuario>(roleValue, true, out var role))
         {
-            var user = _httpContextAccessor.HttpContext?.User;
-            if (user?.Identity?.IsAuthenticated != true)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserNotAuthenticated));
-            }
-
-            var value = user.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? user.FindFirstValue(ClaimTypes.Name)
-                ?? throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.TokenInvalidForCurrentUser));
-
-            if (!int.TryParse(value, out var userId))
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserIdentifierInvalidInToken));
-            }
-
-            return userId;
+            throw new UnauthorizedAccessException(
+                "O token não contém o contexto SAP esperado.");
         }
+
+        return new Usuario
+        {
+            Id = CreateStableUserId(userName),
+            NomeUsuario = userName,
+            TipoUsuario = role,
+            Ativo = true,
+            Idioma = "pt"
+        };
+    }
+
+    private static int CreateStableUserId(string userName)
+    {
+        var hash = SHA256.HashData(
+            Encoding.UTF8.GetBytes(userName.ToUpperInvariant()));
+        return Math.Max(1, BitConverter.ToInt32(hash, 0) & int.MaxValue);
     }
 }

@@ -15,9 +15,6 @@ namespace ExcelDoc.Server.DTOs.PerfilMapeamentos
         [JsonPropertyName("fk_IdDocumento")]
         public int FK_IdDocumento { get; set; }
 
-        [JsonPropertyName("fk_IdEmpresa")]
-        public int? FK_IdEmpresa { get; set; }
-
         public bool IsPadrao { get; set; }
 
         public List<PerfilMapeamentoItemRequestDto> Itens { get; set; } = new();

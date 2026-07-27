@@ -26,7 +26,6 @@ export interface Mapeamento {
   id: number;
   nome: string;
   fk_IdColecao: number;
-  fk_IdEmpresa: number | null;
   isPadrao: boolean;
   quantidadeCampos?: number;
 }
@@ -34,7 +33,6 @@ export interface Mapeamento {
 export interface MapeamentoPayload {
   nome: string;
   fk_IdColecao: number;
-  fk_IdEmpresa: number | null;
   isPadrao?: boolean;
 }
 
@@ -87,14 +85,6 @@ export interface MapeamentoRowErrors {
   indiceColuna: string;
   tipoCampo: string;
   formato: string;
-}
-
-export function getMapeamentoEmpresaId(mapeamento: Mapeamento): number | null {
-  return mapeamento.fk_IdEmpresa ?? null;
-}
-
-export function isMapeamentoEmpresa(mapeamento: Mapeamento): boolean {
-  return getMapeamentoEmpresaId(mapeamento) !== null;
 }
 
 export function orderMapeamentos(mapeamentos: readonly Mapeamento[]): Mapeamento[] {

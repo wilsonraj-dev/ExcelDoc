@@ -2,7 +2,6 @@ namespace ExcelDoc.Server.Localization;
 
 public static class MessageKeys
 {
-    public const string AdminUsersCannotBeLinked = nameof(AdminUsersCannotBeLinked);
     public const string ChildCollectionMustPointToSelectedParent = nameof(ChildCollectionMustPointToSelectedParent);
     public const string CollectionAlreadyExists = nameof(CollectionAlreadyExists);
     public const string CollectionCannotBeChildOfItself = nameof(CollectionCannotBeChildOfItself);
@@ -13,17 +12,13 @@ public static class MessageKeys
     public const string CollectionNameRequired = nameof(CollectionNameRequired);
     public const string CollectionNotFound = nameof(CollectionNotFound);
     public const string CollectionRequired = nameof(CollectionRequired);
-    public const string CompanyAlreadyExistsWithName = nameof(CompanyAlreadyExistsWithName);
-    public const string CompanyNameRequired = nameof(CompanyNameRequired);
-    public const string CompanyNotFound = nameof(CompanyNotFound);
-    public const string ConfigurationNotFound = nameof(ConfigurationNotFound);
-    public const string CredentialsInvalid = nameof(CredentialsInvalid);
     public const string DateInvalid = nameof(DateInvalid);
     public const string DateTimeFieldFormatRequired = nameof(DateTimeFieldFormatRequired);
     public const string DefaultMappingsCannotBeDeleted = nameof(DefaultMappingsCannotBeDeleted);
     public const string DocumentAlreadyExistsWithNameOrEndpoint = nameof(DocumentAlreadyExistsWithNameOrEndpoint);
     public const string DocumentAlreadyImportedWithSuccess = nameof(DocumentAlreadyImportedWithSuccess);
     public const string DocumentDeleteLinkedRecords = nameof(DocumentDeleteLinkedRecords);
+    public const string DocumentEndpointInvalid = nameof(DocumentEndpointInvalid);
     public const string DocumentEndpointRequired = nameof(DocumentEndpointRequired);
     public const string DocumentHasNoLinkedCollections = nameof(DocumentHasNoLinkedCollections);
     public const string DocumentMustHaveHeaderCollection = nameof(DocumentMustHaveHeaderCollection);
@@ -33,7 +28,6 @@ public static class MessageKeys
     public const string DocumentInvalid = nameof(DocumentInvalid);
     public const string DocumentRequired = nameof(DocumentRequired);
     public const string DuplicateCollectionsProfile = nameof(DuplicateCollectionsProfile);
-    public const string EmailAlreadyRegistered = nameof(EmailAlreadyRegistered);
     public const string EmptyIdExcelValueAtRow = nameof(EmptyIdExcelValueAtRow);
     public const string FileRequired = nameof(FileRequired);
     public const string FieldNameMaxLength = nameof(FieldNameMaxLength);
@@ -50,7 +44,6 @@ public static class MessageKeys
     public const string InvalidDocumentLinks = nameof(InvalidDocumentLinks);
     public const string InvalidIdExcelValueAtRow = nameof(InvalidIdExcelValueAtRow);
     public const string InvalidIntegerValue = nameof(InvalidIntegerValue);
-    public const string InvalidLanguage = nameof(InvalidLanguage);
     public const string InvalidNumericValue = nameof(InvalidNumericValue);
     public const string MappingDoesNotBelongToCollection = nameof(MappingDoesNotBelongToCollection);
     public const string MappingFieldColumnIndexAlreadyExists = nameof(MappingFieldColumnIndexAlreadyExists);
@@ -67,17 +60,13 @@ public static class MessageKeys
     public const string MappingCollectionCannotBeChanged = nameof(MappingCollectionCannotBeChanged);
     public const string MappingNotFound = nameof(MappingNotFound);
     public const string MappingRequired = nameof(MappingRequired);
-    public const string OnlyAdminsCanChangeDefaultMappings = nameof(OnlyAdminsCanChangeDefaultMappings);
     public const string OnlyAdminsCanChangeDocuments = nameof(OnlyAdminsCanChangeDocuments);
     public const string OnlyAdminsCanChangeSystemCollections = nameof(OnlyAdminsCanChangeSystemCollections);
     public const string OnlyAdminsCanCreateDefaultMappings = nameof(OnlyAdminsCanCreateDefaultMappings);
     public const string OnlyAdminsCanCreateDefaultProfiles = nameof(OnlyAdminsCanCreateDefaultProfiles);
-    public const string OnlyAdminsCanExecuteAction = nameof(OnlyAdminsCanExecuteAction);
-    public const string OnlyAdminsCanRegisterCompanies = nameof(OnlyAdminsCanRegisterCompanies);
     public const string OnlyExcelFilesAccepted = nameof(OnlyExcelFilesAccepted);
     public const string OnlyLineCollectionsCanBeNested = nameof(OnlyLineCollectionsCanBeNested);
     public const string OneOrMoreDocumentsNotFound = nameof(OneOrMoreDocumentsNotFound);
-    public const string PasswordResetCodeInvalidOrExpired = nameof(PasswordResetCodeInvalidOrExpired);
     public const string ProcessingNotFound = nameof(ProcessingNotFound);
     public const string ProcessingWithoutMappingProfileNotSupported = nameof(ProcessingWithoutMappingProfileNotSupported);
     public const string ProfileNameMaxLength = nameof(ProfileNameMaxLength);
@@ -86,31 +75,11 @@ public static class MessageKeys
     public const string ProfileContainsCollectionsNotInDocument = nameof(ProfileContainsCollectionsNotInDocument);
     public const string ProfileMustContainExactlyOneHeaderCollection = nameof(ProfileMustContainExactlyOneHeaderCollection);
     public const string RequiredIdExcelColumnNotFound = nameof(RequiredIdExcelColumnNotFound);
-    public const string SapAuthenticationCookieNotReturned = nameof(SapAuthenticationCookieNotReturned);
-    public const string SapSendPermissionUnavailable = nameof(SapSendPermissionUnavailable);
     public const string SelectAtLeastOneCollectionForProfile = nameof(SelectAtLeastOneCollectionForProfile);
     public const string SelectAtLeastOneLineCollection = nameof(SelectAtLeastOneLineCollection);
     public const string SelectAtLeastOneRootLineCollection = nameof(SelectAtLeastOneRootLineCollection);
     public const string SpreadsheetEmptyRows = nameof(SpreadsheetEmptyRows);
     public const string SpreadsheetNoDataRows = nameof(SpreadsheetNoDataRows);
-    public const string TokenInvalidForCurrentUser = nameof(TokenInvalidForCurrentUser);
-    public const string UserCannotCreateMappingsForAnotherCompany = nameof(UserCannotCreateMappingsForAnotherCompany);
-    public const string UserCannotCreateProfilesForAnotherCompany = nameof(UserCannotCreateProfilesForAnotherCompany);
-    public const string UserCompanyNotFound = nameof(UserCompanyNotFound);
-    public const string UserDoesNotHaveAccessToCollection = nameof(UserDoesNotHaveAccessToCollection);
-    public const string UserDoesNotHaveAccessToCompany = nameof(UserDoesNotHaveAccessToCompany);
-    public const string UserDoesNotHaveAccessToMapping = nameof(UserDoesNotHaveAccessToMapping);
-    public const string UserDoesNotHaveAccessToMappingProfile = nameof(UserDoesNotHaveAccessToMappingProfile);
     public const string UserDoesNotHavePermissionToChangeMapping = nameof(UserDoesNotHavePermissionToChangeMapping);
     public const string UserDoesNotHavePermissionToChangeProfile = nameof(UserDoesNotHavePermissionToChangeProfile);
-    public const string UserIdentifierInvalidInToken = nameof(UserIdentifierInvalidInToken);
-    public const string UserInactive = nameof(UserInactive);
-    public const string UserNotAuthenticated = nameof(UserNotAuthenticated);
-    public const string UserNotFound = nameof(UserNotFound);
-    public const string UsernameAlreadyRegistered = nameof(UsernameAlreadyRegistered);
-    public const string UserWithoutCompanyCannotCloneMappings = nameof(UserWithoutCompanyCannotCloneMappings);
-    public const string UserWithoutCompanyCannotCloneProfiles = nameof(UserWithoutCompanyCannotCloneProfiles);
-    public const string UserWithoutCompanyCannotCreateMappings = nameof(UserWithoutCompanyCannotCreateMappings);
-    public const string UserWithoutCompanyCannotCreateProfiles = nameof(UserWithoutCompanyCannotCreateProfiles);
-    public const string UserWithoutCompanyCannotExecuteAction = nameof(UserWithoutCompanyCannotExecuteAction);
 }

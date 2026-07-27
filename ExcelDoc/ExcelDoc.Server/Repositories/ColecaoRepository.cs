@@ -1,84 +1,224 @@
-using ExcelDoc.Server.Data;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using ExcelDoc.Server.Sap;
 
-namespace ExcelDoc.Server.Repositories
+namespace ExcelDoc.Server.Repositories;
+
+public sealed class ColecaoRepository : IColecaoRepository
 {
-    public class ColecaoRepository : IColecaoRepository
+    private readonly ISapUdtStore _store;
+    private readonly List<Colecao> _pendingAdds = [];
+    private readonly Dictionary<int, Colecao> _tracked = [];
+    private readonly HashSet<int> _pendingDeletes = [];
+
+    public ColecaoRepository(ISapUdtStore store)
     {
-        private readonly ExcelDocDbContext _context;
+        _store = store;
+    }
 
-        public ColecaoRepository(ExcelDocDbContext context)
+    public async Task<IReadOnlyCollection<Colecao>> GetAllAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var collections = await new SapDataHydrator(_store)
+            .LoadColecoesAsync(
+                includeMappings: true,
+                includeDocuments: true,
+                cancellationToken);
+
+        return collections
+            .OrderBy(collection => collection.NomeColecao)
+            .ToList();
+    }
+
+    public async Task<Colecao?> GetByIdWithMappingsAsync(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        var collections = await new SapDataHydrator(_store)
+            .LoadColecoesAsync(
+                includeMappings: true,
+                includeDocuments: true,
+                cancellationToken);
+        var collection = collections.FirstOrDefault(value => value.Id == id);
+        if (collection is not null)
         {
-            _context = context;
+            _tracked[collection.Id] = collection;
         }
 
-        public async Task<IReadOnlyCollection<Colecao>> GetByEmpresaIdAsync(int? empresaId, bool includeAllCompanies, CancellationToken cancellationToken = default)
-        {
-            var query = _context.Colecoes
-                .AsNoTracking()
-                .Include(x => x.Mapeamentos)
-                    .ThenInclude(x => x.Campos)
-                .Include(x => x.DocumentoColecoes)
-                    .ThenInclude(x => x.Documento)
-                .AsQueryable();
+        return collection;
+    }
 
-            if (!includeAllCompanies)
+    public async Task<bool> ExistsByNomeAsync(
+        string nomeColecao,
+        TipoColecao tipoColecao,
+        int? ignoreId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var records = await _store.QueryAsync(
+            SapUdtSchema.Colecao,
+            filter: SapOData.Eq("TipoColecao", (int)tipoColecao),
+            cancellationToken: cancellationToken);
+
+        return records.Any(record =>
+            (!ignoreId.HasValue || record.Id != ignoreId.Value) &&
+            string.Equals(
+                record.GetString("NomeColecao"),
+                nomeColecao,
+                StringComparison.OrdinalIgnoreCase));
+    }
+
+    public async Task<IReadOnlyCollection<Documento>> GetDocumentosByIdsAsync(
+        IReadOnlyCollection<int> documentoIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (documentoIds.Count == 0)
+        {
+            return Array.Empty<Documento>();
+        }
+
+        var ids = documentoIds.ToHashSet();
+        var documents = await new SapDataHydrator(_store)
+            .LoadDocumentosAsync(
+                includeLinks: false,
+                includeCollectionGraph: false,
+                cancellationToken);
+        return documents
+            .Where(document => ids.Contains(document.Id))
+            .ToList();
+    }
+
+    public Task AddAsync(
+        Colecao colecao,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        _pendingAdds.Add(colecao);
+        return Task.CompletedTask;
+    }
+
+    public void Remove(Colecao colecao)
+    {
+        if (colecao.Id > 0)
+        {
+            _pendingDeletes.Add(colecao.Id);
+        }
+    }
+
+    public async Task SaveChangesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        foreach (var collectionId in _pendingDeletes)
+        {
+            await EnsureCanDeleteAsync(collectionId, cancellationToken);
+            await _store.DeleteAsync(
+                SapUdtSchema.Colecao,
+                collectionId,
+                cancellationToken);
+            _tracked.Remove(collectionId);
+        }
+
+        _pendingDeletes.Clear();
+
+        var insertedIds = new HashSet<int>();
+        foreach (var collection in _pendingAdds)
+        {
+            collection.Id = await _store.AddAsync(
+                SapUdtSchema.Colecao,
+                SapEntityMapper.Fields(collection),
+                cancellationToken: cancellationToken);
+            insertedIds.Add(collection.Id);
+            _tracked[collection.Id] = collection;
+
+            foreach (var link in collection.DocumentoColecoes)
             {
-                query = query.Where(x => x.FK_IdEmpresa == null || x.FK_IdEmpresa == empresaId);
+                link.FK_IdColecao = collection.Id;
+                link.Id = await _store.AddAsync(
+                    SapUdtSchema.DocumentoColecao,
+                    SapEntityMapper.Fields(link),
+                    cancellationToken: cancellationToken);
             }
-
-            return await query
-                .OrderBy(x => x.NomeColecao)
-                .ToListAsync(cancellationToken);
         }
 
-        public Task<Colecao?> GetByIdWithMappingsAsync(int id, CancellationToken cancellationToken = default)
-        {
-            return _context.Colecoes
-                .Include(x => x.Mapeamentos)
-                    .ThenInclude(x => x.Campos)
-                .Include(x => x.DocumentoColecoes)
-                    .ThenInclude(x => x.Documento)
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-        }
+        _pendingAdds.Clear();
 
-        public Task<bool> ExistsByNomeAsync(string nomeColecao, TipoColecao tipoColecao, int? empresaId, int? ignoreId = null, CancellationToken cancellationToken = default)
+        foreach (var collection in _tracked.Values.Where(
+                     value => !insertedIds.Contains(value.Id)))
         {
-            return _context.Colecoes.AnyAsync(
-                x => (!ignoreId.HasValue || x.Id != ignoreId.Value)
-                    && x.NomeColecao == nomeColecao
-                    && x.TipoColecao == tipoColecao
-                    && x.FK_IdEmpresa == empresaId,
+            await _store.UpdateAsync(
+                SapUdtSchema.Colecao,
+                collection.Id,
+                SapEntityMapper.Fields(collection),
+                cancellationToken);
+            await SynchronizeDocumentLinksAsync(collection, cancellationToken);
+        }
+    }
+
+    private async Task SynchronizeDocumentLinksAsync(
+        Colecao collection,
+        CancellationToken cancellationToken)
+    {
+        var currentRows = await _store.QueryAsync(
+            SapUdtSchema.DocumentoColecao,
+            filter: SapOData.Eq("ColecaoId", collection.Id),
+            cancellationToken: cancellationToken);
+        var currentLinks = currentRows
+            .Select(SapEntityMapper.ToDocumentoColecao)
+            .ToList();
+        var desiredDocumentIds = collection.DocumentoColecoes
+            .Select(link => link.FK_IdDocumento)
+            .Distinct()
+            .ToHashSet();
+
+        foreach (var current in currentLinks.Where(
+                     link => !desiredDocumentIds.Contains(link.FK_IdDocumento)))
+        {
+            await _store.DeleteAsync(
+                SapUdtSchema.DocumentoColecao,
+                current.Id,
                 cancellationToken);
         }
 
-        public async Task<IReadOnlyCollection<Documento>> GetDocumentosByIdsAsync(IReadOnlyCollection<int> documentoIds, CancellationToken cancellationToken = default)
+        var currentDocumentIds = currentLinks
+            .Select(link => link.FK_IdDocumento)
+            .ToHashSet();
+        foreach (var desired in collection.DocumentoColecoes.Where(
+                     link => !currentDocumentIds.Contains(link.FK_IdDocumento)))
         {
-            if (documentoIds.Count == 0)
-            {
-                return Array.Empty<Documento>();
-            }
-
-            return await _context.Documentos
-                .Where(x => documentoIds.Contains(x.Id))
-                .ToListAsync(cancellationToken);
+            desired.FK_IdColecao = collection.Id;
+            desired.Id = await _store.AddAsync(
+                SapUdtSchema.DocumentoColecao,
+                SapEntityMapper.Fields(desired),
+                cancellationToken: cancellationToken);
         }
+    }
 
-        public async Task AddAsync(Colecao colecao, CancellationToken cancellationToken = default)
-        {
-            await _context.Colecoes.AddAsync(colecao, cancellationToken);
-        }
+    private async Task EnsureCanDeleteAsync(
+        int collectionId,
+        CancellationToken cancellationToken)
+    {
+        var documentLinks = await _store.QueryAsync(
+            SapUdtSchema.DocumentoColecao,
+            filter: SapOData.Eq("ColecaoId", collectionId),
+            top: 1,
+            select: "Code",
+            cancellationToken: cancellationToken);
+        var mappings = await _store.QueryAsync(
+            SapUdtSchema.Mapeamento,
+            filter: SapOData.Eq("ColecaoId", collectionId),
+            top: 1,
+            select: "Code",
+            cancellationToken: cancellationToken);
+        var profileItems = await _store.QueryAsync(
+            SapUdtSchema.PerfilMapeamentoItem,
+            filter: SapOData.Eq("ColecaoId", collectionId),
+            top: 1,
+            select: "Code",
+            cancellationToken: cancellationToken);
 
-        public void Remove(Colecao colecao)
+        if (documentLinks.Count > 0 || mappings.Count > 0 || profileItems.Count > 0)
         {
-            _context.Colecoes.Remove(colecao);
-        }
-
-        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            return _context.SaveChangesAsync(cancellationToken);
+            throw new InvalidOperationException(
+                "A colecao possui documentos, mapeamentos ou perfis vinculados.");
         }
     }
 }

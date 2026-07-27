@@ -37,11 +37,11 @@
         </mat-form-field>
 
         <div class="toolbar-row__summary" *ngIf="selectedMapeamento as mapeamento">
-          <span [class]="getMapeamentoBadgeClass(mapeamento)" [matTooltip]="mapeamento.isPadrao ? ('mapeamento.mapeamentoHome.tooltips.defaultMapping' | translate) : ('mapeamento.mapeamentoHome.tooltips.companyMapping' | translate)">
+          <span [class]="getMapeamentoBadgeClass(mapeamento)" [matTooltip]="mapeamento.isPadrao ? ('mapeamento.mapeamentoHome.tooltips.defaultMapping' | translate) : ('mapeamento.mapeamentoHome.tooltips.customMapping' | translate)">
             {{ selectedMapeamentoTipoLabel }}
           </span>
           <span class="summary-text">{{ getCampoQuantidadeLabel(mapeamento) }}</span>
-          <span class="summary-text" *ngIf="isMapeamentoEmpresa(mapeamento)">{{ 'mapeamento.common.company' | translate }}</span>
+          <span class="summary-text" *ngIf="!mapeamento.isPadrao">{{ 'mapeamento.common.custom' | translate }}</span>
           <span class="summary-text summary-text--readonly" *ngIf="isReadOnlySelectedMapeamento">{{ 'mapeamento.common.readOnly' | translate }}</span>
         </div>
       </div>

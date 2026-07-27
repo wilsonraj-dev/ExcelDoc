@@ -15,9 +15,7 @@ namespace ExcelDoc.Server.Models
 
         public TipoColecao TipoColecao { get; set; }
 
-        public int? FK_IdEmpresa { get; set; }
-
-        public Empresa? Empresa { get; set; }
+        public bool IsPadrao { get; set; }
 
         public ICollection<DocumentoColecao> DocumentoColecoes { get; set; } = new List<DocumentoColecao>();
 

@@ -13,9 +13,9 @@ namespace ExcelDoc.Server.DTOs.Colecoes
 
         public TipoColecao TipoColecao { get; set; }
 
-        public int? EmpresaId { get; set; }
+        public bool IsPadrao { get; set; }
 
-        public bool PadraoSistema => !EmpresaId.HasValue;
+        public bool PadraoSistema => IsPadrao;
 
         public IReadOnlyCollection<int> DocumentoIds { get; set; } = Array.Empty<int>();
 

@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExcelDoc.Server.Models
 {
@@ -13,18 +12,13 @@ namespace ExcelDoc.Server.Models
 
         public int FK_IdDocumento { get; set; }
 
-        public int? FK_IdEmpresa { get; set; }
-
         public bool IsPadrao { get; set; }
 
-        [NotMapped]
-        public bool IsPadraoGlobal => IsPadrao && !FK_IdEmpresa.HasValue;
+        public bool IsPadraoGlobal => IsPadrao;
 
         public DateTime DataCriacao { get; set; }
 
         public Documento Documento { get; set; } = null!;
-
-        public Empresa? Empresa { get; set; }
 
         public ICollection<PerfilMapeamentoItem> Itens { get; set; } = new List<PerfilMapeamentoItem>();
     }

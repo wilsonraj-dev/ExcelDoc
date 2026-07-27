@@ -35,7 +35,6 @@ export class PerfilListComponent implements OnInit {
   deletingId: number | null = null;
   selectedDocumentoId: number | null = null;
   readonly isAdministrator: boolean;
-  readonly empresaId: number | null;
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -57,7 +56,6 @@ export class PerfilListComponent implements OnInit {
     private readonly translate: TranslateService
   ) {
     this.isAdministrator = this.authService.isAdministrator();
-    this.empresaId = this.authService.getSession()?.empresaId ?? null;
   }
 
   get hasPerfis(): boolean {
@@ -152,8 +150,7 @@ export class PerfilListComponent implements OnInit {
 
   canEdit(perfil: PerfilMapeamento): boolean {
     if (this.isAdministrator) return true;
-    if (perfil.isPadrao) return false;
-    return perfil.fk_IdEmpresa === this.empresaId;
+    return !perfil.isPadrao;
   }
 
   canDelete(perfil: PerfilMapeamento): boolean {
@@ -164,11 +161,11 @@ export class PerfilListComponent implements OnInit {
   getTipoLabel(perfil: PerfilMapeamento): string {
     return perfil.isPadrao
       ? this.translate.instant('perfilMapeamento.common.scope.default')
-      : this.translate.instant('perfilMapeamento.common.scope.myCompany');
+      : this.translate.instant('perfilMapeamento.common.scope.custom');
   }
 
   getTipoBadgeClass(perfil: PerfilMapeamento): string {
-    return perfil.isPadrao ? 'perfil-badge perfil-badge--padrao' : 'perfil-badge perfil-badge--empresa';
+    return perfil.isPadrao ? 'perfil-badge perfil-badge--padrao' : 'perfil-badge perfil-badge--custom';
   }
 
   getDocumentoNome(perfil: PerfilMapeamento): string {

@@ -80,6 +80,7 @@ namespace ExcelDoc.Server.Controllers
             return ex switch
             {
                 KeyNotFoundException => NotFound(new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status404NotFound }),
+                ExcelDoc.Server.Sap.SapSessionExpiredException => Unauthorized(new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status401Unauthorized }),
                 UnauthorizedAccessException => StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status403Forbidden }),
                 InvalidOperationException => Conflict(new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status409Conflict }),
                 FormatException => BadRequest(new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status400BadRequest }),

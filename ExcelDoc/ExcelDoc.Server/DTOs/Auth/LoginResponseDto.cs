@@ -6,15 +6,11 @@ namespace ExcelDoc.Server.DTOs.Auth
 
         public DateTime ExpiresAtUtc { get; set; }
 
-        public int UsuarioId { get; set; }
-
         public string NomeUsuario { get; set; } = string.Empty;
 
         public string TipoUsuario { get; set; } = string.Empty;
 
-        public string? NomeEmpresa { get; set; }
-
-        public int? EmpresaId { get; set; }
+        public string Database { get; set; } = string.Empty;
 
         public string Idioma { get; set; } = "pt";
     }

@@ -42,8 +42,6 @@ export class ColecaoFormComponent implements OnInit {
   isLoading = false;
   isSaving = false;
   readonly isAdministrator: boolean;
-  readonly empresaId: number | null;
-  readonly empresaNome: string;
 
   private readonly destroyRef = inject(DestroyRef);
   private currentColecao: Colecao | null = null;
@@ -57,10 +55,7 @@ export class ColecaoFormComponent implements OnInit {
     private readonly router: Router,
     private readonly translate: TranslateService
   ) {
-    const session = this.authService.getSession();
-    this.isAdministrator = this.authService.isAdministrator(session);
-    this.empresaId = session?.empresaId ?? null;
-    this.empresaNome = session?.nomeEmpresa?.trim() ?? '';
+    this.isAdministrator = this.authService.isAdministrator();
   }
 
   get isEditMode(): boolean {
@@ -130,7 +125,7 @@ export class ColecaoFormComponent implements OnInit {
   get escopoBadgeLabel(): string {
     return this.isColecaoPadraoSelecionada
       ? this.translate.instant('colecoes.colecaoForm.scope.default')
-      : this.translate.instant('colecoes.colecaoForm.scope.myCompany');
+      : this.translate.instant('colecoes.colecaoForm.scope.custom');
   }
 
   get escopoBadgeDescription(): string {
@@ -138,19 +133,11 @@ export class ColecaoFormComponent implements OnInit {
       return this.translate.instant('colecoes.colecaoForm.scope.defaultDescription');
     }
 
-    if (this.empresaNome) {
-      return `${this.translate.instant('colecoes.colecaoForm.scope.customCompanyDescriptionPrefix')} ${this.empresaNome}.`;
-    }
-
-    return this.translate.instant('colecoes.colecaoForm.scope.customCompanyDescription');
+    return this.translate.instant('colecoes.colecaoForm.scope.customDescription');
   }
 
   get isColecaoPadraoSelecionada(): boolean {
     return this.isAdministrator && this.form.controls.criarComoPadrao.getRawValue();
-  }
-
-  get hasCompanyScopeUnavailable(): boolean {
-    return !this.isColecaoPadraoSelecionada && !this.empresaId;
   }
 
   ngOnInit(): void {
@@ -210,12 +197,6 @@ export class ColecaoFormComponent implements OnInit {
       return;
     }
 
-    if (this.hasCompanyScopeUnavailable) {
-      this.apiError = this.translate.instant('colecoes.colecaoForm.feedback.errors.identifyCompany');
-      this.notificationService.showError(this.apiError);
-      return;
-    }
-
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -225,7 +206,7 @@ export class ColecaoFormComponent implements OnInit {
       nomeColecao: this.form.controls.nomeColecao.getRawValue().trim(),
       descricao: this.form.controls.descricao.getRawValue().trim() || null,
       tipoColecao: toTipoColecaoRequestValue(this.form.controls.tipoColecao.getRawValue()),
-      fk_IdEmpresa: this.isColecaoPadraoSelecionada ? null : this.empresaId,
+      isPadrao: this.isColecaoPadraoSelecionada,
       documentoIds: this.form.controls.documentoIds.getRawValue()
     };
 
@@ -264,10 +245,6 @@ export class ColecaoFormComponent implements OnInit {
   }
 
   private loadCreateData(): void {
-    if (!this.isAdministrator && !this.empresaId) {
-      this.applyReadOnlyMode(this.translate.instant('colecoes.colecaoForm.feedback.errors.userWithoutCompany'));
-    }
-
     this.loadDocumentos();
   }
 

@@ -4,7 +4,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
-import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { TranslateService } from '../../../../core/services/translate.service';
 import { Documento } from '../../../documentos/models/documento.model';
@@ -37,7 +36,6 @@ export class ProcessamentoUploadComponent implements OnInit {
     private readonly perfilService: PerfilMapeamentoService,
     private readonly processamentoService: ProcessamentoService,
     private readonly notificationService: NotificationService,
-    private readonly authService: AuthService,
     private readonly translate: TranslateService
   ) {}
 
@@ -59,14 +57,6 @@ export class ProcessamentoUploadComponent implements OnInit {
       });
 
     this.loadDocumentos();
-  }
-
-  get isAdministrator(): boolean {
-    return this.authService.isAdministrator();
-  }
-
-  get empresaId(): number | null {
-    return this.authService.getSession()?.empresaId ?? null;
   }
 
   get isFormValid(): boolean {
@@ -105,15 +95,8 @@ export class ProcessamentoUploadComponent implements OnInit {
 
     const documentoId = this.form.value.documentoId as number;
     const perfilMapeamentoId = this.form.value.perfilMapeamentoId as number;
-    const empresaId = this.empresaId;
-
-    if (!empresaId) {
-      this.notificationService.showError(this.translate.instant('processamento.processamentoUpload.feedback.errors.companyNotFound'));
-      return;
-    }
-
     this.isLoading = true;
-    this.processamentoService.upload(this.selectedFile, documentoId, perfilMapeamentoId, empresaId)
+    this.processamentoService.upload(this.selectedFile, documentoId, perfilMapeamentoId)
       .pipe(
         finalize(() => { this.isLoading = false; }),
         takeUntilDestroyed(this.destroyRef)
@@ -131,19 +114,19 @@ export class ProcessamentoUploadComponent implements OnInit {
   }
 
   getPerfilBadgeClass(perfil: PerfilMapeamento): string {
-    return perfil.isPadrao ? 'mapping-chip mapping-chip--padrao' : 'mapping-chip mapping-chip--empresa';
+    return perfil.isPadrao ? 'mapping-chip mapping-chip--padrao' : 'mapping-chip mapping-chip--custom';
   }
 
   getPerfilBadgeLabel(perfil: PerfilMapeamento): string {
     return perfil.isPadrao
       ? this.translate.instant('processamento.common.scope.default')
-      : this.translate.instant('processamento.common.scope.company');
+      : this.translate.instant('processamento.common.scope.custom');
   }
 
   getPerfilTooltip(perfil: PerfilMapeamento): string {
     return perfil.isPadrao
       ? this.translate.instant('processamento.processamentoUpload.tooltips.defaultProfile')
-      : this.translate.instant('processamento.processamentoUpload.tooltips.companyProfile');
+      : this.translate.instant('processamento.processamentoUpload.tooltips.customProfile');
   }
 
   getItensQuantidadeLabel(perfil: PerfilMapeamento): string {

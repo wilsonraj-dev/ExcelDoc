@@ -1,5 +1,13 @@
 @import '@angular/material/prebuilt-themes/azure-blue.css';
 
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url('/assets/fonts/material-symbols-rounded/MaterialSymbolsRounded.woff2') format('woff2');
+}
+
 * {
   box-sizing: border-box;
 }
@@ -81,17 +89,3 @@ input {
 .success-snackbar {
   --mdc-snackbar-container-color: #166534;
 }
-
-.company-list__item.mat-mdc-list-item {
-  min-height: 72px;
-  margin-top: 0.35rem;
-  border-radius: 16px;
-  background: #f8fafc;
-  cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-  .company-list__item.mat-mdc-list-item:hover {
-    background: #eff6ff;
-    transform: translateY(-1px);
-  }

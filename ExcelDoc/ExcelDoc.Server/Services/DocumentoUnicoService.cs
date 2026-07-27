@@ -18,7 +18,6 @@ namespace ExcelDoc.Server.Services
         {
             var signature = new Dictionary<string, object?>(StringComparer.Ordinal)
             {
-                ["EmpresaId"] = processamento.FK_IdEmpresa,
                 ["DocumentoId"] = processamento.FK_IdDocumento,
                 ["PerfilMapeamentoId"] = processamento.FK_IdPerfilMapeamento,
                 ["IdExcel"] = group.IdExcel,
@@ -29,7 +28,7 @@ namespace ExcelDoc.Server.Services
             var canonicalJson = SerializeCanonical(signature);
             var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalJson));
 
-            return $"v1:{Convert.ToHexString(hash).ToLowerInvariant()}";
+            return $"v2:{Convert.ToHexString(hash).ToLowerInvariant()}";
         }
 
         private static string SerializeCanonical(object? value)

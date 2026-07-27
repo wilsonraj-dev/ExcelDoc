@@ -11,7 +11,6 @@ import { ColecaoService } from '../../../colecoes/services/colecao.service';
 import {
   Mapeamento,
   MapeamentoPayload,
-  isMapeamentoEmpresa,
   orderMapeamentos
 } from '../../models/mapeamento.model';
 import { MapeamentoService } from '../../services/mapeamento.service';
@@ -74,12 +73,8 @@ export class MapeamentoHomeComponent implements OnInit {
     return this.authService.isAdministrator();
   }
 
-  get empresaId(): number | null {
-    return this.authService.getSession()?.empresaId ?? null;
-  }
-
   get canCreateMapeamento(): boolean {
-    return this.isAdministrator || this.empresaId !== null;
+    return true;
   }
 
   get canCloneMapeamento(): boolean {
@@ -87,7 +82,9 @@ export class MapeamentoHomeComponent implements OnInit {
   }
 
   get canDeleteMapeamento(): boolean {
-    return !!this.selectedMapeamento && !this.selectedMapeamento.isPadrao && this.canEditSelectedMapeamento;
+    return !!this.selectedMapeamento
+      && this.canEditSelectedMapeamento
+      && (this.isAdministrator || !this.selectedMapeamento.isPadrao);
   }
 
   get canEditSelectedMapeamento(): boolean {
@@ -111,7 +108,7 @@ export class MapeamentoHomeComponent implements OnInit {
   get selectedMapeamentoTipoLabel(): string {
     return this.selectedMapeamento?.isPadrao
       ? this.translate.instant('mapeamento.common.scope.default')
-      : this.translate.instant('mapeamento.common.scope.myCompany');
+      : this.translate.instant('mapeamento.common.scope.custom');
   }
 
   onMapeamentoSelectionChange(mapeamentoId: number | null): void {
@@ -119,11 +116,6 @@ export class MapeamentoHomeComponent implements OnInit {
   }
 
   openNovoMapeamentoDialog(): void {
-    if (!this.canCreateMapeamento || this.empresaId === null) {
-      this.notificationService.showError(this.translate.instant('mapeamento.mapeamentoHome.feedback.errors.identifyCompany'));
-      return;
-    }
-
     this.dialog.open(NovoMapeamentoDialogComponent, {
       width: '420px',
       data: {
@@ -213,13 +205,13 @@ export class MapeamentoHomeComponent implements OnInit {
   }
 
   getMapeamentoBadgeClass(mapeamento: Mapeamento): string {
-    return mapeamento.isPadrao ? 'chip chip--padrao' : 'chip chip--empresa';
+    return mapeamento.isPadrao ? 'chip chip--padrao' : 'chip chip--custom';
   }
 
   getMapeamentoBadgeLabel(mapeamento: Mapeamento): string {
     return mapeamento.isPadrao
       ? this.translate.instant('mapeamento.common.scope.default')
-      : this.translate.instant('mapeamento.common.scope.myCompany');
+      : this.translate.instant('mapeamento.common.scope.custom');
   }
 
   getCampoQuantidadeLabel(mapeamento: Mapeamento): string {
@@ -281,7 +273,6 @@ export class MapeamentoHomeComponent implements OnInit {
     const payload: MapeamentoPayload = {
       nome: result.nome,
       fk_IdColecao: this.colecaoId,
-      fk_IdEmpresa: result.isPadrao ? null : this.empresaId,
       isPadrao: this.isAdministrator ? result.isPadrao : false
     };
 
@@ -323,6 +314,4 @@ export class MapeamentoHomeComponent implements OnInit {
   private mergeAndSelectMapeamento(mapeamentoId: number): void {
     this.loadMapeamentos(mapeamentoId);
   }
-
-  protected readonly isMapeamentoEmpresa = isMapeamentoEmpresa;
 }

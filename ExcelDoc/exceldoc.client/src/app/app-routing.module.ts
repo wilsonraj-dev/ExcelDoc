@@ -9,17 +9,9 @@ const routes: Routes = [
     path: 'login',
     loadChildren: () => import('./features/auth/auth.module').then((module) => module.AuthModule)
   },
-  { path: 'criar-usuario', redirectTo: 'login/criar-usuario', pathMatch: 'full' },
-  { path: 'esqueci-a-senha', redirectTo: 'login/esqueci-a-senha', pathMatch: 'full' },
   {
     path: 'dashboard',
     loadChildren: () => import('./features/dashboard/dashboard.module').then((module) => module.DashboardModule),
-    canActivate: [AuthGuard],
-    data: { roles: [AUTH_ROLES.administrator, AUTH_ROLES.user] }
-  },
-  {
-    path: 'empresa',
-    loadChildren: () => import('./features/empresa/empresa.module').then((module) => module.EmpresaModule),
     canActivate: [AuthGuard],
     data: { roles: [AUTH_ROLES.administrator, AUTH_ROLES.user] }
   },
@@ -53,14 +45,6 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: [AUTH_ROLES.administrator, AUTH_ROLES.user] }
   },
-  {
-    path: 'usuarios',
-    loadChildren: () => import('./features/usuarios/usuarios.module').then((module) => module.UsuariosModule),
-    canActivate: [AuthGuard],
-    data: { roles: [AUTH_ROLES.administrator] }
-  },
-  { path: 'criar-empresa', redirectTo: 'empresa/criar', pathMatch: 'full' },
-  { path: 'configuracoes-empresa', redirectTo: 'empresa/configuracoes', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
 ];
 

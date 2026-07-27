@@ -1,147 +1,8 @@
 {
   "app-component": {
     "user": "User",
-    "company": "Company",
-    "profile": "Profile"
-  },
-  "companySettings": {
-    "table": {
-      "header": {
-        "company": "Company",
-        "actions": "Action"
-      },
-      "columns": {
-        "database": "Database",
-        "sapUser": "SAP User",
-        "viewConfig": "View configuration"
-      }
-    },
-    "pageTitle": "Company Settings",
-    "createOrUpdate": "Create or update integration data for the selected company.",
-    "visualizeList": "View registered companies and open the desired configuration.",
-    "manageLinked": "Manage the configuration of the company linked to your user.",
-    "registerCompany": "Register company",
-    "backToCompanies": "Back to companies",
-    "loadingCompanies": "Loading companies...",
-    "noCompanies": "No companies available for configuration.",
-    "linkServiceLayer": "Service Layer URL",
-    "database": "Database",
-    "usuarioSAP": "SAP User",
-    "senhaSAP": "SAP Password",
-    "submit": "Save configuration",
-    "viewConfig": "View configuration",
-    "loadingConfiguration": "Loading configuration...",
-    "tableCompany": "Company",
-    "tableDatabase": "Database",
-    "tableSapUser": "SAP User",
-    "tableActions": "Actions",
-    "errors": {
-      "loadCompanies": "Failed to load companies.",
-      "loadConfiguration": "Failed to load company configuration.",
-      "saveConfiguration": "Failed to save company configuration.",
-      "selectCompany": "Select a company to configure.",
-      "noLinkedCompany": "The current user is not linked to a company.",
-      "selectedUnavailable": "The selected company is not available for the current user."
-    },
-    "error": {
-      "invalidCompany": "Invalid company for viewing configuration."
-    },
-    "info": {
-      "noConfig": "No configuration registered for this company. Fill the fields to create a new configuration."
-    },
-    "pageTitleAdmin": "Company settings list",
-    "pageTitleUser": "Company settings",
-    "pageTitleSelectedPrefix": "Company settings",
-    "saving": "Saving...",
-    "submitSaveChanges": "Save changes",
-    "submitCreate": "Create configuration",
-    "successSaved": "Configuration saved successfully."
-  },
-  "usuarios": {
-    "usuariosComponent": {
-      "header": {
-        "title": "Users",
-        "description": "View registered users, create new access, and link users to companies."
-      },
-      "loading": {
-        "companies": "Loading companies...",
-        "users": "Loading users..."
-      },
-      "createForm": {
-        "title": "Create user",
-        "description": "Register a new user already linked to a company, if needed.",
-        "fields": {
-          "user": "User",
-          "email": "Email",
-          "password": "Password",
-          "confirmPassword": "Confirm password",
-          "company": "Company"
-        },
-        "options": {
-          "noCompany": "No linked company"
-        },
-        "actions": {
-          "create": "Create user",
-          "creating": "Creating..."
-        },
-        "errors": {
-          "userRequired": "Enter the user's name.",
-          "emailRequired": "Enter a valid email address.",
-          "passwordRequired": "Enter a password with at least 6 characters.",
-          "confirmPasswordRequired": "Confirm the entered password."
-        }
-      },
-      "list": {
-        "title": "Registered users",
-        "description": "Manage user links to registered companies.",
-        "search": {
-          "label": "Search user",
-          "placeholder": "Name, email, or company",
-          "button": "Search"
-        }
-      },
-      "table": {
-        "header": {
-          "user": "User",
-          "email": "Email",
-          "profile": "Profile",
-          "currentCompany": "Current company",
-          "status": "Status",
-          "linkCompany": "Link company"
-        },
-        "values": {
-          "notLinked": "Not linked",
-          "active": "Active",
-          "inactive": "Inactive",
-          "notApplicable": "Not applicable"
-        },
-        "actions": {
-          "link": "Link",
-          "saving": "Saving..."
-        },
-        "paginationAriaLabel": "Users list pagination"
-      },
-      "empty": {
-        "noUsers": "No users found."
-      },
-      "feedback": {
-        "success": {
-          "createdPrefix": "User",
-          "createdSuffix": "created successfully.",
-          "linkedPrefix": "User",
-          "linkedSuffix": "linked successfully."
-        },
-        "errors": {
-          "passwordMismatch": "Password confirmation does not match.",
-          "createUser": "Could not create the user.",
-          "adminLinkNotAllowed": "Administrator users cannot be linked through this feature.",
-          "selectCompany": "Select a company to link the user.",
-          "linkUser": "Could not link the user to the company.",
-          "loadCompanies": "Could not load the available companies.",
-          "loadUsers": "Could not load users."
-        }
-      }
-    }
+    "profile": "Profile",
+    "database": "SAP database"
   },
   "documentos": {
     "documentoForm": {
@@ -246,8 +107,8 @@
         "ariaLabel": "Collections summary",
         "total": "Registered collections",
         "defaults": "Default structures",
-        "company": "Company structures",
-        "results": "result(s)"
+        "results": "result(s)",
+        "custom": "Custom"
       },
       "adminInfo": {
         "title": "Administrative structures",
@@ -286,7 +147,7 @@
       },
       "scope": {
         "default": "Default",
-        "myCompany": "My company"
+        "custom": "Custom"
       },
       "empty": {
         "title": "No collections found",
@@ -350,12 +211,10 @@
       "scope": {
         "title": "Collection scope",
         "default": "Default",
-        "myCompany": "My company",
-        "defaultDescription": "Global collection available to all companies.",
-        "customCompanyDescriptionPrefix": "Custom collection for company",
-        "customCompanyDescription": "Custom collection linked to the user's company.",
-        "companyUnavailableWarning": "The current user has no company linked to save a custom collection.",
-        "createAsDefault": "Create as default collection"
+        "defaultDescription": "System default collection available in this installation.",
+        "createAsDefault": "Create as default collection",
+        "custom": "Custom",
+        "customDescription": "Custom collection available in this installation."
       },
       "actions": {
         "back": "Back to collections",
@@ -392,9 +251,7 @@
         },
         "errors": {
           "invalidCollection": "Invalid collection for editing.",
-          "identifyCompany": "Could not identify the user's company to create a custom collection.",
           "saveCollection": "Could not save the collection.",
-          "userWithoutCompany": "The current user is not linked to a company to create custom collections.",
           "loadDocuments": "Could not load the documents list.",
           "editDefaultCollection": "Default system collections cannot be changed by regular users.",
           "loadCollection": "Could not load the collection."
@@ -405,16 +262,16 @@
   "mapeamento": {
     "common": {
       "collectionNumberPrefix": "Collection #",
-      "company": "Company",
       "readOnly": "Read-only",
       "scope": {
         "default": "Default",
-        "myCompany": "My company"
+        "custom": "Custom"
       },
       "actions": {
         "cancel": "Cancel",
         "create": "Create"
-      }
+      },
+      "custom": "Custom"
     },
     "workspace": {
       "breadcrumbs": {
@@ -430,7 +287,9 @@
         "marketingDocuments": "Marketing documents",
         "createdAt": "Created on"
       },
-      "status": { "active": "Active" },
+      "status": {
+        "active": "Active"
+      },
       "header": {
         "description": "Configure how Excel fields are imported into SAP Business One."
       },
@@ -456,7 +315,7 @@
       },
       "protection": {
         "title": "Protected default model",
-        "description": "This model works out of the box for marketing documents. Clone it only when your company needs different fields or columns."
+        "description": "This model works out of the box for marketing documents. Clone it only when you need different fields or columns."
       },
       "legacy": {
         "title": "Legacy configuration in protected mode",
@@ -474,7 +333,7 @@
       "cloneDialog": {
         "title": "Create custom mapping",
         "label": "New configuration name",
-        "copySuffix": "My company"
+        "copySuffix": "Copy"
       },
       "documentInfo": {
         "title": "Document information",
@@ -492,7 +351,6 @@
         "selectCollectionDescription": "Choose a structure item on the left to view its fields."
       },
       "feedback": {
-        "companyRequired": "Link the user to a company to create a custom version.",
         "cloned": "Custom version created. Fields can now be edited safely.",
         "cloneError": "The custom version could not be created.",
         "loadDocumentsError": "Documents could not be loaded.",
@@ -505,7 +363,9 @@
         "eyebrow": "Field mapping",
         "description": "Select a collection mapping to edit fields or use as a base for cloning."
       },
-      "fields": { "mapping": "Mapping" },
+      "fields": {
+        "mapping": "Mapping"
+      },
       "actions": {
         "newMapping": "New mapping",
         "clone": "Clone",
@@ -515,13 +375,15 @@
       },
       "tooltips": {
         "defaultMapping": "Default mapping available to the whole collection.",
-        "companyMapping": "Custom mapping for your company."
+        "customMapping": "Custom mapping for this installation."
       },
       "summary": {
         "oneField": "1 field",
         "fieldsSuffix": "fields"
       },
-      "empty": { "noMappings": "No mappings available for this collection." },
+      "empty": {
+        "noMappings": "No mappings available for this collection."
+      },
       "cloneDialog": {
         "title": "Clone mapping",
         "label": "New mapping name"
@@ -538,7 +400,6 @@
         },
         "errors": {
           "invalidCollection": "Invalid collection.",
-          "identifyCompany": "Could not identify the user's company to create the mapping.",
           "cloneMapping": "Could not clone the mapping.",
           "loadMappings": "Could not load the collection mappings.",
           "createMapping": "Could not create the mapping.",
@@ -546,14 +407,22 @@
         }
       }
     },
-    "mapeamentoList": { "feedback": { "errors": { "loadCollections": "Could not load collections." } } },
+    "mapeamentoList": {
+      "feedback": {
+        "errors": {
+          "loadCollections": "Could not load collections."
+        }
+      }
+    },
     "novoMapeamentoDialog": {
       "title": "New mapping",
       "fields": {
         "name": "Mapping name",
         "defaultMapping": "Default mapping"
       },
-      "placeholders": { "name": "E.g.: Financial mapping" },
+      "placeholders": {
+        "name": "E.g.: Financial mapping"
+      },
       "validation": {
         "nameRequired": "Enter the mapping name.",
         "nameMaxLength": "The name must have at most 120 characters."
@@ -621,7 +490,9 @@
         "of": "of",
         "fields": "fields"
       },
-      "preview": { "emptyColumn": "(empty column)" },
+      "preview": {
+        "emptyColumn": "(empty column)"
+      },
       "validation": {
         "fieldNameRequired": "Field name is required",
         "columnIndexPositive": "Index must be a positive number",
@@ -630,7 +501,9 @@
         "formatRequired": "Format is required for DateTime"
       },
       "feedback": {
-        "info": { "noChanges": "No changes to save." },
+        "info": {
+          "noChanges": "No changes to save."
+        },
         "success": {
           "saved": "Mapping fields saved successfully.",
           "previewLoadedPrefix": "Preview loaded:",
@@ -652,8 +525,7 @@
       "document": "Document",
       "scope": {
         "default": "Default",
-        "myCompany": "My company",
-        "company": "Company"
+        "custom": "Custom"
       },
       "loading": {
         "documents": "Loading documents...",
@@ -675,7 +547,9 @@
         "title": "Mapping profiles",
         "description": "Manage profiles that group collection mappings for each document."
       },
-      "loading": { "profiles": "Loading profiles..." },
+      "loading": {
+        "profiles": "Loading profiles..."
+      },
       "actions": {
         "newProfile": "New profile",
         "edit": "Edit",
@@ -694,8 +568,12 @@
         },
         "paginationAriaLabel": "Mapping profiles list pagination"
       },
-      "tooltips": { "defaultProfile": "Default profile cannot be edited" },
-      "empty": { "noProfiles": "No mapping profile found for this document." },
+      "tooltips": {
+        "defaultProfile": "Default profile cannot be edited"
+      },
+      "empty": {
+        "noProfiles": "No mapping profile found for this document."
+      },
       "cloneDialog": {
         "title": "Clone profile",
         "label": "New profile name"
@@ -723,7 +601,9 @@
         "edit": "Edit mapping profile",
         "view": "View mapping profile"
       },
-      "loading": { "profile": "Loading profile..." },
+      "loading": {
+        "profile": "Loading profile..."
+      },
       "fields": {
         "profileName": "Profile name",
         "headerCollection": "Header collection",
@@ -731,7 +611,9 @@
         "mapping": "Mapping",
         "parentCollection": "Parent collection"
       },
-      "placeholders": { "profileName": "E.g.: Default import profile" },
+      "placeholders": {
+        "profileName": "E.g.: Default import profile"
+      },
       "sections": {
         "mappingsByCollection": "Mappings by collection",
         "headerCollection": "Header collection",
@@ -781,7 +663,7 @@
       "actions": "Actions",
       "scope": {
         "default": "Default",
-        "company": "Company"
+        "custom": "Custom"
       },
       "status": {
         "processing": "Processing",
@@ -796,16 +678,30 @@
       "description": "Structure prepared for reusable components, services, and models in the processing domain."
     },
     "processamentoList": {
-      "header": { "title": "Processings" },
+      "header": {
+        "title": "Processings"
+      },
       "filters": {
         "status": "Filter by status",
         "all": "All"
       },
-      "actions": { "newImport": "New import" },
-      "tooltips": { "viewDetails": "View details" },
-      "empty": { "noProcessings": "No processing found." },
-      "table": { "paginationAriaLabel": "Processings list pagination" },
-      "feedback": { "errors": { "loadProcessings": "Could not load processings." } }
+      "actions": {
+        "newImport": "New import"
+      },
+      "tooltips": {
+        "viewDetails": "View details"
+      },
+      "empty": {
+        "noProcessings": "No processing found."
+      },
+      "table": {
+        "paginationAriaLabel": "Processings list pagination"
+      },
+      "feedback": {
+        "errors": {
+          "loadProcessings": "Could not load processings."
+        }
+      }
     },
     "processamentoUpload": {
       "title": "Import spreadsheet",
@@ -813,7 +709,9 @@
         "mappingProfile": "Mapping profile",
         "mappingConfiguration": "Mapping configuration"
       },
-      "loading": { "profiles": "Loading profiles..." },
+      "loading": {
+        "profiles": "Loading profiles..."
+      },
       "actions": {
         "selectFile": "Select .xlsx file",
         "process": "Process"
@@ -828,18 +726,21 @@
       },
       "tooltips": {
         "defaultProfile": "Default profile available to all users.",
-        "companyProfile": "Custom profile for the company."
+        "customProfile": "Custom profile for this installation."
       },
       "validation": {
         "documentRequired": "Select a document.",
         "profileRequired": "Select a mapping profile."
       },
       "feedback": {
-        "success": { "uploaded": "File sent for processing." },
-        "info": { "noProfiles": "No mapping profile available for the selected document." },
+        "success": {
+          "uploaded": "File sent for processing."
+        },
+        "info": {
+          "noProfiles": "No mapping profile available for the selected document."
+        },
         "errors": {
           "invalidFile": "Select a valid .xlsx file.",
-          "companyNotFound": "Company not identified in the session.",
           "uploadFile": "Could not send file for processing.",
           "loadDocuments": "Could not load documents.",
           "loadProfiles": "Could not load mapping profiles."
@@ -847,7 +748,9 @@
       }
     },
     "processamentoDetalhe": {
-      "header": { "title": "Processing details" },
+      "header": {
+        "title": "Processing details"
+      },
       "actions": {
         "back": "Back",
         "reprocess": "Reprocess",
@@ -857,7 +760,9 @@
         "totalRecords": "Total records",
         "progress": "Progress"
       },
-      "itemsLog": { "title": "Items log" },
+      "itemsLog": {
+        "title": "Items log"
+      },
       "table": {
         "header": {
           "line": "Line",
@@ -865,10 +770,16 @@
         },
         "paginationAriaLabel": "Processing items pagination"
       },
-      "tooltips": { "viewJson": "View JSON" },
-      "empty": { "noItems": "No items found." },
+      "tooltips": {
+        "viewJson": "View JSON"
+      },
+      "empty": {
+        "noItems": "No items found."
+      },
       "feedback": {
-        "info": { "noErrorRecords": "No records with errors." },
+        "info": {
+          "noErrorRecords": "No records with errors."
+        },
         "errors": {
           "loadProcessing": "Could not load processing.",
           "loadItems": "Could not load items."
@@ -893,14 +804,6 @@
         "dashboard": {
           "label": "Dashboard",
           "description": "Initial overview"
-        },
-        "companies": {
-          "label": "Companies",
-          "description": "Manage records and settings."
-        },
-        "users": {
-          "label": "Users",
-          "description": "Manage access and company links."
         },
         "documents": {
           "label": "Documents",

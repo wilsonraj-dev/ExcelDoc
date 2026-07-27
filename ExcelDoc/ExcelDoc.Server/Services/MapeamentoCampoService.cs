@@ -24,11 +24,9 @@ namespace ExcelDoc.Server.Services
 
         public async Task<IReadOnlyCollection<MapeamentoCampoResponseDto>> GetByMapeamentoAsync(int mapeamentoId, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(mapeamentoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingNotFound));
-
-            EnsureCanAccessMapeamento(usuario, mapeamento);
 
             var campos = await _mapeamentoRepository.GetCamposByMapeamentoIdAsync(mapeamentoId, cancellationToken);
             return campos.Select(Map).ToList();
@@ -36,7 +34,7 @@ namespace ExcelDoc.Server.Services
 
         public async Task<MapeamentoCampoResponseDto> CriarAsync(MapeamentoCampoRequestDto request, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(request.FK_IdMapeamento, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingNotFound));
 
@@ -61,7 +59,7 @@ namespace ExcelDoc.Server.Services
 
         public async Task<MapeamentoCampoResponseDto> AtualizarAsync(int id, MapeamentoCampoRequestDto request, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var campo = await _mapeamentoRepository.GetCampoByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingFieldNotFound));
 
@@ -89,7 +87,7 @@ namespace ExcelDoc.Server.Services
             AtualizarMapeamentoCamposRequestDto request,
             CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var mapeamento = await _mapeamentoRepository.GetMapeamentoByIdAsync(mapeamentoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingNotFound));
 
@@ -162,7 +160,7 @@ namespace ExcelDoc.Server.Services
 
         public async Task ExcluirAsync(int id, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var campo = await _mapeamentoRepository.GetCampoByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingFieldNotFound));
 
@@ -184,31 +182,14 @@ namespace ExcelDoc.Server.Services
             }
         }
 
-        private void EnsureCanAccessMapeamento(Usuario usuario, Mapeamento mapeamento)
+        private void EnsureCanEditMapeamento(Usuario usuario, Mapeamento mapeamento)
         {
-            if (mapeamento.IsPadraoGlobal)
+            if (usuario.TipoUsuario == TipoUsuario.Administrador)
             {
                 return;
             }
 
-            if (!usuario.FK_IdEmpresa.HasValue ||
-                usuario.FK_IdEmpresa != mapeamento.FK_IdEmpresa)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMapping));
-            }
-        }
-
-        private void EnsureCanEditMapeamento(Usuario usuario, Mapeamento mapeamento)
-        {
-            EnsureCanAccessMapeamento(usuario, mapeamento);
-
             if (mapeamento.IsPadraoGlobal)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeMapping));
-            }
-
-            if (!usuario.FK_IdEmpresa.HasValue ||
-                usuario.FK_IdEmpresa != mapeamento.FK_IdEmpresa)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeMapping));
             }

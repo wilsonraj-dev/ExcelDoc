@@ -2,11 +2,21 @@
   <PropertyGroup>
     <StartupCommand>npm start</StartupCommand>
     <JavaScriptTestFramework>Jasmine</JavaScriptTestFramework>
-    <!-- Allows the build (or compile) script located on package.json to run on Build -->
+    <!-- Publish restores with npm ci below; developers restore explicitly as documented. -->
+    <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
     <ShouldRunBuildScript>false</ShouldRunBuildScript>
-    <!-- Folder where production build objects will be placed -->
+    <!-- Avoid a network-dependent audit on every .NET build; run npm audit explicitly in CI. -->
+    <ShouldRunNpmAudit>false</ShouldRunNpmAudit>
+    <BuildCommand>npm run build -- --configuration production</BuildCommand>
     <BuildOutputFolder>$(MSBuildProjectDirectory)\dist\exceldoc.client\browser\</BuildOutputFolder>
   </PropertyGroup>
+
+  <!-- The JavaScript SDK then registers BuildOutputFolder in the ASP.NET static-assets manifest. -->
+  <Target Name="RestoreAngularForPublish" BeforeTargets="_RunNpmCommandForPublishAssets">
+    <Message Importance="high" Text="Restoring locked Angular dependencies for IIS publish..." />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Command="npm ci --no-audit --no-fund" />
+  </Target>
+
   <ItemGroup>
     <Folder Include="src\app\core\models\" />
     <Folder Include="src\assets\i18n\" />

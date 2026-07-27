@@ -1,157 +1,321 @@
-using ExcelDoc.Server.Data;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using ExcelDoc.Server.Sap;
 
-namespace ExcelDoc.Server.Repositories
+namespace ExcelDoc.Server.Repositories;
+
+public sealed class MapeamentoRepository : IMapeamentoRepository
 {
-    public class MapeamentoRepository : IMapeamentoRepository
+    private readonly ISapUdtStore _store;
+    private readonly List<Mapeamento> _pendingMappings = [];
+    private readonly List<MapeamentoCampo> _pendingFields = [];
+    private readonly Dictionary<int, Mapeamento> _trackedMappings = [];
+    private readonly Dictionary<int, MapeamentoCampo> _trackedFields = [];
+    private readonly HashSet<int> _pendingMappingDeletes = [];
+    private readonly HashSet<int> _pendingFieldDeletes = [];
+
+    public MapeamentoRepository(ISapUdtStore store)
     {
-        private readonly ExcelDocDbContext _context;
+        _store = store;
+    }
 
-        public MapeamentoRepository(ExcelDocDbContext context)
+    public async Task<Colecao?> GetColecaoByIdAsync(
+        int colecaoId,
+        CancellationToken cancellationToken = default)
+    {
+        var record = await _store.GetByIdAsync(
+            SapUdtSchema.Colecao,
+            colecaoId,
+            cancellationToken);
+        return record is null ? null : SapEntityMapper.ToColecao(record);
+    }
+
+    public async Task<IReadOnlyCollection<Mapeamento>> GetMapeamentosByColecaoIdAsync(
+        int colecaoId,
+        CancellationToken cancellationToken = default)
+    {
+        var mappings = await new SapDataHydrator(_store)
+            .LoadMapeamentosAsync(
+                includeColecao: false,
+                includeCampos: true,
+                cancellationToken);
+
+        return mappings
+            .Where(mapping => mapping.FK_IdColecao == colecaoId)
+            .OrderByDescending(mapping => mapping.IsPadraoGlobal)
+            .ThenBy(mapping => mapping.Nome)
+            .ToList();
+    }
+
+    public async Task<Mapeamento?> GetMapeamentoByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        var mappings = await new SapDataHydrator(_store)
+            .LoadMapeamentosAsync(
+                includeColecao: true,
+                includeCampos: true,
+                cancellationToken);
+        var mapping = mappings.FirstOrDefault(value => value.Id == id);
+        if (mapping is null)
         {
-            _context = context;
+            return null;
         }
 
-        public Task<Colecao?> GetColecaoByIdAsync(int colecaoId, CancellationToken cancellationToken = default)
+        _trackedMappings[mapping.Id] = mapping;
+        foreach (var field in mapping.Campos)
         {
-            return _context.Colecoes
-                .FirstOrDefaultAsync(x => x.Id == colecaoId, cancellationToken);
+            _trackedFields[field.Id] = field;
         }
 
-        public async Task<IReadOnlyCollection<Mapeamento>> GetMapeamentosByColecaoIdAsync(int colecaoId, CancellationToken cancellationToken = default)
+        return mapping;
+    }
+
+    public async Task<MapeamentoCampo?> GetCampoByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        var mappings = await new SapDataHydrator(_store)
+            .LoadMapeamentosAsync(
+                includeColecao: true,
+                includeCampos: true,
+                cancellationToken);
+        var field = mappings
+            .SelectMany(mapping => mapping.Campos)
+            .FirstOrDefault(value => value.Id == id);
+        if (field is not null)
         {
-            return await _context.Mapeamentos
-                .AsNoTracking()
-                .Include(x => x.Campos)
-                .Where(x => x.FK_IdColecao == colecaoId)
-                .OrderByDescending(x => x.IsPadrao && !x.FK_IdEmpresa.HasValue)
-                .ThenBy(x => x.Nome)
-                .ToListAsync(cancellationToken);
+            _trackedFields[field.Id] = field;
         }
 
-        public Task<Mapeamento?> GetMapeamentoByIdAsync(int id, CancellationToken cancellationToken = default)
+        return field;
+    }
+
+    public async Task<IReadOnlyCollection<MapeamentoCampo>> GetCamposByMapeamentoIdAsync(
+        int mapeamentoId,
+        CancellationToken cancellationToken = default)
+    {
+        var records = await _store.QueryAsync(
+            SapUdtSchema.MapeamentoCampo,
+            filter: SapOData.Eq("MapeamentoId", mapeamentoId),
+            cancellationToken: cancellationToken);
+        return records
+            .Select(SapEntityMapper.ToMapeamentoCampo)
+            .OrderBy(field => field.IndiceColuna)
+            .ToList();
+    }
+
+    public async Task<bool> ExistsIndiceNoMapeamentoAsync(
+        int mapeamentoId,
+        int indiceColuna,
+        int? ignoreId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var records = await _store.QueryAsync(
+            SapUdtSchema.MapeamentoCampo,
+            filter: SapOData.And(
+                SapOData.Eq("MapeamentoId", mapeamentoId),
+                SapOData.Eq("IndiceColuna", indiceColuna)),
+            cancellationToken: cancellationToken);
+        return records.Any(record => !ignoreId.HasValue || record.Id != ignoreId.Value);
+    }
+
+    public Task AddMapeamentoAsync(
+        Mapeamento mapeamento,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        _pendingMappings.Add(mapeamento);
+        return Task.CompletedTask;
+    }
+
+    public Task AddCampoAsync(
+        MapeamentoCampo campo,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        _pendingFields.Add(campo);
+        return Task.CompletedTask;
+    }
+
+    public void RemoveMapeamento(Mapeamento mapeamento)
+    {
+        if (mapeamento.Id > 0)
         {
-            return _context.Mapeamentos
-                .Include(x => x.Colecao)
-                .Include(x => x.Campos)
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            _pendingMappingDeletes.Add(mapeamento.Id);
+        }
+    }
+
+    public void RemoveCampo(MapeamentoCampo campo)
+    {
+        if (campo.Id > 0)
+        {
+            _pendingFieldDeletes.Add(campo.Id);
+        }
+    }
+
+    public async Task ReplaceCamposAsync(
+        Mapeamento mapeamento,
+        IReadOnlyCollection<MapeamentoCampo> campos,
+        CancellationToken cancellationToken = default)
+    {
+        var currentRows = await _store.QueryAsync(
+            SapUdtSchema.MapeamentoCampo,
+            filter: SapOData.Eq("MapeamentoId", mapeamento.Id),
+            cancellationToken: cancellationToken);
+        var currentFields = currentRows
+            .Select(SapEntityMapper.ToMapeamentoCampo)
+            .ToDictionary(field => field.Id);
+        var desiredIds = campos
+            .Where(field => field.Id > 0)
+            .Select(field => field.Id)
+            .ToHashSet();
+
+        foreach (var removed in currentFields.Values.Where(
+                     field => !desiredIds.Contains(field.Id)))
+        {
+            await _store.DeleteAsync(
+                SapUdtSchema.MapeamentoCampo,
+                removed.Id,
+                cancellationToken);
+            _trackedFields.Remove(removed.Id);
         }
 
-        public Task<MapeamentoCampo?> GetCampoByIdAsync(int id, CancellationToken cancellationToken = default)
+        foreach (var desired in campos)
         {
-            return _context.MapeamentoCampos
-                .Include(x => x.Mapeamento)
-                    .ThenInclude(x => x.Colecao)
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            desired.FK_IdMapeamento = mapeamento.Id;
+            desired.Mapeamento = mapeamento;
+
+            if (desired.Id > 0)
+            {
+                await _store.UpdateAsync(
+                    SapUdtSchema.MapeamentoCampo,
+                    desired.Id,
+                    SapEntityMapper.Fields(desired),
+                    cancellationToken);
+            }
+            else
+            {
+                desired.Id = await _store.AddAsync(
+                    SapUdtSchema.MapeamentoCampo,
+                    SapEntityMapper.Fields(desired),
+                    cancellationToken: cancellationToken);
+            }
+
+            _trackedFields[desired.Id] = desired;
         }
 
-        public async Task<IReadOnlyCollection<MapeamentoCampo>> GetCamposByMapeamentoIdAsync(int mapeamentoId, CancellationToken cancellationToken = default)
+        mapeamento.Campos = campos
+            .OrderBy(field => field.IndiceColuna)
+            .ToList();
+    }
+
+    public async Task SaveChangesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        foreach (var fieldId in _pendingFieldDeletes)
         {
-            return await _context.MapeamentoCampos
-                .AsNoTracking()
-                .Where(x => x.FK_IdMapeamento == mapeamentoId)
-                .OrderBy(x => x.IndiceColuna)
-                .ToListAsync(cancellationToken);
+            await _store.DeleteAsync(
+                SapUdtSchema.MapeamentoCampo,
+                fieldId,
+                cancellationToken);
+            _trackedFields.Remove(fieldId);
         }
 
-        public Task<bool> ExistsIndiceNoMapeamentoAsync(int mapeamentoId, int indiceColuna, int? ignoreId = null, CancellationToken cancellationToken = default)
+        _pendingFieldDeletes.Clear();
+
+        foreach (var mappingId in _pendingMappingDeletes)
         {
-            return _context.MapeamentoCampos.AnyAsync(
-                x => x.FK_IdMapeamento == mapeamentoId
-                    && x.IndiceColuna == indiceColuna
-                    && (!ignoreId.HasValue || x.Id != ignoreId.Value),
+            var references = await _store.QueryAsync(
+                SapUdtSchema.PerfilMapeamentoItem,
+                filter: SapOData.Eq("MapeamentoId", mappingId),
+                top: 1,
+                select: "Code",
+                cancellationToken: cancellationToken);
+            if (references.Count > 0)
+            {
+                throw new InvalidOperationException(
+                    "O mapeamento possui perfis vinculados.");
+            }
+
+            var fields = await _store.QueryAsync(
+                SapUdtSchema.MapeamentoCampo,
+                filter: SapOData.Eq("MapeamentoId", mappingId),
+                cancellationToken: cancellationToken);
+            foreach (var field in fields)
+            {
+                await _store.DeleteAsync(
+                    SapUdtSchema.MapeamentoCampo,
+                    field.Id,
+                    cancellationToken);
+                _trackedFields.Remove(field.Id);
+            }
+
+            await _store.DeleteAsync(
+                SapUdtSchema.Mapeamento,
+                mappingId,
+                cancellationToken);
+            _trackedMappings.Remove(mappingId);
+        }
+
+        _pendingMappingDeletes.Clear();
+
+        var insertedMappingIds = new HashSet<int>();
+        var insertedFieldIds = new HashSet<int>();
+        foreach (var mapping in _pendingMappings)
+        {
+            mapping.Id = await _store.AddAsync(
+                SapUdtSchema.Mapeamento,
+                SapEntityMapper.Fields(mapping),
+                cancellationToken: cancellationToken);
+            insertedMappingIds.Add(mapping.Id);
+            _trackedMappings[mapping.Id] = mapping;
+
+            foreach (var field in mapping.Campos)
+            {
+                field.FK_IdMapeamento = mapping.Id;
+                field.Mapeamento = mapping;
+                field.Id = await _store.AddAsync(
+                    SapUdtSchema.MapeamentoCampo,
+                    SapEntityMapper.Fields(field),
+                    cancellationToken: cancellationToken);
+                insertedFieldIds.Add(field.Id);
+                _trackedFields[field.Id] = field;
+            }
+        }
+
+        _pendingMappings.Clear();
+
+        foreach (var field in _pendingFields)
+        {
+            field.Id = await _store.AddAsync(
+                SapUdtSchema.MapeamentoCampo,
+                SapEntityMapper.Fields(field),
+                cancellationToken: cancellationToken);
+            insertedFieldIds.Add(field.Id);
+            _trackedFields[field.Id] = field;
+        }
+
+        _pendingFields.Clear();
+
+        foreach (var mapping in _trackedMappings.Values.Where(
+                     value => !insertedMappingIds.Contains(value.Id)))
+        {
+            await _store.UpdateAsync(
+                SapUdtSchema.Mapeamento,
+                mapping.Id,
+                SapEntityMapper.Fields(mapping),
                 cancellationToken);
         }
 
-        public async Task AddMapeamentoAsync(Mapeamento mapeamento, CancellationToken cancellationToken = default)
+        foreach (var field in _trackedFields.Values.Where(
+                     value => !insertedFieldIds.Contains(value.Id)))
         {
-            await _context.Mapeamentos.AddAsync(mapeamento, cancellationToken);
-        }
-
-        public async Task AddCampoAsync(MapeamentoCampo campo, CancellationToken cancellationToken = default)
-        {
-            await _context.MapeamentoCampos.AddAsync(campo, cancellationToken);
-        }
-
-        public void RemoveMapeamento(Mapeamento mapeamento)
-        {
-            _context.Mapeamentos.Remove(mapeamento);
-        }
-
-        public void RemoveCampo(MapeamentoCampo campo)
-        {
-            _context.MapeamentoCampos.Remove(campo);
-        }
-
-        public async Task ReplaceCamposAsync(
-            Mapeamento mapeamento,
-            IReadOnlyCollection<MapeamentoCampo> campos,
-            CancellationToken cancellationToken = default)
-        {
-            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-
-            try
-            {
-                var camposExistentes = mapeamento.Campos.ToList();
-                var proximoIndiceTemporario = Math.Max(
-                    camposExistentes.Select(campo => campo.IndiceColuna).DefaultIfEmpty(0).Max() + campos.Count + 1,
-                    1_000_000);
-
-                foreach (var campoExistente in camposExistentes)
-                {
-                    campoExistente.IndiceColuna = proximoIndiceTemporario++;
-                }
-
-                if (camposExistentes.Count > 0)
-                {
-                    await _context.SaveChangesAsync(cancellationToken);
-                }
-
-                var existentesPorId = camposExistentes.ToDictionary(campo => campo.Id);
-                var idsMantidos = campos
-                    .Where(campo => campo.Id > 0)
-                    .Select(campo => campo.Id)
-                    .ToHashSet();
-
-                foreach (var campoRemovido in camposExistentes.Where(campo => !idsMantidos.Contains(campo.Id)).ToList())
-                {
-                    mapeamento.Campos.Remove(campoRemovido);
-                    _context.MapeamentoCampos.Remove(campoRemovido);
-                }
-
-                foreach (var campoDesejado in campos)
-                {
-                    if (campoDesejado.Id > 0)
-                    {
-                        var campoExistente = existentesPorId[campoDesejado.Id];
-                        campoExistente.NomeCampo = campoDesejado.NomeCampo;
-                        campoExistente.DescricaoCampo = campoDesejado.DescricaoCampo;
-                        campoExistente.IndiceColuna = campoDesejado.IndiceColuna;
-                        campoExistente.TipoCampo = campoDesejado.TipoCampo;
-                        campoExistente.Formato = campoDesejado.Formato;
-                        campoExistente.Ativo = campoDesejado.Ativo;
-                        continue;
-                    }
-
-                    campoDesejado.FK_IdMapeamento = mapeamento.Id;
-                    mapeamento.Campos.Add(campoDesejado);
-                }
-
-                await _context.SaveChangesAsync(cancellationToken);
-                await transaction.CommitAsync(cancellationToken);
-            }
-            catch
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                throw;
-            }
-        }
-
-        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            return _context.SaveChangesAsync(cancellationToken);
+            await _store.UpdateAsync(
+                SapUdtSchema.MapeamentoCampo,
+                field.Id,
+                SapEntityMapper.Fields(field),
+                cancellationToken);
         }
     }
 }

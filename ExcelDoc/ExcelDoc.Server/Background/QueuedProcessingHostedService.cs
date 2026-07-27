@@ -1,64 +1,166 @@
 using ExcelDoc.Server.Background.Interfaces;
 using ExcelDoc.Server.Options;
+using ExcelDoc.Server.Sap;
 using ExcelDoc.Server.Services.Interfaces;
 using Microsoft.Extensions.Options;
 
-namespace ExcelDoc.Server.Background
+namespace ExcelDoc.Server.Background;
+
+public sealed class QueuedProcessingHostedService : BackgroundService
 {
-    public class QueuedProcessingHostedService : BackgroundService
+    private readonly IBackgroundTaskQueue _queue;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ISapServiceLayerClient _sapClient;
+    private readonly ISapSessionStore _sessionStore;
+    private readonly ILogger<QueuedProcessingHostedService> _logger;
+    private readonly ProcessingOptions _options;
+
+    public QueuedProcessingHostedService(
+        IBackgroundTaskQueue queue,
+        IServiceScopeFactory serviceScopeFactory,
+        ISapServiceLayerClient sapClient,
+        ISapSessionStore sessionStore,
+        IOptions<ProcessingOptions> options,
+        ILogger<QueuedProcessingHostedService> logger)
     {
-        private readonly IBackgroundTaskQueue _queue;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly ILogger<QueuedProcessingHostedService> _logger;
-        private readonly ProcessingOptions _options;
+        _queue = queue;
+        _serviceScopeFactory = serviceScopeFactory;
+        _sapClient = sapClient;
+        _sessionStore = sessionStore;
+        _logger = logger;
+        _options = options.Value;
+    }
 
-        public QueuedProcessingHostedService(
-            IBackgroundTaskQueue queue,
-            IServiceScopeFactory serviceScopeFactory,
-            IOptions<ProcessingOptions> options,
-            ILogger<QueuedProcessingHostedService> logger)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
         {
-            _queue = queue;
-            _serviceScopeFactory = serviceScopeFactory;
-            _logger = logger;
-            _options = options.Value;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            while (!stoppingToken.IsCancellationRequested)
+            ProcessamentoQueueItem item;
+            try
             {
-                var item = await _queue.DequeueAsync(stoppingToken);
+                item = await _queue.DequeueAsync(stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
 
-                try
+            try
+            {
+                var finalException = await ProcessWithRetriesAsync(
+                    item,
+                    stoppingToken);
+                if (finalException is not null)
                 {
-                    using var scope = _serviceScopeFactory.CreateScope();
-                    var worker = scope.ServiceProvider.GetRequiredService<IProcessamentoWorkerService>();
-
-                    await worker.ProcessAsync(item, stoppingToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Erro ao processar job {ProcessamentoId} na tentativa {Attempt}", item.ProcessamentoId, item.Attempt + 1);
-
-                    if (item.Attempt + 1 < _options.MaxRetries)
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
-                        await _queue.EnqueueAsync(new ProcessamentoQueueItem
-                        {
-                            ProcessamentoId = item.ProcessamentoId,
-                            FilePath = item.FilePath,
-                            Attempt = item.Attempt + 1
-                        }, stoppingToken);
-
-                        continue;
-                    }
-
-                    using var scope = _serviceScopeFactory.CreateScope();
-                    var processamentoService = scope.ServiceProvider.GetRequiredService<IProcessamentoService>();
-                    await processamentoService.MarcarErroFinalAsync(item.ProcessamentoId, ex, stoppingToken);
+                    await TryMarkFinalErrorAsync(
+                        item,
+                        finalException,
+                        stoppingToken);
                 }
             }
+            finally
+            {
+                await ReleaseLeaseAsync(item);
+            }
+        }
+    }
+
+    private async Task<Exception?> ProcessWithRetriesAsync(
+        ProcessamentoQueueItem item,
+        CancellationToken stoppingToken)
+    {
+        Exception? lastException = null;
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                using var scope = _serviceScopeFactory.CreateScope();
+                var sessionAccessor = scope.ServiceProvider
+                    .GetRequiredService<ISapSessionContextAccessor>();
+                sessionAccessor.SetJobSessionKey(item.SessionKey);
+                var worker = scope.ServiceProvider
+                    .GetRequiredService<IProcessamentoWorkerService>();
+
+                await worker.ProcessAsync(item, stoppingToken);
+                return null;
+            }
+            catch (Exception exception)
+            {
+                lastException = exception;
+                _logger.LogError(
+                    exception,
+                    "Erro ao processar job {ProcessamentoId} na tentativa {Attempt}.",
+                    item.ProcessamentoId,
+                    item.Attempt + 1);
+
+                if (exception is SapSessionExpiredException ||
+                    item.Attempt + 1 >= _options.MaxRetries)
+                {
+                    return exception;
+                }
+
+                item.Attempt++;
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+                }
+                catch (OperationCanceledException)
+                    when (stoppingToken.IsCancellationRequested)
+                {
+                    return lastException;
+                }
+            }
+        }
+
+        return lastException;
+    }
+
+    private async Task TryMarkFinalErrorAsync(
+        ProcessamentoQueueItem item,
+        Exception exception,
+        CancellationToken stoppingToken)
+    {
+        try
+        {
+            using var scope = _serviceScopeFactory.CreateScope();
+            var sessionAccessor = scope.ServiceProvider
+                .GetRequiredService<ISapSessionContextAccessor>();
+            sessionAccessor.SetJobSessionKey(item.SessionKey);
+            var processingService = scope.ServiceProvider
+                .GetRequiredService<IProcessamentoService>();
+            await processingService.MarcarErroFinalAsync(
+                item.ProcessamentoId,
+                exception,
+                stoppingToken);
+        }
+        catch (Exception finalizationException)
+        {
+            _logger.LogError(
+                finalizationException,
+                "Falha ao registrar o erro final do processamento {ProcessamentoId}; o worker continuará ativo.",
+                item.ProcessamentoId);
+        }
+    }
+
+    private async Task ReleaseLeaseAsync(ProcessamentoQueueItem item)
+    {
+        var sessionToLogout = _sessionStore.ReleaseJob(item.SessionKey);
+        if (sessionToLogout is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _sapClient.LogoutAsync(sessionToLogout, CancellationToken.None);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogDebug(
+                exception,
+                "Falha no logout SAP adiado após finalizar o processamento {ProcessamentoId}.",
+                item.ProcessamentoId);
         }
     }
 }

@@ -13,8 +13,6 @@ namespace ExcelDoc.Server.DTOs.Mapeamentos
         [Range(1, int.MaxValue, ErrorMessage = MessageKeys.CollectionInvalid)]
         public int FK_IdColecao { get; set; }
 
-        public int? FK_IdEmpresa { get; set; }
-
         public bool IsPadrao { get; set; }
     }
 }

@@ -11,7 +11,7 @@
 
     <div class="context-meta" *ngIf="perfilAtual as perfil">
       <span class="scope-chip" [class.scope-chip--custom]="!perfil.isPadrao">
-        {{ (perfil.isPadrao ? 'mapeamento.common.scope.default' : 'mapeamento.common.scope.myCompany') | translate }}
+        {{ (perfil.isPadrao ? 'mapeamento.common.scope.default' : 'mapeamento.common.scope.custom') | translate }}
       </span>
       <span>{{ 'mapeamento.workspace.meta.base' | translate }}: {{ 'mapeamento.workspace.meta.marketingDocuments' | translate }}</span>
       <span class="context-meta__divider"></span>
@@ -47,7 +47,7 @@
             <mat-label>{{ 'mapeamento.workspace.fields.mapping' | translate }}</mat-label>
             <mat-select [value]="selectedPerfilId" (selectionChange)="onPerfilChange($event.value)">
               <mat-option *ngFor="let option of perfis" [value]="option.id">
-                {{ option.nome }} · {{ (option.isPadrao ? 'mapeamento.common.scope.default' : 'mapeamento.common.scope.myCompany') | translate }}
+                {{ option.nome }} · {{ (option.isPadrao ? 'mapeamento.common.scope.default' : 'mapeamento.common.scope.custom') | translate }}
               </mat-option>
             </mat-select>
           </mat-form-field>
@@ -92,7 +92,7 @@
       </span>
     </nav>
 
-    <div class="protection-banner" *ngIf="isPadrao">
+    <div class="protection-banner" *ngIf="isReadOnly">
       <mat-icon>verified_user</mat-icon>
       <div>
         <strong>{{ 'mapeamento.workspace.protection.title' | translate }}</strong>
@@ -199,7 +199,7 @@
         </article>
         <article>
           <span>{{ 'mapeamento.workspace.documentInfo.scope' | translate }}</span>
-          <strong>{{ (isPadrao ? 'mapeamento.common.scope.default' : 'mapeamento.common.scope.myCompany') | translate }}</strong>
+          <strong>{{ (isPadrao ? 'mapeamento.common.scope.default' : 'mapeamento.common.scope.custom') | translate }}</strong>
         </article>
       </div>
     </section>

@@ -1,190 +1,178 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using ExcelDoc.Server.DTOs.Auth;
-using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Options;
-using ExcelDoc.Server.Repositories.Interfaces;
+using ExcelDoc.Server.Sap;
 using ExcelDoc.Server.Security;
 using ExcelDoc.Server.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ExcelDoc.Server.Services
+namespace ExcelDoc.Server.Services;
+
+public sealed class AuthService : IAuthService
 {
-    public class AuthService : IAuthService
+    private static readonly HashSet<string> AdministratorUsers =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            "manager",
+            "Support"
+        };
+
+    private readonly ISapDatabaseInitializer _databaseInitializer;
+    private readonly JwtOptions _jwtOptions;
+    private readonly ILogger<AuthService> _logger;
+    private readonly SapServiceLayerOptions _sapOptions;
+    private readonly ISapServiceLayerClient _sapServiceLayerClient;
+    private readonly ISapSessionContextAccessor _sessionAccessor;
+    private readonly ISapSessionStore _sessionStore;
+    private readonly ISystemClock _systemClock;
+
+    public AuthService(
+        ISapDatabaseInitializer databaseInitializer,
+        IOptions<JwtOptions> jwtOptions,
+        ILogger<AuthService> logger,
+        IOptions<SapServiceLayerOptions> sapOptions,
+        ISapServiceLayerClient sapServiceLayerClient,
+        ISapSessionContextAccessor sessionAccessor,
+        ISapSessionStore sessionStore,
+        ISystemClock systemClock)
     {
-        private readonly JwtOptions _jwtOptions;
-        private readonly IEmailService _emailService;
-        private readonly ILogger<AuthService> _logger;
-        private readonly IMessageService _messageService;
-        private readonly IPasswordHasherService _passwordHasherService;
-        private readonly ISystemClock _systemClock;
-        private readonly IUsuarioRepository _usuarioRepository;
+        _databaseInitializer = databaseInitializer;
+        _jwtOptions = jwtOptions.Value;
+        _logger = logger;
+        _sapOptions = sapOptions.Value;
+        _sapServiceLayerClient = sapServiceLayerClient;
+        _sessionAccessor = sessionAccessor;
+        _sessionStore = sessionStore;
+        _systemClock = systemClock;
+    }
 
-        public AuthService(
-            IOptions<JwtOptions> jwtOptions,
-            IEmailService emailService,
-            ILogger<AuthService> logger,
-            IMessageService messageService,
-            IPasswordHasherService passwordHasherService,
-            ISystemClock systemClock,
-            IUsuarioRepository usuarioRepository)
+    public IReadOnlyCollection<SapBaseDto> GetBases()
+    {
+        return _sapOptions.Bases
+            .Where(item =>
+                !string.IsNullOrWhiteSpace(item.Database) &&
+                !string.IsNullOrWhiteSpace(item.Description))
+            .GroupBy(item => item.Database.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .OrderBy(item => item.Description, StringComparer.CurrentCultureIgnoreCase)
+            .Select(item => new SapBaseDto
+            {
+                Database = item.Database.Trim(),
+                Description = item.Description.Trim()
+            })
+            .ToList();
+    }
+
+    public async Task<LoginResponseDto> LoginAsync(
+        LoginRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var configuredBase = _sapOptions.Bases.FirstOrDefault(item =>
+            string.Equals(
+                item.Database.Trim(),
+                request.Database.Trim(),
+                StringComparison.OrdinalIgnoreCase));
+
+        if (configuredBase is null)
         {
-            _jwtOptions = jwtOptions.Value;
-            _emailService = emailService;
-            _logger = logger;
-            _messageService = messageService;
-            _passwordHasherService = passwordHasherService;
-            _systemClock = systemClock;
-            _usuarioRepository = usuarioRepository;
+            throw new InvalidOperationException(
+                "A base SAP Business One selecionada não está configurada para esta instalação.");
         }
 
-        public async Task ForgotPasswordAsync(ForgotPasswordRequestDto request, CancellationToken cancellationToken = default)
-        {
-            var email = request.Email.Trim();
-            var usuario = await _usuarioRepository.GetByEmailAsync(email, cancellationToken);
+        var database = configuredBase.Database.Trim();
+        var userName = request.Login.Trim();
+        var isAdministrator = AdministratorUsers.Contains(userName);
+        var session = await _sapServiceLayerClient.LoginAsync(
+            database,
+            userName,
+            request.Senha,
+            cancellationToken);
 
-            if (usuario is null || !usuario.Ativo)
+        _sessionStore.Add(session);
+        _sessionAccessor.SetSessionKey(session.SessionKey);
+
+        try
+        {
+            await _databaseInitializer.InitializeAsync(
+                session,
+                isAdministrator,
+                cancellationToken);
+        }
+        catch
+        {
+            _sessionStore.Remove(session.SessionKey, out _);
+            try
             {
-                _logger.LogInformation("Solicitação de recuperação ignorada para e-mail não encontrado ou inativo: {Email}.", email);
-                return;
+                await _sapServiceLayerClient.LogoutAsync(session, CancellationToken.None);
+            }
+            catch (Exception logoutException)
+            {
+                _logger.LogDebug(
+                    logoutException,
+                    "Falha ao encerrar sessão SAP após erro de inicialização.");
             }
 
-            var expiresAt = _systemClock.UtcNow.AddMinutes(10);
-            var code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
-
-            usuario.ResetPasswordCode = code;
-            usuario.ResetPasswordCodeExpiresAtUtc = expiresAt;
-
-            await _usuarioRepository.SaveChangesAsync(cancellationToken);
-
-            var body = $"Olá, {usuario.NomeUsuario}!\n\nSeu código para redefinição de senha é: {code}\n\nEsse código expira em 10 minutos ({expiresAt:dd/MM/yyyy HH:mm:ss} UTC).\n\nSe você não solicitou a redefinição, ignore este e-mail.";
-            await _emailService.SendAsync(email, "Código de redefinição de senha - ExcelDoc", body, cancellationToken);
+            throw;
         }
 
-        public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
+        var role = isAdministrator
+            ? TipoUsuario.Administrador.ToString()
+            : TipoUsuario.Usuario.ToString();
+        var expiresAt = _systemClock.UtcNow.AddMinutes(
+            Math.Max(1, _jwtOptions.ExpirationMinutes));
+        var claims = new List<Claim>
         {
-            var usuario = await _usuarioRepository.GetByLoginAsync(request.Login.Trim(), cancellationToken)
-                ?? throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.CredentialsInvalid));
+            new(ClaimTypes.NameIdentifier, userName),
+            new(ClaimTypes.Name, userName),
+            new(ClaimTypes.GivenName, userName),
+            new(ClaimTypes.Role, role),
+            new(CustomClaimTypes.Database, database),
+            new(CustomClaimTypes.SapSessionKey, session.SessionKey)
+        };
 
-            if (!usuario.Ativo)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserInactive));
-            }
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+        var credentials = new SigningCredentials(
+            key,
+            SecurityAlgorithms.HmacSha256);
+        var tokenDescriptor = new JwtSecurityToken(
+            issuer: _jwtOptions.Issuer,
+            audience: _jwtOptions.Audience,
+            claims: claims,
+            expires: expiresAt,
+            signingCredentials: credentials);
+        var token = new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
 
-            if (!_passwordHasherService.Verify(request.Senha, usuario.SenhaHash))
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.CredentialsInvalid));
-            }
+        _logger.LogInformation(
+            "Usuário SAP {UserName} autenticado na base {Database} com perfil {Role}.",
+            userName,
+            database,
+            role);
 
-            if (_passwordHasherService.NeedsRehash(usuario.SenhaHash))
-            {
-                usuario.SenhaHash = _passwordHasherService.Hash(request.Senha);
-                await _usuarioRepository.SaveChangesAsync(cancellationToken);
+        return new LoginResponseDto
+        {
+            Token = token,
+            ExpiresAtUtc = expiresAt,
+            NomeUsuario = userName,
+            TipoUsuario = role,
+            Database = database,
+            Idioma = "pt"
+        };
+    }
 
-                _logger.LogInformation("Senha do usuário {UsuarioId} migrada automaticamente para BCrypt.", usuario.Id);
-            }
-
-            var expiresAt = _systemClock.UtcNow.AddMinutes(Math.Max(1, _jwtOptions.ExpirationMinutes));
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
-                new(ClaimTypes.Name, usuario.Id.ToString()),
-                new(ClaimTypes.GivenName, usuario.NomeUsuario),
-                new(ClaimTypes.Role, usuario.TipoUsuario.ToString())
-            };
-
-            if (usuario.FK_IdEmpresa.HasValue)
-            {
-                claims.Add(new Claim(CustomClaimTypes.EmpresaId, usuario.FK_IdEmpresa.Value.ToString()));
-            }
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var tokenDescriptor = new JwtSecurityToken(
-                issuer: _jwtOptions.Issuer,
-                audience: _jwtOptions.Audience,
-                claims: claims,
-                expires: expiresAt,
-                signingCredentials: credentials);
-
-            var token = new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
-
-            return new LoginResponseDto
-            {
-                Token = token,
-                ExpiresAtUtc = expiresAt,
-                UsuarioId = usuario.Id,
-                NomeUsuario = usuario.NomeUsuario,
-                TipoUsuario = usuario.TipoUsuario.ToString(),
-                NomeEmpresa = usuario.Empresa?.NomeEmpresa,
-                EmpresaId = usuario.FK_IdEmpresa,
-                Idioma = usuario.Idioma
-            };
+    public async Task LogoutAsync(CancellationToken cancellationToken = default)
+    {
+        var sessionKey = _sessionAccessor.GetRequiredSessionKey();
+        var session = _sessionStore.RequestLogout(sessionKey);
+        if (session is null)
+        {
+            return;
         }
 
-        public async Task<RegisterUserResponseDto> RegisterAsync(RegisterUserRequestDto request, CancellationToken cancellationToken = default)
-        {
-            var nomeUsuario = request.NomeUsuario.Trim();
-            var email = request.Email.Trim();
-
-            if (await _usuarioRepository.ExistsByNomeUsuarioAsync(nomeUsuario, cancellationToken))
-            {
-                throw new InvalidOperationException(_messageService.Get(MessageKeys.UsernameAlreadyRegistered));
-            }
-
-            if (await _usuarioRepository.ExistsByEmailAsync(email, cancellationToken))
-            {
-                throw new InvalidOperationException(_messageService.Get(MessageKeys.EmailAlreadyRegistered));
-            }
-
-            var usuario = new Usuario
-            {
-                NomeUsuario = nomeUsuario,
-                Email = email,
-                SenhaHash = _passwordHasherService.Hash(request.Senha),
-                TipoUsuario = TipoUsuario.Usuario,
-                Ativo = true
-            };
-
-            await _usuarioRepository.AddAsync(usuario, cancellationToken);
-            await _usuarioRepository.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Usuário {UsuarioId} criado via autoatendimento.", usuario.Id);
-
-            return new RegisterUserResponseDto
-            {
-                UsuarioId = usuario.Id,
-                NomeUsuario = usuario.NomeUsuario,
-                Email = usuario.Email ?? string.Empty
-            };
-        }
-
-        public async Task ResetPasswordAsync(ResetPasswordRequestDto request, CancellationToken cancellationToken = default)
-        {
-            var email = request.Email.Trim();
-            var usuario = await _usuarioRepository.GetByEmailAsync(email, cancellationToken)
-                ?? throw new InvalidOperationException(_messageService.Get(MessageKeys.PasswordResetCodeInvalidOrExpired));
-
-            if (!usuario.Ativo ||
-                string.IsNullOrWhiteSpace(usuario.ResetPasswordCode) ||
-                usuario.ResetPasswordCodeExpiresAtUtc is null ||
-                usuario.ResetPasswordCode != request.Codigo.Trim() ||
-                usuario.ResetPasswordCodeExpiresAtUtc <= _systemClock.UtcNow)
-            {
-                throw new InvalidOperationException(_messageService.Get(MessageKeys.PasswordResetCodeInvalidOrExpired));
-            }
-
-            usuario.SenhaHash = _passwordHasherService.Hash(request.NovaSenha);
-            usuario.ResetPasswordCode = null;
-            usuario.ResetPasswordCodeExpiresAtUtc = null;
-
-            await _usuarioRepository.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Senha redefinida com sucesso para o usuário {UsuarioId}.", usuario.Id);
-        }
+        await _sapServiceLayerClient.LogoutAsync(session, cancellationToken);
     }
 }

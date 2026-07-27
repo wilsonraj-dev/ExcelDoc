@@ -27,47 +27,39 @@ namespace ExcelDoc.Server.Services
 
         public async Task<IReadOnlyCollection<PerfilMapeamentoResponseDto>> GetByDocumentoAsync(int documentoId, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
 
             var perfis = await _repository.GetByDocumentoIdAsync(documentoId, cancellationToken);
             return perfis
-                .Where(p => PodeVisualizar(usuario, p))
                 .Select(Map)
                 .ToList();
         }
 
         public async Task<PerfilMapeamentoResponseDto> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var perfil = await _repository.GetByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
-            EnsureCanAccess(usuario, perfil);
             return Map(perfil);
         }
 
         public async Task<PerfilMapeamentoResponseDto> CriarAsync(PerfilMapeamentoRequestDto request, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
 
             _ = await _repository.GetDocumentoByIdAsync(request.FK_IdDocumento, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.DocumentNotFound));
 
             EnsureCanCreate(usuario, request);
 
-            // Perfis padrão são globais. Todo perfil customizado pertence
-            // obrigatoriamente à empresa do usuário, inclusive administradores.
-            var isPadraoGlobal = usuario.TipoUsuario == TipoUsuario.Administrador && request.IsPadrao;
-            var empresaId = isPadraoGlobal ? null : usuario.FK_IdEmpresa;
-
-            await ValidarItensAsync(request.FK_IdDocumento, request.Itens, empresaId, cancellationToken);
+            await ValidarItensAsync(request.FK_IdDocumento, request.Itens, cancellationToken);
 
             var perfil = new PerfilMapeamento
             {
                 Nome = request.Nome.Trim(),
                 FK_IdDocumento = request.FK_IdDocumento,
-                FK_IdEmpresa = empresaId,
-                IsPadrao = isPadraoGlobal,
+                IsPadrao = request.IsPadrao,
                 DataCriacao = DateTime.UtcNow,
                 Itens = CreatePerfilMapeamentoItems(request.Itens)
             };
@@ -82,7 +74,7 @@ namespace ExcelDoc.Server.Services
 
         public async Task<PerfilMapeamentoResponseDto> AtualizarAsync(int id, PerfilMapeamentoRequestDto request, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var perfil = await _repository.GetByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
@@ -93,9 +85,7 @@ namespace ExcelDoc.Server.Services
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingProfileDocumentCannotBeChanged));
             }
 
-            var empresaId = perfil.FK_IdEmpresa;
-
-            await ValidarItensAsync(request.FK_IdDocumento, request.Itens, empresaId, cancellationToken);
+            await ValidarItensAsync(request.FK_IdDocumento, request.Itens, cancellationToken);
 
             perfil.Nome = request.Nome.Trim();
 
@@ -113,7 +103,7 @@ namespace ExcelDoc.Server.Services
 
         public async Task ExcluirAsync(int id, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var perfil = await _repository.GetByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
@@ -124,29 +114,19 @@ namespace ExcelDoc.Server.Services
 
         public async Task<PerfilMapeamentoResponseDto> ClonarAsync(int id, ClonePerfilMapeamentoRequestDto request, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var origem = await _repository.GetByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
-            EnsureCanAccess(usuario, origem);
-            EnsureCloneSourceIsConsistent(origem);
-
-            if (!usuario.FK_IdEmpresa.HasValue)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotCloneProfiles));
-            }
-
             var dataCriacao = DateTime.UtcNow;
-            var empresaId = usuario.FK_IdEmpresa.Value;
 
             var clone = new PerfilMapeamento
             {
                 Nome = request.Nome.Trim(),
                 FK_IdDocumento = origem.FK_IdDocumento,
-                FK_IdEmpresa = empresaId,
                 IsPadrao = false,
                 DataCriacao = dataCriacao,
-                Itens = ClonePerfilMapeamentoItems(origem.Itens, empresaId, dataCriacao, request.Nome.Trim())
+                Itens = ClonePerfilMapeamentoItems(origem.Itens, dataCriacao, request.Nome.Trim())
             };
 
             await _repository.AddAsync(clone, cancellationToken);
@@ -160,7 +140,6 @@ namespace ExcelDoc.Server.Services
         private async Task ValidarItensAsync(
             int documentoId,
             List<PerfilMapeamentoItemRequestDto> itens,
-            int? empresaId,
             CancellationToken cancellationToken)
         {
             if (itens.Count == 0)
@@ -278,10 +257,6 @@ namespace ExcelDoc.Server.Services
                     throw new InvalidOperationException(_messageService.Get(MessageKeys.MappingDoesNotBelongToCollection, item.FK_IdMapeamento, item.FK_IdColecao));
                 }
 
-                if (!mapeamento.IsPadraoGlobal && mapeamento.FK_IdEmpresa != empresaId)
-                {
-                    throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMapping));
-                }
             }
         }
 
@@ -307,7 +282,6 @@ namespace ExcelDoc.Server.Services
 
         private static List<PerfilMapeamentoItem> ClonePerfilMapeamentoItems(
             IEnumerable<PerfilMapeamentoItem> sourceItems,
-            int empresaId,
             DateTime dataCriacao,
             string cloneProfileName)
         {
@@ -321,7 +295,6 @@ namespace ExcelDoc.Server.Services
                     {
                         Nome = BuildClonedMappingName(item.Mapeamento.Nome, cloneProfileName),
                         FK_IdColecao = item.Mapeamento.FK_IdColecao,
-                        FK_IdEmpresa = empresaId,
                         IsPadrao = false,
                         DataCriacao = dataCriacao,
                         Campos = item.Mapeamento.Campos
@@ -347,18 +320,6 @@ namespace ExcelDoc.Server.Services
             return sourceList.Select(item => clonedBySourceId[item.Id]).ToList();
         }
 
-        private void EnsureCloneSourceIsConsistent(PerfilMapeamento origem)
-        {
-            var possuiMapeamentoDeOutraEmpresa = origem.Itens.Any(item =>
-                !item.Mapeamento.IsPadraoGlobal &&
-                item.Mapeamento.FK_IdEmpresa != origem.FK_IdEmpresa);
-
-            if (possuiMapeamentoDeOutraEmpresa)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMapping));
-            }
-        }
-
         private static string BuildClonedMappingName(string sourceName, string cloneProfileName)
         {
             const int maxLength = 150;
@@ -366,32 +327,14 @@ namespace ExcelDoc.Server.Services
             return name.Length <= maxLength ? name : name[..maxLength];
         }
 
-        private static bool PodeVisualizar(Usuario usuario, PerfilMapeamento perfil)
-        {
-            if (perfil.IsPadraoGlobal) return true;
-            return usuario.FK_IdEmpresa.HasValue &&
-                   usuario.FK_IdEmpresa == perfil.FK_IdEmpresa;
-        }
-
-        private void EnsureCanAccess(Usuario usuario, PerfilMapeamento perfil)
-        {
-            if (!PodeVisualizar(usuario, perfil))
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMappingProfile));
-            }
-        }
-
         private void EnsureCanEdit(Usuario usuario, PerfilMapeamento perfil)
         {
-            EnsureCanAccess(usuario, perfil);
-
-            if (perfil.IsPadraoGlobal)
+            if (usuario.TipoUsuario == TipoUsuario.Administrador)
             {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeProfile));
+                return;
             }
 
-            if (!usuario.FK_IdEmpresa.HasValue ||
-                perfil.FK_IdEmpresa != usuario.FK_IdEmpresa)
+            if (perfil.IsPadraoGlobal)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHavePermissionToChangeProfile));
             }
@@ -399,24 +342,10 @@ namespace ExcelDoc.Server.Services
 
         private void EnsureCanCreate(Usuario usuario, PerfilMapeamentoRequestDto request)
         {
-            if (request.IsPadrao)
+            if (request.IsPadrao &&
+                usuario.TipoUsuario != TipoUsuario.Administrador)
             {
-                if (usuario.TipoUsuario == TipoUsuario.Administrador)
-                {
-                    return;
-                }
-
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanCreateDefaultProfiles));
-            }
-
-            if (!usuario.FK_IdEmpresa.HasValue)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotCreateProfiles));
-            }
-
-            if (request.FK_IdEmpresa.HasValue && request.FK_IdEmpresa != usuario.FK_IdEmpresa)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserCannotCreateProfilesForAnotherCompany));
             }
         }
 
@@ -430,7 +359,6 @@ namespace ExcelDoc.Server.Services
                 Id = perfil.Id,
                 Nome = perfil.Nome,
                 FK_IdDocumento = perfil.FK_IdDocumento,
-                FK_IdEmpresa = perfil.FK_IdEmpresa,
                 IsPadrao = perfil.IsPadraoGlobal,
                 DataCriacao = perfil.DataCriacao,
                 Itens = itens.Select(i =>

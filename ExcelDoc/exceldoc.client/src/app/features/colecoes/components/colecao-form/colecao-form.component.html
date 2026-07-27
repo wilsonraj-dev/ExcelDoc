@@ -29,7 +29,7 @@
           <div class="workspace-header__title-row">
             <h1>{{ pageTitle }}</h1>
             <span class="scope-chip" [class.scope-chip--default]="isColecaoPadraoSelecionada">
-              <mat-icon>{{ isColecaoPadraoSelecionada ? 'verified' : 'domain' }}</mat-icon>
+              <mat-icon>{{ isColecaoPadraoSelecionada ? 'verified' : 'edit_note' }}</mat-icon>
               {{ escopoBadgeLabel }}
             </span>
           </div>
@@ -53,7 +53,7 @@
     </div>
 
     <div class="form-content" *ngIf="!isLoading">
-      <div class="feedback-stack" *ngIf="apiError || documentoError || permissionMessage || hasCompanyScopeUnavailable">
+      <div class="feedback-stack" *ngIf="apiError || documentoError || permissionMessage">
         <section class="feedback feedback--error" *ngIf="apiError" role="alert">
           <mat-icon>error_outline</mat-icon>
           <span>{{ apiError }}</span>
@@ -65,10 +65,6 @@
         <section class="feedback feedback--info" *ngIf="permissionMessage">
           <mat-icon>info</mat-icon>
           <span>{{ permissionMessage }}</span>
-        </section>
-        <section class="feedback feedback--warning" *ngIf="hasCompanyScopeUnavailable">
-          <mat-icon>warning_amber</mat-icon>
-          <span>{{ 'colecoes.colecaoForm.scope.companyUnavailableWarning' | translate }}</span>
         </section>
       </div>
 
@@ -151,7 +147,7 @@
             <div class="form-panel__body">
               <div class="scope-preview">
                 <span class="scope-preview__icon" [class.scope-preview__icon--default]="isColecaoPadraoSelecionada">
-                  <mat-icon>{{ isColecaoPadraoSelecionada ? 'public' : 'domain' }}</mat-icon>
+                  <mat-icon>{{ isColecaoPadraoSelecionada ? 'public' : 'edit_note' }}</mat-icon>
                 </span>
                 <div>
                   <strong>{{ escopoBadgeLabel }}</strong>

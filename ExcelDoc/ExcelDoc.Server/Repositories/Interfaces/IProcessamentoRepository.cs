@@ -11,8 +11,6 @@ namespace ExcelDoc.Server.Repositories.Interfaces
         Task<Processamento?> GetForExecutionAsync(int id, CancellationToken cancellationToken = default);
 
         Task<(IReadOnlyCollection<Processamento> Items, int TotalCount)> GetPagedAsync(
-            int empresaId,
-            int? empresaUsuarioId,
             StatusProcessamento? status,
             int pageNumber,
             int pageSize,

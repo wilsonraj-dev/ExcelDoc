@@ -6,9 +6,9 @@ namespace ExcelDoc.Server.Models
     {
         public int Id { get; set; }
 
-        public int FK_IdUsuario { get; set; }
-
-        public int FK_IdEmpresa { get; set; }
+        [Required]
+        [MaxLength(100)]
+        public string UsuarioSAP { get; set; } = string.Empty;
 
         public int FK_IdDocumento { get; set; }
 
@@ -38,10 +38,7 @@ namespace ExcelDoc.Server.Models
 
         public PerfilMapeamento? PerfilMapeamento { get; set; }
 
-        public Empresa Empresa { get; set; } = null!;
-
         public ICollection<ProcessamentoItem> Itens { get; set; } = new List<ProcessamentoItem>();
 
-        public Usuario Usuario { get; set; } = null!;
     }
 }

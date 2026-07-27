@@ -15,7 +15,6 @@ import {
   Colecao,
   TIPO_COLECAO_OPTIONS,
   TipoColecao,
-  getColecaoEmpresaId,
   isColecaoPadrao,
   resolveTipoColecao
 } from '../../models/colecao.model';
@@ -91,7 +90,7 @@ export class ColecaoListComponent implements OnInit {
     return this.dataSource.data.filter((colecao) => isColecaoPadrao(colecao)).length;
   }
 
-  get totalColecoesEmpresa(): number {
+  get totalColecoesPersonalizadas(): number {
     return this.totalColecoes - this.totalColecoesPadrao;
   }
 
@@ -174,7 +173,7 @@ export class ColecaoListComponent implements OnInit {
   getEscopoLabel(colecao: Colecao): string {
     return isColecaoPadrao(colecao)
       ? this.translate.instant('colecoes.colecaoList.scope.default')
-      : this.translate.instant('colecoes.colecaoList.scope.myCompany');
+      : this.translate.instant('colecoes.colecaoList.scope.custom');
   }
 
   isPadrao(colecao: Colecao): boolean {

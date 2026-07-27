@@ -1,147 +1,8 @@
 {
   "app-component": {
     "user": "Usuario",
-    "company": "Empresa",
-    "profile": "Perfil"
-  },
-  "companySettings": {
-    "table": {
-      "header": {
-        "company": "Empresa",
-        "actions": "Acción"
-      },
-      "columns": {
-        "database": "Base de datos",
-        "sapUser": "Usuario de SAP",
-        "viewConfig": "Ver configuración"
-      }
-    },
-    "pageTitle": "Configuración de la Empresa",
-    "createOrUpdate": "Cree o actualice los datos de integración de la empresa seleccionada.",
-    "visualizeList": "Visualice las empresas registradas y abra la configuración deseada.",
-    "manageLinked": "Administre la configuración de la empresa vinculada a su usuario.",
-    "registerCompany": "Registrar empresa",
-    "backToCompanies": "Volver a empresas",
-    "loadingCompanies": "Cargando empresas...",
-    "noCompanies": "No hay empresas disponibles para configurar.",
-    "linkServiceLayer": "URL del Service Layer",
-    "database": "Base de datos",
-    "usuarioSAP": "Usuario SAP",
-    "senhaSAP": "Contraseña SAP",
-    "submit": "Guardar configuración",
-    "viewConfig": "Ver configuración",
-    "loadingConfiguration": "Cargando configuración...",
-    "tableCompany": "Empresa",
-    "tableDatabase": "Base de datos",
-    "tableSapUser": "Usuario SAP",
-    "tableActions": "Acciones",
-    "errors": {
-      "loadCompanies": "Error al cargar empresas.",
-      "loadConfiguration": "Error al cargar la configuración de la empresa.",
-      "saveConfiguration": "Error al guardar la configuración de la empresa.",
-      "selectCompany": "Seleccione una empresa para configurar.",
-      "noLinkedCompany": "El usuario actual no está vinculado a una empresa.",
-      "selectedUnavailable": "La empresa seleccionada no está disponible para el usuario actual."
-    },
-    "error": {
-      "invalidCompany": "Empresa inválida para la visualización de la configuración."
-    },
-    "info": {
-      "noConfig": "No hay configuración registrada para esta empresa. Complete los campos para crear una nueva configuración."
-    },
-    "pageTitleAdmin": "Configuración de empresas",
-    "pageTitleUser": "Configuración de la empresa",
-    "pageTitleSelectedPrefix": "Configuración de la empresa",
-    "saving": "Guardando...",
-    "submitSaveChanges": "Guardar cambios",
-    "submitCreate": "Crear configuración",
-    "successSaved": "Configuración guardada con éxito."
-  },
-  "usuarios": {
-    "usuariosComponent": {
-      "header": {
-        "title": "Usuarios",
-        "description": "Visualice los usuarios registrados, cree nuevos accesos y vincule usuarios a empresas."
-      },
-      "loading": {
-        "companies": "Cargando empresas...",
-        "users": "Cargando usuarios..."
-      },
-      "createForm": {
-        "title": "Crear usuario",
-        "description": "Registre un nuevo usuario ya vinculado a una empresa, si es necesario.",
-        "fields": {
-          "user": "Usuario",
-          "email": "Correo electrónico",
-          "password": "Contraseña",
-          "confirmPassword": "Confirmar contraseña",
-          "company": "Empresa"
-        },
-        "options": {
-          "noCompany": "Sin empresa vinculada"
-        },
-        "actions": {
-          "create": "Crear usuario",
-          "creating": "Creando..."
-        },
-        "errors": {
-          "userRequired": "Informe el nombre del usuario.",
-          "emailRequired": "Informe un correo electrónico válido.",
-          "passwordRequired": "Informe una contraseña con al menos 6 caracteres.",
-          "confirmPasswordRequired": "Confirme la contraseña informada."
-        }
-      },
-      "list": {
-        "title": "Usuarios registrados",
-        "description": "Administre la vinculación de los usuarios a las empresas registradas.",
-        "search": {
-          "label": "Buscar usuario",
-          "placeholder": "Nombre, correo electrónico o empresa",
-          "button": "Buscar"
-        }
-      },
-      "table": {
-        "header": {
-          "user": "Usuario",
-          "email": "Correo electrónico",
-          "profile": "Perfil",
-          "currentCompany": "Empresa actual",
-          "status": "Estado",
-          "linkCompany": "Vincular empresa"
-        },
-        "values": {
-          "notLinked": "No vinculada",
-          "active": "Activo",
-          "inactive": "Inactivo",
-          "notApplicable": "No aplicable"
-        },
-        "actions": {
-          "link": "Vincular",
-          "saving": "Guardando..."
-        },
-        "paginationAriaLabel": "Paginación de la lista de usuarios"
-      },
-      "empty": {
-        "noUsers": "No se encontraron usuarios."
-      },
-      "feedback": {
-        "success": {
-          "createdPrefix": "Usuario",
-          "createdSuffix": "creado con éxito.",
-          "linkedPrefix": "Usuario",
-          "linkedSuffix": "vinculado con éxito."
-        },
-        "errors": {
-          "passwordMismatch": "La confirmación de la contraseña no coincide.",
-          "createUser": "No fue posible crear el usuario.",
-          "adminLinkNotAllowed": "Los usuarios administradores no pueden vincularse mediante esta funcionalidad.",
-          "selectCompany": "Seleccione una empresa para vincular el usuario.",
-          "linkUser": "No fue posible vincular el usuario a la empresa.",
-          "loadCompanies": "No fue posible cargar las empresas disponibles.",
-          "loadUsers": "No fue posible cargar los usuarios."
-        }
-      }
-    }
+    "profile": "Perfil",
+    "database": "Base SAP"
   },
   "documentos": {
     "documentoForm": {
@@ -246,8 +107,8 @@
         "ariaLabel": "Resumen de colecciones",
         "total": "Colecciones registradas",
         "defaults": "Estructuras predeterminadas",
-        "company": "Estructuras de empresas",
-        "results": "resultado(s)"
+        "results": "resultado(s)",
+        "custom": "Personalizadas"
       },
       "adminInfo": {
         "title": "Estructuras administrativas",
@@ -286,7 +147,7 @@
       },
       "scope": {
         "default": "Predeterminada",
-        "myCompany": "Mi empresa"
+        "custom": "Personalizada"
       },
       "empty": {
         "title": "No se encontraron colecciones",
@@ -350,12 +211,10 @@
       "scope": {
         "title": "Alcance de la colección",
         "default": "Predeterminada",
-        "myCompany": "Mi empresa",
-        "defaultDescription": "Colección global disponible para todas las empresas.",
-        "customCompanyDescriptionPrefix": "Colección personalizada de la empresa",
-        "customCompanyDescription": "Colección personalizada vinculada a la empresa del usuario.",
-        "companyUnavailableWarning": "El usuario actual no tiene una empresa vinculada para guardar una colección personalizada.",
-        "createAsDefault": "Crear como colección predeterminada"
+        "defaultDescription": "Colección predeterminada del sistema disponible en esta instalación.",
+        "createAsDefault": "Crear como colección predeterminada",
+        "custom": "Personalizada",
+        "customDescription": "Colección personalizada disponible en esta instalación."
       },
       "actions": {
         "back": "Volver a colecciones",
@@ -392,9 +251,7 @@
         },
         "errors": {
           "invalidCollection": "Colección inválida para edición.",
-          "identifyCompany": "No fue posible identificar la empresa del usuario para crear una colección personalizada.",
           "saveCollection": "No fue posible guardar la colección.",
-          "userWithoutCompany": "El usuario actual no está vinculado a una empresa para crear colecciones personalizadas.",
           "loadDocuments": "No fue posible cargar la lista de documentos.",
           "editDefaultCollection": "Las colecciones predeterminadas del sistema no pueden ser modificadas por usuarios comunes.",
           "loadCollection": "No fue posible cargar la colección."
@@ -405,16 +262,16 @@
   "mapeamento": {
     "common": {
       "collectionNumberPrefix": "Colección #",
-      "company": "Empresa",
       "readOnly": "Solo lectura",
       "scope": {
         "default": "Predeterminado",
-        "myCompany": "Mi empresa"
+        "custom": "Personalizado"
       },
       "actions": {
         "cancel": "Cancelar",
         "create": "Crear"
-      }
+      },
+      "custom": "Personalizado"
     },
     "workspace": {
       "breadcrumbs": {
@@ -430,7 +287,9 @@
         "marketingDocuments": "Documentos de marketing",
         "createdAt": "Creado el"
       },
-      "status": { "active": "Activo" },
+      "status": {
+        "active": "Activo"
+      },
       "header": {
         "description": "Configure cómo se importan los campos de Excel a SAP Business One."
       },
@@ -456,7 +315,7 @@
       },
       "protection": {
         "title": "Modelo predeterminado protegido",
-        "description": "Este modelo funciona inmediatamente para documentos de marketing. Clónelo solo cuando su empresa necesite campos o columnas diferentes."
+        "description": "Este modelo funciona inmediatamente para documentos de marketing. Clónelo solo cuando necesite campos o columnas diferentes."
       },
       "legacy": {
         "title": "Configuración antigua en modo protegido",
@@ -474,7 +333,7 @@
       "cloneDialog": {
         "title": "Crear mapeo personalizado",
         "label": "Nombre de la nueva configuración",
-        "copySuffix": "Mi empresa"
+        "copySuffix": "Copia"
       },
       "documentInfo": {
         "title": "Información del documento",
@@ -492,7 +351,6 @@
         "selectCollectionDescription": "Elija una parte de la estructura a la izquierda para ver sus campos."
       },
       "feedback": {
-        "companyRequired": "Vincule el usuario a una empresa para crear una versión personalizada.",
         "cloned": "Versión personalizada creada. Los campos ahora se pueden editar con seguridad.",
         "cloneError": "No se pudo crear la versión personalizada.",
         "loadDocumentsError": "No se pudieron cargar los documentos.",
@@ -505,7 +363,9 @@
         "eyebrow": "Mapeo de campos",
         "description": "Seleccione un mapeo de la colección para editar los campos o usarlo como base para clonarlo."
       },
-      "fields": { "mapping": "Mapeo" },
+      "fields": {
+        "mapping": "Mapeo"
+      },
       "actions": {
         "newMapping": "Nuevo mapeo",
         "clone": "Clonar",
@@ -515,13 +375,15 @@
       },
       "tooltips": {
         "defaultMapping": "Mapeo predeterminado disponible para toda la colección.",
-        "companyMapping": "Mapeo personalizado de su empresa."
+        "customMapping": "Mapeo personalizado de esta instalación."
       },
       "summary": {
         "oneField": "1 campo",
         "fieldsSuffix": "campos"
       },
-      "empty": { "noMappings": "No hay mapeos disponibles para esta colección." },
+      "empty": {
+        "noMappings": "No hay mapeos disponibles para esta colección."
+      },
       "cloneDialog": {
         "title": "Clonar mapeo",
         "label": "Nombre del nuevo mapeo"
@@ -538,7 +400,6 @@
         },
         "errors": {
           "invalidCollection": "Colección inválida.",
-          "identifyCompany": "No fue posible identificar la empresa del usuario para crear el mapeo.",
           "cloneMapping": "No fue posible clonar el mapeo.",
           "loadMappings": "No fue posible cargar los mapeos de la colección.",
           "createMapping": "No fue posible crear el mapeo.",
@@ -546,14 +407,22 @@
         }
       }
     },
-    "mapeamentoList": { "feedback": { "errors": { "loadCollections": "No fue posible cargar las colecciones." } } },
+    "mapeamentoList": {
+      "feedback": {
+        "errors": {
+          "loadCollections": "No fue posible cargar las colecciones."
+        }
+      }
+    },
     "novoMapeamentoDialog": {
       "title": "Nuevo mapeo",
       "fields": {
         "name": "Nombre del mapeo",
         "defaultMapping": "Mapeo predeterminado"
       },
-      "placeholders": { "name": "Ej.: Mapeo financiero" },
+      "placeholders": {
+        "name": "Ej.: Mapeo financiero"
+      },
       "validation": {
         "nameRequired": "Informe el nombre del mapeo.",
         "nameMaxLength": "El nombre debe tener como máximo 120 caracteres."
@@ -621,7 +490,9 @@
         "of": "de",
         "fields": "campos"
       },
-      "preview": { "emptyColumn": "(columna vacía)" },
+      "preview": {
+        "emptyColumn": "(columna vacía)"
+      },
       "validation": {
         "fieldNameRequired": "El nombre del campo es obligatorio",
         "columnIndexPositive": "El índice debe ser un número positivo",
@@ -630,7 +501,9 @@
         "formatRequired": "El formato es obligatorio para DateTime"
       },
       "feedback": {
-        "info": { "noChanges": "No hay cambios para guardar." },
+        "info": {
+          "noChanges": "No hay cambios para guardar."
+        },
         "success": {
           "saved": "Campos del mapeo guardados con éxito.",
           "previewLoadedPrefix": "Vista previa cargada:",
@@ -652,8 +525,7 @@
       "document": "Documento",
       "scope": {
         "default": "Predeterminado",
-        "myCompany": "Mi empresa",
-        "company": "Empresa"
+        "custom": "Personalizado"
       },
       "loading": {
         "documents": "Cargando documentos...",
@@ -675,7 +547,9 @@
         "title": "Perfiles de mapeo",
         "description": "Administre perfiles que agrupan mapeos por colección para cada documento."
       },
-      "loading": { "profiles": "Cargando perfiles..." },
+      "loading": {
+        "profiles": "Cargando perfiles..."
+      },
       "actions": {
         "newProfile": "Nuevo perfil",
         "edit": "Editar",
@@ -694,8 +568,12 @@
         },
         "paginationAriaLabel": "Paginación de la lista de perfiles de mapeo"
       },
-      "tooltips": { "defaultProfile": "El perfil predeterminado no se puede editar" },
-      "empty": { "noProfiles": "No se encontró ningún perfil de mapeo para este documento." },
+      "tooltips": {
+        "defaultProfile": "El perfil predeterminado no se puede editar"
+      },
+      "empty": {
+        "noProfiles": "No se encontró ningún perfil de mapeo para este documento."
+      },
       "cloneDialog": {
         "title": "Clonar perfil",
         "label": "Nombre del nuevo perfil"
@@ -723,7 +601,9 @@
         "edit": "Editar perfil de mapeo",
         "view": "Visualizar perfil de mapeo"
       },
-      "loading": { "profile": "Cargando perfil..." },
+      "loading": {
+        "profile": "Cargando perfil..."
+      },
       "fields": {
         "profileName": "Nombre del perfil",
         "headerCollection": "Colección de encabezado",
@@ -731,7 +611,9 @@
         "mapping": "Mapeo",
         "parentCollection": "Colección padre"
       },
-      "placeholders": { "profileName": "Ej.: Perfil predeterminado de importación" },
+      "placeholders": {
+        "profileName": "Ej.: Perfil predeterminado de importación"
+      },
       "sections": {
         "mappingsByCollection": "Mapeos por colección",
         "headerCollection": "Colección de encabezado",
@@ -781,7 +663,7 @@
       "actions": "Acciones",
       "scope": {
         "default": "Predeterminado",
-        "company": "Empresa"
+        "custom": "Personalizado"
       },
       "status": {
         "processing": "Procesando",
@@ -796,16 +678,30 @@
       "description": "Estructura preparada para componentes reutilizables, servicios y modelos del dominio de procesamiento."
     },
     "processamentoList": {
-      "header": { "title": "Procesamientos" },
+      "header": {
+        "title": "Procesamientos"
+      },
       "filters": {
         "status": "Filtrar por estado",
         "all": "Todos"
       },
-      "actions": { "newImport": "Nueva importación" },
-      "tooltips": { "viewDetails": "Ver detalles" },
-      "empty": { "noProcessings": "No se encontró ningún procesamiento." },
-      "table": { "paginationAriaLabel": "Paginación de la lista de procesamientos" },
-      "feedback": { "errors": { "loadProcessings": "No fue posible cargar los procesamientos." } }
+      "actions": {
+        "newImport": "Nueva importación"
+      },
+      "tooltips": {
+        "viewDetails": "Ver detalles"
+      },
+      "empty": {
+        "noProcessings": "No se encontró ningún procesamiento."
+      },
+      "table": {
+        "paginationAriaLabel": "Paginación de la lista de procesamientos"
+      },
+      "feedback": {
+        "errors": {
+          "loadProcessings": "No fue posible cargar los procesamientos."
+        }
+      }
     },
     "processamentoUpload": {
       "title": "Importar planilla",
@@ -813,7 +709,9 @@
         "mappingProfile": "Perfil de mapeo",
         "mappingConfiguration": "Configuración de mapeo"
       },
-      "loading": { "profiles": "Cargando perfiles..." },
+      "loading": {
+        "profiles": "Cargando perfiles..."
+      },
       "actions": {
         "selectFile": "Seleccionar archivo .xlsx",
         "process": "Procesar"
@@ -828,18 +726,21 @@
       },
       "tooltips": {
         "defaultProfile": "Perfil predeterminado disponible para todos los usuarios.",
-        "companyProfile": "Perfil personalizado para la empresa."
+        "customProfile": "Perfil personalizado de esta instalación."
       },
       "validation": {
         "documentRequired": "Seleccione un documento.",
         "profileRequired": "Seleccione un perfil de mapeo."
       },
       "feedback": {
-        "success": { "uploaded": "Archivo enviado para procesamiento." },
-        "info": { "noProfiles": "No hay perfiles de mapeo disponibles para el documento seleccionado." },
+        "success": {
+          "uploaded": "Archivo enviado para procesamiento."
+        },
+        "info": {
+          "noProfiles": "No hay perfiles de mapeo disponibles para el documento seleccionado."
+        },
         "errors": {
           "invalidFile": "Seleccione un archivo .xlsx válido.",
-          "companyNotFound": "Empresa no identificada en la sesión.",
           "uploadFile": "No fue posible enviar el archivo para procesamiento.",
           "loadDocuments": "No fue posible cargar los documentos.",
           "loadProfiles": "No fue posible cargar los perfiles de mapeo."
@@ -847,7 +748,9 @@
       }
     },
     "processamentoDetalhe": {
-      "header": { "title": "Detalles del procesamiento" },
+      "header": {
+        "title": "Detalles del procesamiento"
+      },
       "actions": {
         "back": "Volver",
         "reprocess": "Reprocesar",
@@ -857,7 +760,9 @@
         "totalRecords": "Total registros",
         "progress": "Progreso"
       },
-      "itemsLog": { "title": "Log de ítems" },
+      "itemsLog": {
+        "title": "Log de ítems"
+      },
       "table": {
         "header": {
           "line": "Línea",
@@ -865,10 +770,16 @@
         },
         "paginationAriaLabel": "Paginación de los ítems del procesamiento"
       },
-      "tooltips": { "viewJson": "Ver JSON" },
-      "empty": { "noItems": "No se encontró ningún ítem." },
+      "tooltips": {
+        "viewJson": "Ver JSON"
+      },
+      "empty": {
+        "noItems": "No se encontró ningún ítem."
+      },
       "feedback": {
-        "info": { "noErrorRecords": "Ningún registro con error." },
+        "info": {
+          "noErrorRecords": "Ningún registro con error."
+        },
         "errors": {
           "loadProcessing": "No fue posible cargar el procesamiento.",
           "loadItems": "No fue posible cargar los ítems."
@@ -893,14 +804,6 @@
         "dashboard": {
           "label": "Dashboard",
           "description": "Vista general inicial"
-        },
-        "companies": {
-          "label": "Empresas",
-          "description": "Administre registros y configuraciones."
-        },
-        "users": {
-          "label": "Usuarios",
-          "description": "Administre accesos y vínculos con empresas."
         },
         "documents": {
           "label": "Documentos",

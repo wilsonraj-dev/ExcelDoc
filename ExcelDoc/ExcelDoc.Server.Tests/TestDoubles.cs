@@ -14,12 +14,6 @@ internal sealed class StubMessageService : IMessageService
 internal sealed class StubUsuarioAcessoService(Usuario usuario) : IUsuarioAcessoService
 {
     public Task<Usuario> GetUsuarioAtualAsync(
-        bool requerEmpresaVinculada = true,
-        CancellationToken cancellationToken = default) => Task.FromResult(usuario);
-
-    public Task<Usuario> ValidarAcessoEmpresaAsync(
-        int empresaId,
-        bool requerAdministrador,
         CancellationToken cancellationToken = default) => Task.FromResult(usuario);
 }
 

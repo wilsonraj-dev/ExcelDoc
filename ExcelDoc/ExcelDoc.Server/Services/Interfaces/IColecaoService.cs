@@ -4,7 +4,7 @@ namespace ExcelDoc.Server.Services.Interfaces
 {
     public interface IColecaoService
     {
-        Task<IReadOnlyCollection<ColecaoResponseDto>> GetByEmpresaIdAsync(int? empresaId, CancellationToken cancellationToken = default);
+        Task<IReadOnlyCollection<ColecaoResponseDto>> GetAllAsync(CancellationToken cancellationToken = default);
 
         Task<ColecaoResponseDto> GetByIdAsync(int colecaoId, CancellationToken cancellationToken = default);
 

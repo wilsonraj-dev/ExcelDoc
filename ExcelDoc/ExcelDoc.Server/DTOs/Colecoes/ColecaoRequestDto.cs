@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using ExcelDoc.Server.Models;
 
 namespace ExcelDoc.Server.DTOs.Colecoes
@@ -16,8 +15,7 @@ namespace ExcelDoc.Server.DTOs.Colecoes
         [Required]
         public TipoColecao TipoColecao { get; set; }
 
-        [JsonPropertyName("fk_IdEmpresa")]
-        public int? FK_IdEmpresa { get; set; }
+        public bool IsPadrao { get; set; }
 
         public IReadOnlyCollection<int> DocumentoIds { get; set; } = Array.Empty<int>();
     }

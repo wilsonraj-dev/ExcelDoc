@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService, LoginResponse } from './core/services/auth.service';
 import { LanguageService } from './core/services/language.service';
@@ -8,7 +8,7 @@ import { LanguageService } from './core/services/language.service';
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'ExcelDoc';
 
   constructor(
@@ -30,14 +30,8 @@ export class AppComponent {
     return this.session !== null;
   }
 
-  get companyLabel(): string {
-    const session = this.session;
-
-    if (!session) {
-      return '';
-    }
-
-    return session.nomeEmpresa?.trim() || (this.authService.isAdministrator(session) ? 'Todas as empresas' : 'Não vinculada');
+  get databaseLabel(): string {
+    return this.session?.database.trim() ?? '';
   }
 
   logout(): void {

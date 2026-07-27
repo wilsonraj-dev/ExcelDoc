@@ -7,6 +7,7 @@ using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Options;
 using ExcelDoc.Server.Repositories.Interfaces;
+using ExcelDoc.Server.Sap;
 using ExcelDoc.Server.Services.Interfaces;
 using Microsoft.Extensions.Options;
 
@@ -23,6 +24,8 @@ namespace ExcelDoc.Server.Services
         private readonly IMessageService _messageService;
         private readonly IPerfilMapeamentoRepository _perfilMapeamentoRepository;
         private readonly IProcessamentoRepository _processamentoRepository;
+        private readonly ISapSessionContextAccessor _sapSessionContextAccessor;
+        private readonly ISapSessionStore _sapSessionStore;
         private readonly ISystemClock _systemClock;
         private readonly IUsuarioAcessoService _usuarioAcessoService;
         private readonly ProcessingOptions _processingOptions;
@@ -36,6 +39,8 @@ namespace ExcelDoc.Server.Services
             IMessageService messageService,
             IPerfilMapeamentoRepository perfilMapeamentoRepository,
             IProcessamentoRepository processamentoRepository,
+            ISapSessionContextAccessor sapSessionContextAccessor,
+            ISapSessionStore sapSessionStore,
             ISystemClock systemClock,
             IUsuarioAcessoService usuarioAcessoService,
             IOptions<ProcessingOptions> processingOptions,
@@ -48,6 +53,8 @@ namespace ExcelDoc.Server.Services
             _messageService = messageService;
             _perfilMapeamentoRepository = perfilMapeamentoRepository;
             _processamentoRepository = processamentoRepository;
+            _sapSessionContextAccessor = sapSessionContextAccessor;
+            _sapSessionStore = sapSessionStore;
             _systemClock = systemClock;
             _usuarioAcessoService = usuarioAcessoService;
             _processingOptions = processingOptions.Value;
@@ -61,7 +68,7 @@ namespace ExcelDoc.Server.Services
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.FileRequired));
             }
 
-            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(request.EmpresaId, false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
 
             var documento = await _documentoRepository.GetByIdAsync(request.DocumentoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.DocumentNotFound));
@@ -69,7 +76,6 @@ namespace ExcelDoc.Server.Services
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
             ValidateDocumentoPerfilMapeamento(documento, perfilMapeamento);
-            ValidateAccessToPerfilMapeamento(usuario, perfilMapeamento, request.EmpresaId);
 
             if (perfilMapeamento.Itens.Count == 0)
             {
@@ -96,8 +102,7 @@ namespace ExcelDoc.Server.Services
 
             var entity = new Processamento
             {
-                FK_IdUsuario = usuario.Id,
-                FK_IdEmpresa = request.EmpresaId,
+                UsuarioSAP = usuario.NomeUsuario,
                 FK_IdDocumento = documento.Id,
                 FK_IdPerfilMapeamento = perfilMapeamento.Id,
                 NomeArquivo = request.Arquivo.FileName,
@@ -116,14 +121,30 @@ namespace ExcelDoc.Server.Services
             entity.Documento = documento;
             entity.PerfilMapeamento = perfilMapeamento;
 
-            await _backgroundTaskQueue.EnqueueAsync(new ProcessamentoQueueItem
+            var sessionKey = _sapSessionContextAccessor.GetRequiredSessionKey();
+            if (!_sapSessionStore.TryAcquireJob(sessionKey))
             {
-                ProcessamentoId = entity.Id,
-                FilePath = filePath,
-                Attempt = 0
-            }, cancellationToken);
+                throw new SapSessionExpiredException(
+                    "A sessão do SAP Business One expirou antes do enfileiramento.");
+            }
 
-            _logger.LogInformation("Processamento {ProcessamentoId} criado para empresa {EmpresaId}, documento {DocumentoId} e perfil {PerfilMapeamentoId}", entity.Id, entity.FK_IdEmpresa, entity.FK_IdDocumento, entity.FK_IdPerfilMapeamento);
+            try
+            {
+                await _backgroundTaskQueue.EnqueueAsync(new ProcessamentoQueueItem
+                {
+                    ProcessamentoId = entity.Id,
+                    FilePath = filePath,
+                    SessionKey = sessionKey,
+                    Attempt = 0
+                }, cancellationToken);
+            }
+            catch
+            {
+                _sapSessionStore.ReleaseJob(sessionKey);
+                throw;
+            }
+
+            _logger.LogInformation("Processamento {ProcessamentoId} criado para documento {DocumentoId} e perfil {PerfilMapeamentoId}", entity.Id, entity.FK_IdDocumento, entity.FK_IdPerfilMapeamento);
 
             return Map(entity);
         }
@@ -133,20 +154,17 @@ namespace ExcelDoc.Server.Services
             var processamento = await _processamentoRepository.GetByIdAsync(processamentoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.ProcessingNotFound));
 
-            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(processamento.FK_IdEmpresa, false, cancellationToken);
-            EnsureCanReadProcessamentoProfile(usuario, processamento.PerfilMapeamento);
+            await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             return Map(processamento);
         }
 
         public async Task<PagedResultDto<ProcessamentoResponseDto>> GetPagedAsync(ProcessamentoQueryDto query, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(query.EmpresaId, false, cancellationToken);
+            await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
 
             var pageNumber = Math.Max(1, query.PageNumber);
             var pageSize = Math.Clamp(query.PageSize, 1, _processingOptions.MaxPageSize);
             var result = await _processamentoRepository.GetPagedAsync(
-                query.EmpresaId,
-                usuario.FK_IdEmpresa,
                 query.Status,
                 pageNumber,
                 pageSize,
@@ -166,8 +184,7 @@ namespace ExcelDoc.Server.Services
             var processamento = await _processamentoRepository.GetByIdAsync(processamentoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.ProcessingNotFound));
 
-            var usuario = await _usuarioAcessoService.ValidarAcessoEmpresaAsync(processamento.FK_IdEmpresa, false, cancellationToken);
-            EnsureCanReadProcessamentoProfile(usuario, processamento.PerfilMapeamento);
+            await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
 
             var pageNumber = Math.Max(1, query.PageNumber);
             var pageSize = Math.Clamp(query.PageSize, 1, _processingOptions.MaxPageSize);
@@ -230,41 +247,6 @@ namespace ExcelDoc.Server.Services
             }
         }
 
-        private void ValidateAccessToPerfilMapeamento(
-            Usuario usuario,
-            PerfilMapeamento perfilMapeamento,
-            int empresaProcessamentoId)
-        {
-            if (perfilMapeamento.IsPadraoGlobal)
-            {
-                return;
-            }
-
-            if (!usuario.FK_IdEmpresa.HasValue ||
-                usuario.FK_IdEmpresa != perfilMapeamento.FK_IdEmpresa ||
-                perfilMapeamento.FK_IdEmpresa != empresaProcessamentoId)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToMappingProfile));
-            }
-        }
-
-        private void EnsureCanReadProcessamentoProfile(
-            Usuario usuario,
-            PerfilMapeamento? perfilMapeamento)
-        {
-            if (perfilMapeamento is null || perfilMapeamento.IsPadraoGlobal)
-            {
-                return;
-            }
-
-            if (!usuario.FK_IdEmpresa.HasValue ||
-                perfilMapeamento.FK_IdEmpresa != usuario.FK_IdEmpresa)
-            {
-                throw new UnauthorizedAccessException(
-                    _messageService.Get(MessageKeys.UserDoesNotHaveAccessToMappingProfile));
-            }
-        }
-
         private static string? GetExceptionData(Exception exception, string key)
         {
             return exception.Data.Contains(key) ? exception.Data[key]?.ToString() : null;
@@ -275,8 +257,7 @@ namespace ExcelDoc.Server.Services
             return new ProcessamentoResponseDto
             {
                 Id = processamento.Id,
-                UsuarioId = processamento.FK_IdUsuario,
-                EmpresaId = processamento.FK_IdEmpresa,
+                UsuarioSAP = processamento.UsuarioSAP,
                 DocumentoId = processamento.FK_IdDocumento,
                 PerfilMapeamentoId = processamento.FK_IdPerfilMapeamento,
                 NomePerfilMapeamento = processamento.PerfilMapeamento?.Nome ?? string.Empty,

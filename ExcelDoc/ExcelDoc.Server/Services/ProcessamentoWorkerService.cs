@@ -11,39 +11,36 @@ namespace ExcelDoc.Server.Services
         private const string RequestPayloadKey = "RequestPayload";
         private const string ResponseBodyKey = "ResponseBody";
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-        private readonly IConfiguracaoRepository _configuracaoRepository;
-        private readonly IEncryptionService _encryptionService;
         private readonly IExcelReaderService _excelReaderService;
         private readonly IJsonBuilderService _jsonBuilderService;
         private readonly IMessageService _messageService;
         private readonly IDocumentoUnicoService _documentoUnicoService;
         private readonly IAgrupamentoService _agrupamentoService;
         private readonly IProcessamentoRepository _processamentoRepository;
+        private readonly ISapSessionContextAccessor _sapSessionContextAccessor;
         private readonly ISapServiceLayerClient _sapServiceLayerClient;
         private readonly ISystemClock _systemClock;
         private readonly ILogger<ProcessamentoWorkerService> _logger;
 
         public ProcessamentoWorkerService(
-            IConfiguracaoRepository configuracaoRepository,
-            IEncryptionService encryptionService,
             IExcelReaderService excelReaderService,
             IJsonBuilderService jsonBuilderService,
             IMessageService messageService,
             IDocumentoUnicoService documentoUnicoService,
             IAgrupamentoService agrupamentoService,
             IProcessamentoRepository processamentoRepository,
+            ISapSessionContextAccessor sapSessionContextAccessor,
             ISapServiceLayerClient sapServiceLayerClient,
             ISystemClock systemClock,
             ILogger<ProcessamentoWorkerService> logger)
         {
-            _configuracaoRepository = configuracaoRepository;
-            _encryptionService = encryptionService;
             _excelReaderService = excelReaderService;
             _jsonBuilderService = jsonBuilderService;
             _messageService = messageService;
             _documentoUnicoService = documentoUnicoService;
             _agrupamentoService = agrupamentoService;
             _processamentoRepository = processamentoRepository;
+            _sapSessionContextAccessor = sapSessionContextAccessor;
             _sapServiceLayerClient = sapServiceLayerClient;
             _systemClock = systemClock;
             _logger = logger;
@@ -53,19 +50,13 @@ namespace ExcelDoc.Server.Services
         {
             var processamento = await _processamentoRepository.GetForExecutionAsync(item.ProcessamentoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.ProcessingNotFound));
-
-            var configuracao = await _configuracaoRepository.GetByEmpresaIdAsync(processamento.FK_IdEmpresa, cancellationToken)
-                ?? throw new InvalidOperationException(_messageService.Get(MessageKeys.ConfigurationNotFound));
-
-            var sapConfig = DecryptConfiguration(configuracao);
+            var sapSession = _sapSessionContextAccessor.GetRequiredSession();
             var rows = await _excelReaderService.ReadRowsAsync(item.FilePath, cancellationToken);
 
             if (processamento.PerfilMapeamento is null)
             {
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.ProcessingWithoutMappingProfileNotSupported));
             }
-
-            ValidateMappingTenant(processamento);
 
             IReadOnlyList<Background.ExcelDocumentGroup> groups;
             try
@@ -78,7 +69,7 @@ namespace ExcelDoc.Server.Services
                 return;
             }
 
-            await ProcessWithPerfilAsync(processamento, sapConfig, groups, cancellationToken);
+            await ProcessWithPerfilAsync(processamento, sapSession, groups, cancellationToken);
 
             _logger.LogInformation("Processamento {ProcessamentoId} finalizado. Sucesso={TotalSucesso} Erro={TotalErro} Ignorado={TotalIgnorado}",
                 processamento.Id, processamento.TotalSucesso, processamento.TotalErro, processamento.TotalIgnorado);
@@ -86,12 +77,11 @@ namespace ExcelDoc.Server.Services
 
         private async Task ProcessWithPerfilAsync(
             Processamento processamento,
-            Configuracao sapConfig,
+            Sap.SapSessionContext sapSession,
             IReadOnlyList<Background.ExcelDocumentGroup> groups,
             CancellationToken cancellationToken)
         {
             var perfil = processamento.PerfilMapeamento!;
-            Background.SapSession? sapSession = null;
 
             processamento.TotalRegistros = groups.Count;
             processamento.TotalErro = 0;
@@ -142,10 +132,11 @@ namespace ExcelDoc.Server.Services
                     }
                     else
                     {
-                        sapSession ??= await _sapServiceLayerClient.LoginAsync(sapConfig, cancellationToken);
-
                         var responseJson = await _sapServiceLayerClient.PostAsync(
-                            sapConfig, sapSession, processamento.Documento.Endpoint, payloadJson, cancellationToken);
+                            sapSession,
+                            processamento.Documento.Endpoint,
+                            payloadJson,
+                            cancellationToken);
 
                         itemLog.JsonRetorno = responseJson;
                         itemLog.Mensagem = _messageService.Get(MessageKeys.DocumentProcessedSuccessfully);
@@ -219,35 +210,5 @@ namespace ExcelDoc.Server.Services
             return exception.Data.Contains(key) ? exception.Data[key]?.ToString() : null;
         }
 
-        private void ValidateMappingTenant(Processamento processamento)
-        {
-            var perfil = processamento.PerfilMapeamento!;
-            if (!perfil.IsPadraoGlobal && perfil.FK_IdEmpresa != processamento.FK_IdEmpresa)
-            {
-                throw new UnauthorizedAccessException(
-                    _messageService.Get(MessageKeys.UserDoesNotHaveAccessToMappingProfile));
-            }
-
-            if (perfil.Itens.Any(item =>
-                    !item.Mapeamento.IsPadraoGlobal &&
-                    item.Mapeamento.FK_IdEmpresa != processamento.FK_IdEmpresa))
-            {
-                throw new UnauthorizedAccessException(
-                    _messageService.Get(MessageKeys.UserDoesNotHaveAccessToMapping));
-            }
-        }
-
-        private Configuracao DecryptConfiguration(Configuracao configuracao)
-        {
-            return new Configuracao
-            {
-                Id = configuracao.Id,
-                FK_IdEmpresa = configuracao.FK_IdEmpresa,
-                LinkServiceLayer = configuracao.LinkServiceLayer,
-                Database = configuracao.Database,
-                UsuarioSAP = _encryptionService.Decrypt(configuracao.UsuarioSAP),
-                SenhaSAP = _encryptionService.Decrypt(configuracao.SenhaSAP)
-            };
-        }
     }
 }

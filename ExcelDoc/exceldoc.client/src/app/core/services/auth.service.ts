@@ -1,26 +1,18 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { EMPTY, Observable, catchError, tap } from 'rxjs';
 import {
   AUTH_ROLES,
-  ForgotPasswordRequest,
   LoginRequest,
   LoginResponse,
-  MessageResponse,
-  RegisterRequest,
-  RegisterResponse,
-  ResetPasswordRequest
+  SapBase
 } from '../../features/auth/models/auth.models';
 
 export {
   AUTH_ROLES,
-  type ForgotPasswordRequest,
   type LoginRequest,
   type LoginResponse,
-  type MessageResponse,
-  type RegisterRequest,
-  type RegisterResponse,
-  type ResetPasswordRequest
+  type SapBase
 } from '../../features/auth/models/auth.models';
 
 @Injectable({
@@ -42,21 +34,22 @@ export class AuthService {
     );
   }
 
-  register(request: RegisterRequest): Observable<RegisterResponse> {
-    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, request);
-  }
-
-  forgotPassword(request: ForgotPasswordRequest): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.apiUrl}/forgot-password`, request);
-  }
-
-  resetPassword(request: ResetPasswordRequest): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.apiUrl}/reset-password`, request);
+  getBases(): Observable<SapBase[]> {
+    return this.http.get<SapBase[]>(`${this.apiUrl}/bases`);
   }
 
   logout(): void {
-    localStorage.removeItem(this.tokenStorageKey);
-    localStorage.removeItem(this.sessionStorageKey);
+    const token = this.getToken();
+
+    this.clearLocalSession();
+
+    const options = token
+      ? { headers: { Authorization: `Bearer ${token}` } }
+      : {};
+
+    this.http.post<void>(`${this.apiUrl}/logout`, {}, options)
+      .pipe(catchError(() => EMPTY))
+      .subscribe();
   }
 
   getToken(): string | null {
@@ -71,11 +64,24 @@ export class AuthService {
     }
 
     try {
-      return JSON.parse(rawValue) as LoginResponse;
+      const session = JSON.parse(rawValue) as LoginResponse;
+      const expiresAt = Date.parse(session.expiresAtUtc);
+
+      if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+        this.clearLocalSession();
+        return null;
+      }
+
+      return session;
     } catch {
-      this.logout();
+      this.clearLocalSession();
       return null;
     }
+  }
+
+  private clearLocalSession(): void {
+    localStorage.removeItem(this.tokenStorageKey);
+    localStorage.removeItem(this.sessionStorageKey);
   }
 
   isAdministrator(session: LoginResponse | null = this.getSession()): boolean {

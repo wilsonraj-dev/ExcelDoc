@@ -2,7 +2,6 @@ export interface PerfilMapeamento {
   id: number;
   nome: string;
   fk_IdDocumento: number;
-  fk_IdEmpresa: number | null;
   isPadrao: boolean;
   dataCriacao: string;
   itens: PerfilMapeamentoItem[];
@@ -24,7 +23,6 @@ export interface PerfilMapeamentoItem {
 export interface PerfilMapeamentoPayload {
   nome: string;
   fk_IdDocumento: number;
-  fk_IdEmpresa?: number | null;
   isPadrao?: boolean;
   itens: PerfilMapeamentoItemPayload[];
 }

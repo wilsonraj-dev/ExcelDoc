@@ -24,19 +24,6 @@ export class SideMenuComponent {
       exact: true
     },
     {
-      labelKey: 'layout.sideMenu.items.companies.label',
-      icon: 'domain',
-      route: '/empresa',
-      roles: [AUTH_ROLES.administrator, AUTH_ROLES.user]
-    },
-    {
-      labelKey: 'layout.sideMenu.items.users.label',
-      icon: 'group',
-      route: '/usuarios',
-      roles: [AUTH_ROLES.administrator],
-      exact: true
-    },
-    {
       labelKey: 'layout.sideMenu.items.documents.label',
       icon: 'description',
       route: '/documentos',

@@ -8,8 +8,6 @@ namespace ExcelDoc.Server.DTOs.Mapeamentos
 
         public int FK_IdColecao { get; set; }
 
-        public int? FK_IdEmpresa { get; set; }
-
         public bool IsPadrao { get; set; }
 
         public int QuantidadeCampos { get; set; }

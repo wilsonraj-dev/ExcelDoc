@@ -3,7 +3,6 @@ using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExcelDoc.Server.Services
 {
@@ -22,7 +21,7 @@ namespace ExcelDoc.Server.Services
 
         public async Task<IReadOnlyCollection<DocumentoResponseDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            await _usuarioAcessoService.GetUsuarioAtualAsync(true, cancellationToken);
+            await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
 
             var documentos = await _documentoRepository.GetAllAsync(cancellationToken);
 
@@ -33,7 +32,7 @@ namespace ExcelDoc.Server.Services
 
         public async Task<DocumentoResponseDto> GetByIdAsync(int documentoId, CancellationToken cancellationToken = default)
         {
-            await _usuarioAcessoService.GetUsuarioAtualAsync(true, cancellationToken);
+            await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
 
             var documento = await _documentoRepository.GetByIdAsync(documentoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.DocumentNotFound));
@@ -79,7 +78,7 @@ namespace ExcelDoc.Server.Services
                 _documentoRepository.Remove(documento);
                 await _documentoRepository.SaveChangesAsync(cancellationToken);
             }
-            catch (DbUpdateException)
+            catch (InvalidOperationException)
             {
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.DocumentDeleteLinkedRecords));
             }
@@ -112,7 +111,7 @@ namespace ExcelDoc.Server.Services
 
         private async Task ValidarAdministradorAsync(CancellationToken cancellationToken)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
 
             if (usuario.TipoUsuario != TipoUsuario.Administrador)
             {
@@ -131,7 +130,29 @@ namespace ExcelDoc.Server.Services
             {
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.DocumentEndpointRequired));
             }
+
+            if (!IsSafeSapEntitySet(endpoint))
+            {
+                throw new InvalidOperationException(_messageService.Get(MessageKeys.DocumentEndpointInvalid));
+            }
         }
+
+        private static bool IsSafeSapEntitySet(string endpoint)
+        {
+            if (endpoint.Length > 100 ||
+                !(IsAsciiLetter(endpoint[0]) || endpoint[0] == '_'))
+            {
+                return false;
+            }
+
+            return endpoint.All(character =>
+                IsAsciiLetter(character) ||
+                char.IsAsciiDigit(character) ||
+                character == '_');
+        }
+
+        private static bool IsAsciiLetter(char character) =>
+            character is >= 'A' and <= 'Z' or >= 'a' and <= 'z';
 
         private static DocumentoResponseDto Map(Documento documento)
         {

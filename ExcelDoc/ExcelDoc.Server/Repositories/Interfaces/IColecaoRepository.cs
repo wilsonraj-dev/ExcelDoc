@@ -4,11 +4,11 @@ namespace ExcelDoc.Server.Repositories.Interfaces
 {
     public interface IColecaoRepository
     {
-        Task<IReadOnlyCollection<Colecao>> GetByEmpresaIdAsync(int? empresaId, bool includeAllCompanies, CancellationToken cancellationToken = default);
+        Task<IReadOnlyCollection<Colecao>> GetAllAsync(CancellationToken cancellationToken = default);
 
         Task<Colecao?> GetByIdWithMappingsAsync(int id, CancellationToken cancellationToken = default);
 
-        Task<bool> ExistsByNomeAsync(string nomeColecao, TipoColecao tipoColecao, int? empresaId, int? ignoreId = null, CancellationToken cancellationToken = default);
+        Task<bool> ExistsByNomeAsync(string nomeColecao, TipoColecao tipoColecao, int? ignoreId = null, CancellationToken cancellationToken = default);
 
         Task<IReadOnlyCollection<Documento>> GetDocumentosByIdsAsync(IReadOnlyCollection<int> documentoIds, CancellationToken cancellationToken = default);
 

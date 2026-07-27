@@ -4,7 +4,6 @@ using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExcelDoc.Server.Services
 {
@@ -23,38 +22,32 @@ namespace ExcelDoc.Server.Services
             _logger = logger;
         }
 
-        public async Task<IReadOnlyCollection<ColecaoResponseDto>> GetByEmpresaIdAsync(int? empresaId, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyCollection<ColecaoResponseDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
-
-            var empresaConsulta = ResolveEmpresaConsulta(usuario, empresaId);
-
-            var colecoes = await _colecaoRepository.GetByEmpresaIdAsync(empresaConsulta, false, cancellationToken);
-            return colecoes.Select(colecao => Map(colecao, usuario.FK_IdEmpresa)).ToList();
+            var colecoes = await _colecaoRepository.GetAllAsync(cancellationToken);
+            return colecoes.Select(Map).ToList();
         }
 
         public async Task<ColecaoResponseDto> GetByIdAsync(int colecaoId, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var colecao = await _colecaoRepository.GetByIdWithMappingsAsync(colecaoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.CollectionNotFound));
 
-            EnsureCanAccessColecao(usuario, colecao);
-
-            return Map(colecao, usuario.FK_IdEmpresa);
+            return Map(colecao);
         }
 
         public async Task<ColecaoResponseDto> CriarAsync(ColecaoRequestDto request, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var nomeColecao = NormalizeNome(request.NomeColecao);
-            var empresaId = ResolveEmpresaId(usuario, request.FK_IdEmpresa, true);
+            var isPadrao = ResolveIsPadrao(usuario, request.IsPadrao);
             var documentoIds = request.DocumentoIds
                 .Where(x => x > 0)
                 .Distinct()
                 .ToList();
 
-            await ValidarColecaoAsync(nomeColecao, request.TipoColecao, empresaId, null, documentoIds, cancellationToken);
+            await ValidarColecaoAsync(nomeColecao, request.TipoColecao, null, documentoIds, cancellationToken);
 
             var documentos = await _colecaoRepository.GetDocumentosByIdsAsync(documentoIds, cancellationToken);
             EnsureAllDocumentosExist(documentoIds, documentos);
@@ -64,7 +57,7 @@ namespace ExcelDoc.Server.Services
                 NomeColecao = nomeColecao,
                 Descricao = request.Descricao?.Trim(),
                 TipoColecao = request.TipoColecao,
-                FK_IdEmpresa = empresaId,
+                IsPadrao = isPadrao,
                 DocumentoColecoes = documentos.Select(documento => new DocumentoColecao
                 {
                     FK_IdDocumento = documento.Id
@@ -74,25 +67,25 @@ namespace ExcelDoc.Server.Services
             await _colecaoRepository.AddAsync(colecao, cancellationToken);
             await _colecaoRepository.SaveChangesAsync(cancellationToken);
 
-            return Map(colecao, usuario.FK_IdEmpresa);
+            return Map(colecao);
         }
 
         public async Task<ColecaoResponseDto> AtualizarAsync(int colecaoId, ColecaoRequestDto request, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var colecao = await _colecaoRepository.GetByIdWithMappingsAsync(colecaoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.CollectionNotFound));
 
             EnsureCanEditColecao(usuario, colecao);
 
             var nomeColecao = NormalizeNome(request.NomeColecao);
-            var empresaId = ResolveEmpresaId(usuario, request.FK_IdEmpresa, true);
+            var isPadrao = ResolveIsPadrao(usuario, request.IsPadrao);
             var documentoIds = request.DocumentoIds
                 .Where(x => x > 0)
                 .Distinct()
                 .ToList();
 
-            await ValidarColecaoAsync(nomeColecao, request.TipoColecao, empresaId, colecaoId, documentoIds, cancellationToken);
+            await ValidarColecaoAsync(nomeColecao, request.TipoColecao, colecaoId, documentoIds, cancellationToken);
 
             var documentos = await _colecaoRepository.GetDocumentosByIdsAsync(documentoIds, cancellationToken);
             EnsureAllDocumentosExist(documentoIds, documentos);
@@ -100,17 +93,17 @@ namespace ExcelDoc.Server.Services
             colecao.NomeColecao = nomeColecao;
             colecao.Descricao = request.Descricao?.Trim();
             colecao.TipoColecao = request.TipoColecao;
-            colecao.FK_IdEmpresa = empresaId;
+            colecao.IsPadrao = isPadrao;
             SynchronizeDocumentos(colecao, documentoIds);
 
             await _colecaoRepository.SaveChangesAsync(cancellationToken);
 
-            return Map(colecao, usuario.FK_IdEmpresa);
+            return Map(colecao);
         }
 
         public async Task ExcluirAsync(int colecaoId, CancellationToken cancellationToken = default)
         {
-            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(false, cancellationToken);
+            var usuario = await _usuarioAcessoService.GetUsuarioAtualAsync(cancellationToken);
             var colecao = await _colecaoRepository.GetByIdWithMappingsAsync(colecaoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.CollectionNotFound));
 
@@ -126,13 +119,13 @@ namespace ExcelDoc.Server.Services
                 _colecaoRepository.Remove(colecao);
                 await _colecaoRepository.SaveChangesAsync(cancellationToken);
             }
-            catch (DbUpdateException)
+            catch (InvalidOperationException)
             {
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.CollectionDeleteActiveLinks));
             }
         }
 
-        private async Task ValidarColecaoAsync(string nomeColecao, TipoColecao tipoColecao, int? empresaId, int? ignoreId, IReadOnlyCollection<int> documentoIds, CancellationToken cancellationToken)
+        private async Task ValidarColecaoAsync(string nomeColecao, TipoColecao tipoColecao, int? ignoreId, IReadOnlyCollection<int> documentoIds, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(nomeColecao))
             {
@@ -144,7 +137,7 @@ namespace ExcelDoc.Server.Services
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.CollectionNameMaxLength));
             }
 
-            if (await _colecaoRepository.ExistsByNomeAsync(nomeColecao, tipoColecao, empresaId, ignoreId, cancellationToken))
+            if (await _colecaoRepository.ExistsByNomeAsync(nomeColecao, tipoColecao, ignoreId, cancellationToken))
             {
                 throw new InvalidOperationException(_messageService.Get(MessageKeys.CollectionAlreadyExists));
             }
@@ -198,67 +191,28 @@ namespace ExcelDoc.Server.Services
             }
         }
 
-        private int? ResolveEmpresaId(Usuario usuario, int? empresaId, bool allowGlobal)
+        private bool ResolveIsPadrao(Usuario usuario, bool isPadrao)
         {
-            if (empresaId.HasValue)
+            if (isPadrao && usuario.TipoUsuario != TipoUsuario.Administrador)
             {
-                if (usuario.FK_IdEmpresa != empresaId)
-                {
-                    throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToCompany));
-                }
-
-                return empresaId;
+                throw new UnauthorizedAccessException(
+                    _messageService.Get(MessageKeys.OnlyAdminsCanChangeSystemCollections));
             }
 
-            if (allowGlobal && usuario.TipoUsuario == TipoUsuario.Administrador)
-            {
-                return null;
-            }
-
-            if (!usuario.FK_IdEmpresa.HasValue)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserWithoutCompanyCannotExecuteAction));
-            }
-
-            return usuario.FK_IdEmpresa;
-        }
-
-        private int? ResolveEmpresaConsulta(Usuario usuario, int? empresaId)
-        {
-            if (empresaId.HasValue && usuario.FK_IdEmpresa != empresaId)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToCompany));
-            }
-
-            return usuario.FK_IdEmpresa;
-        }
-
-        private void EnsureCanAccessColecao(Usuario usuario, Colecao colecao)
-        {
-            if (!colecao.FK_IdEmpresa.HasValue)
-            {
-                return;
-            }
-
-            if (usuario.FK_IdEmpresa != colecao.FK_IdEmpresa)
-            {
-                throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.UserDoesNotHaveAccessToCollection));
-            }
+            return isPadrao;
         }
 
         private void EnsureCanEditColecao(Usuario usuario, Colecao colecao)
         {
-            EnsureCanAccessColecao(usuario, colecao);
-
-            if (usuario.TipoUsuario != TipoUsuario.Administrador && !colecao.FK_IdEmpresa.HasValue)
+            if (usuario.TipoUsuario != TipoUsuario.Administrador && colecao.IsPadrao)
             {
                 throw new UnauthorizedAccessException(_messageService.Get(MessageKeys.OnlyAdminsCanChangeSystemCollections));
             }
         }
 
-        private static ColecaoResponseDto Map(Colecao colecao, int? empresaId)
+        private static ColecaoResponseDto Map(Colecao colecao)
         {
-            var campos = ObterCamposDoMapeamentoVisivel(colecao, empresaId);
+            var campos = ObterCamposDoMapeamentoVisivel(colecao);
 
             return new ColecaoResponseDto
             {
@@ -266,7 +220,7 @@ namespace ExcelDoc.Server.Services
                 NomeColecao = colecao.NomeColecao,
                 Descricao = colecao.Descricao,
                 TipoColecao = colecao.TipoColecao,
-                EmpresaId = colecao.FK_IdEmpresa,
+                IsPadrao = colecao.IsPadrao,
                 DocumentoIds = colecao.DocumentoColecoes
                     .Select(x => x.FK_IdDocumento)
                     .Distinct()
@@ -298,16 +252,12 @@ namespace ExcelDoc.Server.Services
             };
         }
 
-        private static IReadOnlyCollection<MapeamentoCampo> ObterCamposDoMapeamentoVisivel(Colecao colecao, int? empresaId)
+        private static IReadOnlyCollection<MapeamentoCampo> ObterCamposDoMapeamentoVisivel(Colecao colecao)
         {
-            var mapeamentosVisiveis = colecao.Mapeamentos
-                .Where(x => !x.FK_IdEmpresa.HasValue || x.FK_IdEmpresa == empresaId)
-                .ToList();
-
-            var mapeamentoPadrao = mapeamentosVisiveis
-                .FirstOrDefault(x => x.IsPadrao && !x.FK_IdEmpresa.HasValue)
-                ?? mapeamentosVisiveis.Where(x => !x.FK_IdEmpresa.HasValue).OrderBy(x => x.Id).FirstOrDefault()
-                ?? mapeamentosVisiveis.OrderBy(x => x.Id).FirstOrDefault();
+            var mapeamentoPadrao = colecao.Mapeamentos
+                .OrderByDescending(x => x.IsPadrao)
+                .ThenBy(x => x.Id)
+                .FirstOrDefault();
 
             return mapeamentoPadrao is null ? Array.Empty<MapeamentoCampo>() : mapeamentoPadrao.Campos.ToList();
         }

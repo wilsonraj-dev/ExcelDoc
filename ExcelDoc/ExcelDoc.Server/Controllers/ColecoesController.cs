@@ -19,11 +19,11 @@ namespace ExcelDoc.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] int? empresaId, CancellationToken cancellationToken)
+        public async Task<IActionResult> Get(CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _colecaoService.GetByEmpresaIdAsync(empresaId, cancellationToken);
+                var result = await _colecaoService.GetAllAsync(cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -96,6 +96,7 @@ namespace ExcelDoc.Server.Controllers
             return ex switch
             {
                 KeyNotFoundException => NotFound(new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status404NotFound }),
+                ExcelDoc.Server.Sap.SapSessionExpiredException => Unauthorized(new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status401Unauthorized }),
                 UnauthorizedAccessException => StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status403Forbidden }),
                 InvalidOperationException => Conflict(new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status409Conflict }),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails { Detail = ex.Message, Status = StatusCodes.Status500InternalServerError })
