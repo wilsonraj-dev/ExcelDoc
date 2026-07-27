@@ -72,6 +72,7 @@ namespace ExcelDoc.Server.Services
 
             var documento = await _documentoRepository.GetByIdAsync(request.DocumentoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.DocumentNotFound));
+
             var perfilMapeamento = await _perfilMapeamentoRepository.GetForExecutionAsync(request.PerfilMapeamentoId, cancellationToken)
                 ?? throw new KeyNotFoundException(_messageService.Get(MessageKeys.MappingProfileNotFound));
 
@@ -124,8 +125,7 @@ namespace ExcelDoc.Server.Services
             var sessionKey = _sapSessionContextAccessor.GetRequiredSessionKey();
             if (!_sapSessionStore.TryAcquireJob(sessionKey))
             {
-                throw new SapSessionExpiredException(
-                    "A sessão do SAP Business One expirou antes do enfileiramento.");
+                throw new SapSessionExpiredException("A sessão do SAP Business One expirou antes do enfileiramento.");
             }
 
             try
