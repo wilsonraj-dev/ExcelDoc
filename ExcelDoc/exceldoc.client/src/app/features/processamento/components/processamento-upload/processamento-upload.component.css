@@ -1,12 +1,177 @@
-.full-width {
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.upload-workspace {
+  min-width: 0;
+  color: #101828;
+}
+
+.context-bar,
+.breadcrumbs,
+.workspace-header__title-row,
+.panel-header,
+.file-panel,
+.file-panel__copy,
+.form-actions,
+.mapping-option,
+.mapping-option__meta {
+  display: flex;
+  align-items: center;
+}
+
+.context-bar {
+  min-height: 54px;
+  padding: 0 2px 16px;
+  color: #475467;
+  font-size: 0.78rem;
+}
+
+.breadcrumbs {
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.breadcrumbs mat-icon {
+  width: 17px;
+  height: 17px;
+  font-size: 17px;
+}
+
+.breadcrumbs > mat-icon:first-child {
+  color: #344054;
+}
+
+.breadcrumbs__separator {
+  color: #98a2b3;
+}
+
+.breadcrumbs strong {
+  color: #1d2939;
+  font-weight: 650;
+}
+
+.workspace-card {
+  overflow: hidden;
+  border: 1px solid #dfe5ef;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 14px 38px rgba(16, 24, 40, 0.05);
+}
+
+.workspace-header {
+  min-height: 126px;
+  padding: 26px;
+  border-bottom: 1px solid #e7ebf2;
+}
+
+.workspace-header__title-row {
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.workspace-header__icon,
+.panel-header__icon,
+.file-panel__icon {
+  display: grid;
+  place-items: center;
+  background: #eaf1ff;
+  color: #155eef;
+}
+
+.workspace-header__icon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  border-radius: 12px;
+}
+
+.workspace-header h1,
+.workspace-header p,
+.panel-header h2,
+.panel-header p {
+  margin: 0;
+}
+
+.workspace-header h1 {
+  color: #0b1739;
+  font-size: clamp(1.55rem, 2vw, 2rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+.workspace-header p {
+  margin-top: 8px;
+  color: #667085;
+  font-size: 0.82rem;
+}
+
+.upload-form {
+  display: grid;
+  gap: 18px;
+  padding: 20px 24px 24px;
+}
+
+.configuration-panel,
+.file-panel {
+  border: 1px solid #e0e6ef;
+  border-radius: 13px;
+}
+
+.configuration-panel {
+  overflow: hidden;
+  background: #fff;
+}
+
+.panel-header {
+  gap: 12px;
+  padding: 17px 18px;
+  border-bottom: 1px solid #e0e6ef;
+  background: #fbfcfe;
+}
+
+.panel-header__icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 10px;
+}
+
+.panel-header h2 {
+  color: #1d2939;
+  font-size: 0.92rem;
+}
+
+.panel-header p {
+  margin-top: 3px;
+  color: #667085;
+  font-size: 0.72rem;
+}
+
+.configuration-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding: 24px 20px;
+}
+
+.configuration-fields mat-form-field {
   width: 100%;
 }
 
+:host ::ng-deep .configuration-fields .mat-mdc-text-field-wrapper {
+  border-radius: 9px;
+}
+
+:host ::ng-deep .configuration-fields .mat-mdc-form-field-icon-prefix {
+  padding: 0 10px 0 0;
+  color: #8091ab;
+}
+
 .mapping-option {
-  display: flex;
   justify-content: space-between;
   gap: 1rem;
-  align-items: center;
 }
 
 .mapping-option__name {
@@ -14,52 +179,104 @@
 }
 
 .mapping-option__meta {
-  display: flex;
-  align-items: center;
   gap: 0.5rem;
   color: #64748b;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
 }
 
 .mapping-chip {
   display: inline-flex;
-  align-items: center;
   padding: 0.25rem 0.625rem;
   border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 650;
   line-height: 1;
 }
 
 .mapping-chip--padrao {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #eaf1ff;
+  color: #155eef;
 }
 
 .mapping-chip--custom {
-  background: #dcfce7;
-  color: #15803d;
+  background: #ecfdf3;
+  color: #027a48;
 }
 
-.file-upload-area {
-  display: flex;
-  align-items: center;
+.file-panel {
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px;
+  background: #fbfcfe;
+}
+
+.file-panel__copy {
+  min-width: 0;
   gap: 12px;
-  margin: 16px 0;
 }
 
-.file-name {
-  font-size: 14px;
-  color: #333;
+.file-panel__icon {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 11px;
 }
 
-.file-name--empty {
-  color: #999;
+.file-panel__copy > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
 }
 
-.actions {
-  display: flex;
-  align-items: center;
+.file-panel strong {
+  overflow: hidden;
+  color: #1d2939;
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-panel span {
+  color: #667085;
+  font-size: 0.72rem;
+}
+
+.file-panel button,
+.form-actions button {
+  min-height: 42px;
+  border-radius: 9px;
+}
+
+.form-actions {
+  justify-content: flex-end;
   gap: 12px;
-  margin-top: 16px;
+}
+
+.form-actions button {
+  padding-inline: 22px;
+}
+
+@media (max-width: 720px) {
+  .workspace-header {
+    padding: 20px 16px;
+  }
+
+  .upload-form {
+    padding: 14px;
+  }
+
+  .configuration-fields {
+    grid-template-columns: 1fr;
+    padding: 18px 14px;
+  }
+
+  .file-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .file-panel button,
+  .form-actions button {
+    width: 100%;
+  }
 }

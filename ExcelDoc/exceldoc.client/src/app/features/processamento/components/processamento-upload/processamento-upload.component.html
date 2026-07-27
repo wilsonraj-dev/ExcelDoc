@@ -1,60 +1,95 @@
-<section class="feature-page">
-  <h2>{{ 'processamento.processamentoUpload.title' | translate }}</h2>
+<section class="upload-workspace">
+  <div class="context-bar">
+    <nav class="breadcrumbs" [attr.aria-label]="'processamento.processamentoUpload.title' | translate">
+      <mat-icon>sync_alt</mat-icon>
+      <span>{{ 'processamento.processamentoList.header.title' | translate }}</span>
+      <mat-icon class="breadcrumbs__separator">chevron_right</mat-icon>
+      <strong>{{ 'processamento.processamentoUpload.title' | translate }}</strong>
+    </nav>
+  </div>
 
-  <mat-card>
-    <mat-card-content>
-      <form [formGroup]="form" (ngSubmit)="processar()">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>{{ 'processamento.common.document' | translate }}</mat-label>
-          <mat-select formControlName="documentoId">
-            <mat-option *ngFor="let doc of documentos" [value]="doc.id">
-              {{ doc.nomeDocumento }}
-            </mat-option>
-          </mat-select>
-          <mat-error>{{ 'processamento.processamentoUpload.validation.documentRequired' | translate }}</mat-error>
-        </mat-form-field>
+  <section class="workspace-card">
+    <header class="workspace-header">
+      <div class="workspace-header__title-row">
+        <span class="workspace-header__icon"><mat-icon>upload_file</mat-icon></span>
+        <div>
+          <h1>{{ 'processamento.processamentoUpload.title' | translate }}</h1>
+          <p>{{ 'processamento.processamentoHome.description' | translate }}</p>
+        </div>
+      </div>
+    </header>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>{{ 'processamento.processamentoUpload.fields.mappingConfiguration' | translate }}</mat-label>
-          <mat-select formControlName="perfilMapeamentoId" [disabled]="isLoadingPerfis || !form.controls['documentoId'].value">
-            <mat-select-trigger>
-              {{ selectedPerfilNome }}
-            </mat-select-trigger>
-            <mat-option *ngFor="let perfil of perfisDisponiveis" [value]="perfil.id">
-              <div class="mapping-option">
-                <span class="mapping-option__name">{{ perfil.nome }}</span>
-                <span class="mapping-option__meta">
-                  <span [class]="getPerfilBadgeClass(perfil)" [matTooltip]="getPerfilTooltip(perfil)">
-                    {{ getPerfilBadgeLabel(perfil) }}
+    <form class="upload-form" [formGroup]="form" (ngSubmit)="processar()">
+      <section class="configuration-panel">
+        <header class="panel-header">
+          <span class="panel-header__icon"><mat-icon>tune</mat-icon></span>
+          <div>
+            <h2>{{ 'processamento.processamentoUpload.fields.mappingConfiguration' | translate }}</h2>
+            <p>{{ 'processamento.processamentoUpload.validation.documentRequired' | translate }}</p>
+          </div>
+        </header>
+
+        <div class="configuration-fields">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'processamento.common.document' | translate }}</mat-label>
+            <mat-select formControlName="documentoId">
+              <mat-option *ngFor="let doc of documentos" [value]="doc.id">
+                {{ doc.nomeDocumento }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matPrefix>description</mat-icon>
+            <mat-error>{{ 'processamento.processamentoUpload.validation.documentRequired' | translate }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'processamento.processamentoUpload.fields.mappingConfiguration' | translate }}</mat-label>
+            <mat-select formControlName="perfilMapeamentoId" [disabled]="isLoadingPerfis || !form.controls['documentoId'].value">
+              <mat-select-trigger>{{ selectedPerfilNome }}</mat-select-trigger>
+              <mat-option *ngFor="let perfil of perfisDisponiveis" [value]="perfil.id">
+                <div class="mapping-option">
+                  <span class="mapping-option__name">{{ perfil.nome }}</span>
+                  <span class="mapping-option__meta">
+                    <span [class]="getPerfilBadgeClass(perfil)" [matTooltip]="getPerfilTooltip(perfil)">
+                      {{ getPerfilBadgeLabel(perfil) }}
+                    </span>
+                    <span>{{ getItensQuantidadeLabel(perfil) }}</span>
                   </span>
-                  <span>{{ getItensQuantidadeLabel(perfil) }}</span>
-                </span>
-              </div>
-            </mat-option>
-          </mat-select>
-          <mat-hint *ngIf="isLoadingPerfis">{{ 'processamento.processamentoUpload.loading.profiles' | translate }}</mat-hint>
-          <mat-hint *ngIf="!isLoadingPerfis && form.controls['documentoId'].value && !perfisDisponiveis.length">{{ 'processamento.processamentoUpload.empty.noProfilesForDocument' | translate }}</mat-hint>
-          <mat-error>{{ 'processamento.processamentoUpload.validation.profileRequired' | translate }}</mat-error>
-        </mat-form-field>
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-icon matPrefix>account_tree</mat-icon>
+            <mat-hint *ngIf="isLoadingPerfis">{{ 'processamento.processamentoUpload.loading.profiles' | translate }}</mat-hint>
+            <mat-hint *ngIf="!isLoadingPerfis && form.controls['documentoId'].value && !perfisDisponiveis.length">
+              {{ 'processamento.processamentoUpload.empty.noProfilesForDocument' | translate }}
+            </mat-hint>
+            <mat-error>{{ 'processamento.processamentoUpload.validation.profileRequired' | translate }}</mat-error>
+          </mat-form-field>
+        </div>
+      </section>
 
-        <div class="file-upload-area">
-          <button type="button" mat-stroked-button (click)="fileInput.click()">
-            <mat-icon>upload_file</mat-icon>
-            {{ 'processamento.processamentoUpload.actions.selectFile' | translate }}
-          </button>
-          <input #fileInput type="file" accept=".xlsx" hidden (change)="onFileSelected($event)" />
-          <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
-          <span class="file-name file-name--empty" *ngIf="!selectedFile">{{ 'processamento.processamentoUpload.empty.noFileSelected' | translate }}</span>
+      <section class="file-panel">
+        <div class="file-panel__copy">
+          <span class="file-panel__icon"><mat-icon>{{ selectedFile ? 'description' : 'cloud_upload' }}</mat-icon></span>
+          <div>
+            <strong>{{ selectedFile?.name || ('processamento.processamentoUpload.empty.noFileSelected' | translate) }}</strong>
+            <span>{{ 'processamento.processamentoUpload.actions.selectFile' | translate }}</span>
+          </div>
         </div>
 
-        <div class="actions">
-          <button mat-raised-button color="primary" type="submit" [disabled]="!isFormValid || isLoading || isLoadingPerfis">
-            <mat-icon>play_arrow</mat-icon>
-            {{ 'processamento.processamentoUpload.actions.process' | translate }}
-          </button>
-          <mat-spinner *ngIf="isLoading" diameter="24"></mat-spinner>
-        </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
+        <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()">
+          <mat-icon>upload_file</mat-icon>
+          {{ 'processamento.processamentoUpload.actions.selectFile' | translate }}
+        </button>
+        <input #fileInput type="file" accept=".xlsx" hidden (change)="onFileSelected($event)" />
+      </section>
+
+      <footer class="form-actions">
+        <mat-spinner *ngIf="isLoading" diameter="24"></mat-spinner>
+        <button mat-flat-button color="primary" type="submit" [disabled]="!isFormValid || isLoading || isLoadingPerfis">
+          <mat-icon>play_arrow</mat-icon>
+          {{ 'processamento.processamentoUpload.actions.process' | translate }}
+        </button>
+      </footer>
+    </form>
+  </section>
 </section>

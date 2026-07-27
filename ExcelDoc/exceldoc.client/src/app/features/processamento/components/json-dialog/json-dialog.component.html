@@ -1,4 +1,7 @@
-<h2 mat-dialog-title>JSON — {{ 'processamento.jsonDialog.line' | translate }} {{ data.linhaExcel }}</h2>
+<h2 mat-dialog-title>
+  <span class="dialog-title__icon"><mat-icon>data_object</mat-icon></span>
+  JSON — {{ 'processamento.jsonDialog.line' | translate }} {{ data.linhaExcel }}
+</h2>
 
 <mat-dialog-content>
   <h4>{{ 'processamento.jsonDialog.sentJson' | translate }}</h4>
@@ -9,5 +12,5 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>{{ 'processamento.jsonDialog.close' | translate }}</button>
+  <button mat-flat-button color="primary" mat-dialog-close>{{ 'processamento.jsonDialog.close' | translate }}</button>
 </mat-dialog-actions>

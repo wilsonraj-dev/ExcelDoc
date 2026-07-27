@@ -1,90 +1,135 @@
-<section class="feature-page">
-  <div class="page-header">
-    <h2>{{ 'processamento.processamentoList.header.title' | translate }}</h2>
-    <div class="header-actions">
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>{{ 'processamento.processamentoList.filters.status' | translate }}</mat-label>
-        <mat-select (selectionChange)="applyStatusFilter($event.value)" [value]="statusFilter">
-          <mat-option value="">{{ 'processamento.processamentoList.filters.all' | translate }}</mat-option>
-          <mat-option value="Processando">{{ 'processamento.common.status.processing' | translate }}</mat-option>
-          <mat-option value="Sucesso">{{ 'processamento.common.status.success' | translate }}</mat-option>
-          <mat-option value="Erro">{{ 'processamento.common.status.error' | translate }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <button mat-raised-button color="primary" (click)="novoProcessamento()">
-        <mat-icon>upload_file</mat-icon>
-        {{ 'processamento.processamentoList.actions.newImport' | translate }}
-      </button>
-    </div>
+<section class="processing-workspace">
+  <div class="context-bar">
+    <nav class="breadcrumbs" [attr.aria-label]="'processamento.processamentoList.header.title' | translate">
+      <mat-icon>sync_alt</mat-icon>
+      <span>{{ 'processamento.processamentoHome.title' | translate }}</span>
+      <mat-icon class="breadcrumbs__separator">chevron_right</mat-icon>
+      <strong>{{ 'processamento.processamentoList.header.title' | translate }}</strong>
+    </nav>
+
+    <span class="context-count" *ngIf="!isLoading && hasData">
+      {{ dataSource.filteredData.length }}
+      <mat-icon>receipt_long</mat-icon>
+    </span>
   </div>
 
-  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+  <section class="workspace-card">
+    <header class="workspace-header">
+      <div class="workspace-header__title-row">
+        <span class="workspace-header__icon"><mat-icon>sync_alt</mat-icon></span>
+        <div>
+          <h1>{{ 'processamento.processamentoList.header.title' | translate }}</h1>
+          <p>{{ 'processamento.processamentoHome.description' | translate }}</p>
+        </div>
+      </div>
 
-  <mat-card *ngIf="!isLoading">
-    <mat-card-content>
-      <p *ngIf="!hasData">{{ 'processamento.processamentoList.empty.noProcessings' | translate }}</p>
+      <div class="workspace-actions">
+        <mat-form-field appearance="outline" class="filter-field" subscriptSizing="dynamic">
+          <mat-label>{{ 'processamento.processamentoList.filters.status' | translate }}</mat-label>
+          <mat-select (selectionChange)="applyStatusFilter($event.value)" [value]="statusFilter">
+            <mat-option value="">{{ 'processamento.processamentoList.filters.all' | translate }}</mat-option>
+            <mat-option value="Processando">{{ 'processamento.common.status.processing' | translate }}</mat-option>
+            <mat-option value="Sucesso">{{ 'processamento.common.status.success' | translate }}</mat-option>
+            <mat-option value="Erro">{{ 'processamento.common.status.error' | translate }}</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-      <table mat-table [dataSource]="dataSource" *ngIf="hasData" class="full-width">
-        <ng-container matColumnDef="nomeArquivo">
-          <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.file' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.nomeArquivo }}</td>
-        </ng-container>
+        <button mat-flat-button color="primary" type="button" (click)="novoProcessamento()">
+          <mat-icon>upload_file</mat-icon>
+          {{ 'processamento.processamentoList.actions.newImport' | translate }}
+        </button>
+      </div>
+    </header>
 
-        <ng-container matColumnDef="dataExecucao">
-          <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.date' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.dataExecucao | date:'dd/MM/yyyy HH:mm' }}</td>
-        </ng-container>
+    <div class="processing-panel">
+      <div class="loading-state" *ngIf="isLoading">
+        <app-loading-spinner></app-loading-spinner>
+      </div>
 
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.statusLabel' | translate }}</th>
-          <td mat-cell *matCellDef="let row">
-            <span class="status-badge" [ngClass]="getStatusClass(row.status)">
-              <mat-spinner *ngIf="row.status === 'Processando'" diameter="14" class="inline-spinner"></mat-spinner>
-              {{ getStatusLabel(row.status) }}
-            </span>
-          </td>
-        </ng-container>
+      <ng-container *ngIf="!isLoading">
+        <section class="empty-state" *ngIf="!hasData">
+          <span class="empty-state__icon"><mat-icon>upload_file</mat-icon></span>
+          <h2>{{ 'processamento.processamentoList.empty.noProcessings' | translate }}</h2>
+          <button mat-flat-button color="primary" type="button" (click)="novoProcessamento()">
+            <mat-icon>add</mat-icon>
+            {{ 'processamento.processamentoList.actions.newImport' | translate }}
+          </button>
+        </section>
 
-        <ng-container matColumnDef="totalRegistros">
-          <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.total' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.totalRegistros }}</td>
-        </ng-container>
+        <div class="processing-table" *ngIf="hasData">
+          <div class="table-wrapper">
+            <table mat-table [dataSource]="dataSource" class="processing-table__content">
+              <ng-container matColumnDef="nomeArquivo">
+                <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.file' | translate }}</th>
+                <td mat-cell *matCellDef="let row">
+                  <div class="file-cell">
+                    <span class="file-cell__icon"><mat-icon>table_view</mat-icon></span>
+                    <strong>{{ row.nomeArquivo }}</strong>
+                  </div>
+                </td>
+              </ng-container>
 
-        <ng-container matColumnDef="totalSucesso">
-          <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.success' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.totalSucesso }}</td>
-        </ng-container>
+              <ng-container matColumnDef="dataExecucao">
+                <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.date' | translate }}</th>
+                <td mat-cell *matCellDef="let row">
+                  <span class="date-value">{{ row.dataExecucao | date:'dd/MM/yyyy HH:mm' }}</span>
+                </td>
+              </ng-container>
 
-        <ng-container matColumnDef="totalErro">
-          <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.errors' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.totalErro }}</td>
-        </ng-container>
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.statusLabel' | translate }}</th>
+                <td mat-cell *matCellDef="let row">
+                  <span class="status-badge" [ngClass]="getStatusClass(row.status)">
+                    <mat-spinner *ngIf="row.status === 'Processando'" diameter="14"></mat-spinner>
+                    <span class="status-badge__dot" *ngIf="row.status !== 'Processando'"></span>
+                    {{ getStatusLabel(row.status) }}
+                  </span>
+                </td>
+              </ng-container>
 
-        <ng-container matColumnDef="totalIgnorado">
-          <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.ignored' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.totalIgnorado || 0 }}</td>
-        </ng-container>
+              <ng-container matColumnDef="totalRegistros">
+                <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.total' | translate }}</th>
+                <td mat-cell *matCellDef="let row"><strong class="metric">{{ row.totalRegistros }}</strong></td>
+              </ng-container>
 
-        <ng-container matColumnDef="acoes">
-          <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.actions' | translate }}</th>
-          <td mat-cell *matCellDef="let row">
-            <div class="action-buttons">
-              <button mat-icon-button color="primary" [matTooltip]="'processamento.processamentoList.tooltips.viewDetails' | translate" (click)="verDetalhes(row)">
-                <mat-icon>visibility</mat-icon>
-              </button>
-            </div>
-          </td>
-        </ng-container>
+              <ng-container matColumnDef="totalSucesso">
+                <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.success' | translate }}</th>
+                <td mat-cell *matCellDef="let row"><span class="metric metric--success">{{ row.totalSucesso }}</span></td>
+              </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
+              <ng-container matColumnDef="totalErro">
+                <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.errors' | translate }}</th>
+                <td mat-cell *matCellDef="let row"><span class="metric metric--error">{{ row.totalErro }}</span></td>
+              </ng-container>
 
-      <mat-paginator *ngIf="hasData"
-        [pageSizeOptions]="pageSizeOptions"
-        showFirstLastButtons
-        [attr.aria-label]="'processamento.processamentoList.table.paginationAriaLabel' | translate">
-      </mat-paginator>
-    </mat-card-content>
-  </mat-card>
+              <ng-container matColumnDef="totalIgnorado">
+                <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.ignored' | translate }}</th>
+                <td mat-cell *matCellDef="let row"><span class="metric metric--ignored">{{ row.totalIgnorado || 0 }}</span></td>
+              </ng-container>
+
+              <ng-container matColumnDef="acoes">
+                <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.actions' | translate }}</th>
+                <td mat-cell *matCellDef="let row" class="actions-cell">
+                  <button mat-stroked-button color="primary" type="button"
+                          [matTooltip]="'processamento.processamentoList.tooltips.viewDetails' | translate"
+                          (click)="verDetalhes(row)">
+                    <mat-icon>visibility</mat-icon>
+                    {{ 'processamento.processamentoList.tooltips.viewDetails' | translate }}
+                  </button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+          </div>
+
+          <mat-paginator [pageSizeOptions]="pageSizeOptions"
+                         showFirstLastButtons
+                         [attr.aria-label]="'processamento.processamentoList.table.paginationAriaLabel' | translate">
+          </mat-paginator>
+        </div>
+      </ng-container>
+    </div>
+  </section>
 </section>

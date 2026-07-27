@@ -1,120 +1,153 @@
-<section class="feature-page">
-  <div class="page-header">
-    <h2>{{ 'processamento.processamentoDetalhe.header.title' | translate }}</h2>
-    <div class="header-actions">
-      <button mat-stroked-button (click)="voltar()">
-        <mat-icon>arrow_back</mat-icon> {{ 'processamento.processamentoDetalhe.actions.back' | translate }}
-      </button>
-      <button mat-stroked-button (click)="reprocessar()">
-        <mat-icon>replay</mat-icon> {{ 'processamento.processamentoDetalhe.actions.reprocess' | translate }}
-      </button>
-    </div>
+<section class="detail-workspace">
+  <div class="context-bar">
+    <nav class="breadcrumbs" [attr.aria-label]="'processamento.processamentoDetalhe.header.title' | translate">
+      <mat-icon>sync_alt</mat-icon>
+      <span>{{ 'processamento.processamentoList.header.title' | translate }}</span>
+      <mat-icon class="breadcrumbs__separator">chevron_right</mat-icon>
+      <strong>{{ processamento?.nomeArquivo || ('processamento.processamentoDetalhe.header.title' | translate) }}</strong>
+    </nav>
   </div>
 
-  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+  <div class="loading-state" *ngIf="isLoading">
+    <app-loading-spinner></app-loading-spinner>
+  </div>
 
-  <ng-container *ngIf="processamento && !isLoading">
-    <mat-card class="info-card">
-      <mat-card-content>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">{{ 'processamento.common.file' | translate }}</span>
-            <span class="info-value">{{ processamento.nomeArquivo }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">{{ 'processamento.common.date' | translate }}</span>
-            <span class="info-value">{{ processamento.dataExecucao | date:'dd/MM/yyyy HH:mm:ss' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">{{ 'processamento.common.statusLabel' | translate }}</span>
-            <span class="status-badge" [ngClass]="getProcessamentoStatusClass(processamento.status)">
-              <mat-spinner *ngIf="isProcessando" diameter="14" class="inline-spinner"></mat-spinner>
-              {{ getProcessamentoStatusLabel(processamento.status) }}
-            </span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">{{ 'processamento.processamentoDetalhe.info.totalRecords' | translate }}</span>
-            <span class="info-value">{{ processamento.totalRegistros }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">{{ 'processamento.common.success' | translate }}</span>
-            <span class="info-value text-success">{{ processamento.totalSucesso }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">{{ 'processamento.common.errors' | translate }}</span>
-            <span class="info-value text-error">{{ processamento.totalErro }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">{{ 'processamento.common.ignored' | translate }}</span>
-            <span class="info-value text-ignored">{{ processamento.totalIgnorado || 0 }}</span>
+  <section class="workspace-card" *ngIf="processamento && !isLoading">
+    <header class="workspace-header">
+      <div class="workspace-header__copy">
+        <div class="workspace-header__title-row">
+          <span class="workspace-header__icon"><mat-icon>table_view</mat-icon></span>
+          <div>
+            <div class="title-with-status">
+              <h1>{{ processamento.nomeArquivo }}</h1>
+              <span class="status-badge" [ngClass]="getProcessamentoStatusClass(processamento.status)">
+                <mat-spinner *ngIf="isProcessando" diameter="14"></mat-spinner>
+                <span class="status-badge__dot" *ngIf="!isProcessando"></span>
+                {{ getProcessamentoStatusLabel(processamento.status) }}
+              </span>
+            </div>
+            <p>{{ processamento.dataExecucao | date:'dd/MM/yyyy HH:mm:ss' }}</p>
           </div>
         </div>
+      </div>
 
-        <div *ngIf="isProcessando" class="progress-section">
-          <span>{{ 'processamento.processamentoDetalhe.info.progress' | translate }}: {{ progressoPercentual }}%</span>
-          <mat-progress-bar mode="determinate" [value]="progressoPercentual" *ngIf="processamento.totalRegistros > 0"></mat-progress-bar>
-          <mat-progress-bar mode="indeterminate" *ngIf="processamento.totalRegistros === 0"></mat-progress-bar>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
-    <mat-card class="itens-card">
-      <mat-card-header>
-        <mat-card-title>{{ 'processamento.processamentoDetalhe.itemsLog.title' | translate }}</mat-card-title>
-        <span class="spacer"></span>
-        <button mat-stroked-button color="warn" (click)="baixarErros()" [disabled]="isProcessando">
-          <mat-icon>download</mat-icon> {{ 'processamento.processamentoDetalhe.actions.downloadErrors' | translate }}
+      <div class="workspace-actions">
+        <button mat-stroked-button type="button" (click)="voltar()">
+          <mat-icon>arrow_back</mat-icon>
+          {{ 'processamento.processamentoDetalhe.actions.back' | translate }}
         </button>
-      </mat-card-header>
-      <mat-card-content>
-        <app-loading-spinner *ngIf="isLoadingItens"></app-loading-spinner>
+        <button mat-flat-button color="primary" type="button" (click)="reprocessar()">
+          <mat-icon>replay</mat-icon>
+          {{ 'processamento.processamentoDetalhe.actions.reprocess' | translate }}
+        </button>
+      </div>
+    </header>
 
-        <table mat-table [dataSource]="itensDataSource" *ngIf="!isLoadingItens && itensDataSource.data.length > 0" class="full-width">
-          <ng-container matColumnDef="idExcel">
-            <th mat-header-cell *matHeaderCellDef>#</th>
-            <td mat-cell *matCellDef="let row">{{ row.idExcel || '—' }}</td>
-          </ng-container>
+    <div class="detail-content">
+      <section class="summary-panel">
+        <article>
+          <span>{{ 'processamento.processamentoDetalhe.info.totalRecords' | translate }}</span>
+          <strong>{{ processamento.totalRegistros }}</strong>
+          <mat-icon>dataset</mat-icon>
+        </article>
+        <article class="summary-panel__success">
+          <span>{{ 'processamento.common.success' | translate }}</span>
+          <strong>{{ processamento.totalSucesso }}</strong>
+          <mat-icon>check_circle</mat-icon>
+        </article>
+        <article class="summary-panel__error">
+          <span>{{ 'processamento.common.errors' | translate }}</span>
+          <strong>{{ processamento.totalErro }}</strong>
+          <mat-icon>error</mat-icon>
+        </article>
+        <article class="summary-panel__ignored">
+          <span>{{ 'processamento.common.ignored' | translate }}</span>
+          <strong>{{ processamento.totalIgnorado || 0 }}</strong>
+          <mat-icon>do_not_disturb_on</mat-icon>
+        </article>
+      </section>
 
-          <ng-container matColumnDef="linhaExcel">
-            <th mat-header-cell *matHeaderCellDef>{{ 'processamento.processamentoDetalhe.table.header.line' | translate }}</th>
-            <td mat-cell *matCellDef="let row">{{ row.linhaExcel }}</td>
-          </ng-container>
+      <section class="progress-panel" *ngIf="isProcessando">
+        <div>
+          <span>{{ 'processamento.processamentoDetalhe.info.progress' | translate }}</span>
+          <strong>{{ progressoPercentual }}%</strong>
+        </div>
+        <mat-progress-bar mode="determinate" [value]="progressoPercentual" *ngIf="processamento.totalRegistros > 0"></mat-progress-bar>
+        <mat-progress-bar mode="indeterminate" *ngIf="processamento.totalRegistros === 0"></mat-progress-bar>
+      </section>
 
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.statusLabel' | translate }}</th>
-            <td mat-cell *matCellDef="let row">
-              <span class="status-badge" [ngClass]="getItemStatusClass(row.status)">{{ getItemStatusLabel(row.status) }}</span>
-            </td>
-          </ng-container>
+      <section class="items-panel">
+        <header class="items-panel__header">
+          <div>
+            <h2>{{ 'processamento.processamentoDetalhe.itemsLog.title' | translate }}</h2>
+            <p>{{ 'processamento.processamentoDetalhe.header.title' | translate }}</p>
+          </div>
+          <button mat-stroked-button color="warn" type="button" (click)="baixarErros()" [disabled]="isProcessando">
+            <mat-icon>download</mat-icon>
+            {{ 'processamento.processamentoDetalhe.actions.downloadErrors' | translate }}
+          </button>
+        </header>
 
-          <ng-container matColumnDef="mensagem">
-            <th mat-header-cell *matHeaderCellDef>{{ 'processamento.processamentoDetalhe.table.header.message' | translate }}</th>
-            <td mat-cell *matCellDef="let row">{{ row.mensagem || row.erro || '—' }}</td>
-          </ng-container>
+        <div class="items-loading" *ngIf="isLoadingItens">
+          <app-loading-spinner></app-loading-spinner>
+        </div>
 
-          <ng-container matColumnDef="acoes">
-            <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.actions' | translate }}</th>
-            <td mat-cell *matCellDef="let row">
-              <div class="action-buttons">
-                <button mat-icon-button color="primary" [matTooltip]="'processamento.processamentoDetalhe.tooltips.viewJson' | translate" (click)="verJson(row)">
+        <div class="table-wrapper" *ngIf="!isLoadingItens && itensDataSource.data.length > 0">
+          <table mat-table [dataSource]="itensDataSource" class="items-table">
+            <ng-container matColumnDef="idExcel">
+              <th mat-header-cell *matHeaderCellDef>#</th>
+              <td mat-cell *matCellDef="let row">{{ row.idExcel || '—' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="linhaExcel">
+              <th mat-header-cell *matHeaderCellDef>{{ 'processamento.processamentoDetalhe.table.header.line' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.linhaExcel }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.statusLabel' | translate }}</th>
+              <td mat-cell *matCellDef="let row">
+                <span class="status-badge" [ngClass]="getItemStatusClass(row.status)">
+                  <span class="status-badge__dot"></span>
+                  {{ getItemStatusLabel(row.status) }}
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="mensagem">
+              <th mat-header-cell *matHeaderCellDef>{{ 'processamento.processamentoDetalhe.table.header.message' | translate }}</th>
+              <td mat-cell *matCellDef="let row">
+                <span class="message-value">{{ row.mensagem || row.erro || '—' }}</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="acoes">
+              <th mat-header-cell *matHeaderCellDef>{{ 'processamento.common.actions' | translate }}</th>
+              <td mat-cell *matCellDef="let row" class="actions-cell">
+                <button mat-stroked-button color="primary" type="button"
+                        [matTooltip]="'processamento.processamentoDetalhe.tooltips.viewJson' | translate"
+                        (click)="verJson(row)">
                   <mat-icon>code</mat-icon>
+                  JSON
                 </button>
-              </div>
-            </td>
-          </ng-container>
+              </td>
+            </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="itensColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: itensColumns;"></tr>
-        </table>
+            <tr mat-header-row *matHeaderRowDef="itensColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: itensColumns;"></tr>
+          </table>
 
-        <p *ngIf="!isLoadingItens && itensDataSource.data.length === 0">{{ 'processamento.processamentoDetalhe.empty.noItems' | translate }}</p>
+          <mat-paginator [pageSizeOptions]="pageSizeOptions"
+                         showFirstLastButtons
+                         [attr.aria-label]="'processamento.processamentoDetalhe.table.paginationAriaLabel' | translate">
+          </mat-paginator>
+        </div>
 
-        <mat-paginator *ngIf="itensDataSource.data.length > 0"
-          [pageSizeOptions]="pageSizeOptions"
-          showFirstLastButtons
-          [attr.aria-label]="'processamento.processamentoDetalhe.table.paginationAriaLabel' | translate">
-        </mat-paginator>
-      </mat-card-content>
-    </mat-card>
-  </ng-container>
+        <section class="items-empty" *ngIf="!isLoadingItens && itensDataSource.data.length === 0">
+          <mat-icon>receipt_long</mat-icon>
+          <p>{{ 'processamento.processamentoDetalhe.empty.noItems' | translate }}</p>
+        </section>
+      </section>
+    </div>
+  </section>
 </section>

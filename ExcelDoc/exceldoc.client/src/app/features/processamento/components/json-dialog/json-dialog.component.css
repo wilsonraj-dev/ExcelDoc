@@ -1,19 +1,78 @@
+:host {
+  display: block;
+  color: #101828;
+}
+
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0;
+  color: #0b1739;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.dialog-title__icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #eaf1ff;
+  color: #155eef;
+}
+
+  .dialog-title__icon mat-icon {
+    width: 19px;
+    height: 19px;
+    font-size: 19px;
+  }
+
+mat-dialog-content {
+  min-width: min(620px, 70vw);
+}
+
+h4 {
+  margin: 18px 0 8px;
+  color: #344054;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+  h4:first-of-type {
+    margin-top: 8px;
+  }
+
 .json-block {
-  background: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 12px;
-  font-size: 13px;
   max-height: 300px;
+  margin: 0;
   overflow: auto;
+  padding: 14px;
+  border: 1px solid #e0e6ef;
+  border-radius: 9px;
+  background: #f8faff;
+  color: #344054;
+  font-size: 0.78rem;
+  line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-all;
 }
 
-h4 {
-  margin: 16px 0 8px;
+mat-dialog-actions {
+  padding: 12px 24px 20px;
+  border-top: 1px solid #e7ebf2;
 }
 
-h4:first-of-type {
-  margin-top: 0;
+  mat-dialog-actions button {
+    min-height: 40px;
+    border-radius: 9px;
+    padding-inline: 20px;
+  }
+
+@media (max-width: 700px) {
+  mat-dialog-content {
+    min-width: 0;
+  }
 }
