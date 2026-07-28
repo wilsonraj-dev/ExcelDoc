@@ -30,6 +30,59 @@ public sealed class ExcelReaderServiceTests
     }
 
     [Fact]
+    public async Task ReadFirstRowAsync_UsesPrincipalWorksheetWhenInstructionsComeFirst()
+    {
+        using var stream = new MemoryStream();
+        using (var workbook = new XLWorkbook())
+        {
+            workbook.AddWorksheet("Instruções").Cell(1, 1).Value = "Como utilizar";
+            var principal = workbook.AddWorksheet("Principal");
+            principal.Cell(1, 1).Value = "#";
+            principal.Cell(1, 2).Value = "DocDate";
+            workbook.SaveAs(stream);
+        }
+
+        stream.Position = 0;
+        var service = new ExcelReaderService(new StubMessageService());
+
+        var result = await service.ReadFirstRowAsync(stream);
+
+        Assert.Equal(["#", "DocDate"], result);
+    }
+
+    [Fact]
+    public async Task ReadRowsAsync_UsesPrincipalWorksheetWhenInstructionsComeFirst()
+    {
+        var filePath = Path.Combine(
+            Path.GetTempPath(),
+            $"exceldoc-principal-{Guid.NewGuid():N}.xlsx");
+        try
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                workbook.AddWorksheet("Instruções").Cell(1, 1).Value = "Como utilizar";
+                var principal = workbook.AddWorksheet("Principal");
+                principal.Cell(1, 1).Value = "#";
+                principal.Cell(2, 1).Value = 1;
+                principal.Cell(2, 2).Value = "C0001";
+                workbook.SaveAs(filePath);
+            }
+
+            var service = new ExcelReaderService(new StubMessageService());
+
+            var result = await service.ReadRowsAsync(filePath);
+
+            Assert.Equal(2, result.Count);
+            Assert.Equal("#", result.First().Values[1]);
+            Assert.Equal("C0001", result.Last().Values[2]);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public async Task ReadFirstRowAsync_ThrowsFormatExceptionForInvalidWorkbook()
     {
         await using var stream = new MemoryStream(Encoding.UTF8.GetBytes("arquivo inválido"));

@@ -108,18 +108,21 @@ namespace ExcelDoc.Server.Services
 
         private static IdExcelHeader? FindIdExcelHeader(IReadOnlyList<ExcelRowData> rows)
         {
+            IdExcelHeader? result = null;
+
             foreach (var row in rows.Take(HeaderRowsToInspect))
             {
                 foreach (var value in row.Values)
                 {
                     if (string.Equals(value.Value?.Trim(), IdExcelHeaderName, StringComparison.Ordinal))
                     {
-                        return new IdExcelHeader(row.RowNumber, value.Key);
+                        result = new IdExcelHeader(row.RowNumber, value.Key);
+                        break;
                     }
                 }
             }
 
-            return null;
+            return result;
         }
 
         private int ReadIdExcel(ExcelRowData row, int columnNumber)

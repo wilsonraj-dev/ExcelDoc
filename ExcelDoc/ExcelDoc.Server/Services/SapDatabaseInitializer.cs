@@ -9,7 +9,7 @@ namespace ExcelDoc.Server.Services;
 public sealed class SapDatabaseInitializer : ISapDatabaseInitializer
 {
     private const int CurrentSchemaVersion = 2;
-    private const int CurrentSeedVersion = 2;
+    private const int CurrentSeedVersion = 4;
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> InstallationLocks =
         new(StringComparer.OrdinalIgnoreCase);
     private const string HeaderCollection = "Cabeçalho Documentos de Marketing";
@@ -87,40 +87,68 @@ public sealed class SapDatabaseInitializer : ISapDatabaseInitializer
             [
                 new("DocDate", "Data de Lançamento", 2, TipoCampo.DateTime, "yyyy-MM-dd"),
                 new("TaxDate", "Data de emissão", 3, TipoCampo.DateTime, "yyyy-MM-dd"),
-                new("DocDueDate", "Data de entrega", 4, TipoCampo.DateTime, "yyyy-MM-dd"),
-                new("BPL_IDAssignedToInvoice", "Id da Filial", 5, TipoCampo.Int, null),
-                new("CardCode", "Id do parceiro", 6, TipoCampo.String, null),
-                new("SequenceCode", "Sequência do Documento", 9, TipoCampo.Int, null),
-                new("SequenceSerial", "Número da NF", 10, TipoCampo.Int, null),
-                new("Comments", "Observações", 38, TipoCampo.String, null)
+                new("DocDueDate", "Data de vencimento", 4, TipoCampo.DateTime, "yyyy-MM-dd"),
+                new("BPL_IDAssignedToInvoice", "Código da filial", 5, TipoCampo.Int, null),
+                new("CardCode", "Código do parceiro de negócios", 6, TipoCampo.String, null),
+                new("CardName", "Nome do parceiro de negócios", 7, TipoCampo.String, null),
+                new("ImportFileNum", "Pedido", 8, TipoCampo.Int, null),
+                new("SequenceCode", "Sequência do documento", 9, TipoCampo.Int, null),
+                new("SequenceSerial", "Número da nota fiscal", 10, TipoCampo.Int, null),
+                new("SeriesString", "Série do documento", 11, TipoCampo.String, null),
+                new("SequenceModel", "Modelo do documento", 12, TipoCampo.String, null),
+                new("Comments", "Observações", 13, TipoCampo.String, null),
+                new("U_TX_DctfReceita", "DCTF Receita", 35, TipoCampo.String, null),
+                new("U_ChaveAcesso", "Chave de acesso da nota fiscal", 39, TipoCampo.String, null)
             ]),
         new(
             LinesMapping,
             "DocumentLines",
             [
-                new("ItemCode", "Código do Item", 13, TipoCampo.String, null),
-                new("LineTotal", "Valor Total da Linha", 14, TipoCampo.Double, null),
-                new("TaxCode", "Código de Imposto", 16, TipoCampo.String, null),
-                new("Quantity", "Quantidade", 35, TipoCampo.Double, null),
+                new("ItemCode", "Código do item", 14, TipoCampo.String, null),
+                new("Quantity", "Quantidade", 15, TipoCampo.Double, null),
+                new("Price", "Preço unitário", 16, TipoCampo.Double, null),
                 new("Usage", "Utilização", 17, TipoCampo.String, null),
-                new("CostingCode", "Centro de Custo", 18, TipoCampo.String, null),
-                new("AccountCode", "Conta Contábil", 19, TipoCampo.String, null)
+                new("TaxCode", "Código do imposto", 18, TipoCampo.String, null),
+                new("WTLiable", "Sujeito a imposto de renda retido na fonte", 19, TipoCampo.Boolean, null),
+                new("CostingCode", "Centro de custo 1", 20, TipoCampo.String, null),
+                new("CostingCode2", "Centro de custo 2", 21, TipoCampo.String, null),
+                new("CostingCode3", "Centro de custo 3", 22, TipoCampo.String, null),
+                new("CostingCode4", "Centro de custo 4", 23, TipoCampo.String, null),
+                new("CostingCode5", "Centro de custo 5", 24, TipoCampo.String, null),
+                new("AccountCode", "Conta do razão", 25, TipoCampo.String, null),
+                new("WarehouseCode", "Código do depósito", 26, TipoCampo.String, null),
+                new("ProjectCode", "Projeto", 27, TipoCampo.String, null),
+                new("Incoterms", "Incoterms", 28, TipoCampo.String, null)
             ]),
         new(
             InstallmentsMapping,
             "DocumentInstallments",
             [
-                new("InstallmentId", "Id da Parcela", 20, TipoCampo.Int, null),
-                new("DueDate", "Data de Vencimento da Parcela", 21, TipoCampo.DateTime, "yyyy-MM-dd"),
-                new("Total", "Total da Parcela", 22, TipoCampo.Double, null)
+                new("U_CodigoDeBarras", "Código de barras", 33, TipoCampo.String, null),
+                new("U_IB_TipoImposto", "Tipo de imposto", 34, TipoCampo.String, null),
+                new("U_IB_LinhaDigitavel", "Linha digitável", 36, TipoCampo.String, null),
+                new("U_IB_QrCodePix", "QR Code do Pix", 37, TipoCampo.String, null),
+                new("U_IB_TipoTransfRealizar", "Tipo de transferência", 38, TipoCampo.String, null)
             ]),
         EmptyMapping("DocumentAdditionalExpenses"),
         EmptyMapping("DocumentLineAdditionalExpenses"),
         EmptyMapping("DocumentSpecialLines"),
         EmptyMapping("DocumentLinesBinAllocations"),
-        EmptyMapping("BatchNumbers"),
+        new(
+            DefaultMappingName("BatchNumbers"),
+            "BatchNumbers",
+            [
+                new("BatchNumber", "Número do lote", 29, TipoCampo.String, null),
+                new("Quantity", "Quantidade do lote", 30, TipoCampo.Double, null)
+            ]),
         EmptyMapping("SerialNumbers"),
-        EmptyMapping("WithholdingTaxDataCollection"),
+        new(
+            DefaultMappingName("WithholdingTaxDataCollection"),
+            "WithholdingTaxDataCollection",
+            [
+                new("TaxableAmount", "Valor sujeito a imposto retido", 31, TipoCampo.Double, null),
+                new("WTCode", "Código do imposto retido", 32, TipoCampo.String, null)
+            ]),
         EmptyMapping("WithholdingTaxDataWTXCollection")
     ];
 
@@ -447,21 +475,20 @@ public sealed class SapDatabaseInitializer : ISapDatabaseInitializer
             }
 
             var fields = existingFields.GetValueOrDefault(mapping.Id) ?? [];
-            foreach (var fieldSeed in seed.Fields)
+            if (seed.Fields.Count > 0 && !FieldsMatchSeed(fields, seed.Fields))
             {
-                var field = fields.FirstOrDefault(value =>
-                    string.Equals(
-                        value.NomeCampo,
-                        fieldSeed.Name,
-                        StringComparison.OrdinalIgnoreCase));
-                if (field is null)
+                foreach (var field in fields)
                 {
-                    if (fields.Any(value => value.IndiceColuna == fieldSeed.ColumnIndex))
-                    {
-                        continue;
-                    }
+                    await _store.DeleteAsync(
+                        SapUdtSchema.MapeamentoCampo,
+                        field.Id,
+                        cancellationToken);
+                }
 
-                    field = new MapeamentoCampo
+                fields = [];
+                foreach (var fieldSeed in seed.Fields)
+                {
+                    var field = new MapeamentoCampo
                     {
                         FK_IdMapeamento = mapping.Id,
                         NomeCampo = fieldSeed.Name,
@@ -476,9 +503,7 @@ public sealed class SapDatabaseInitializer : ISapDatabaseInitializer
                         SapEntityMapper.Fields(field),
                         cancellationToken: cancellationToken);
                     fields.Add(field);
-                    continue;
                 }
-
             }
 
             mapping.Campos = fields;
@@ -577,6 +602,25 @@ public sealed class SapDatabaseInitializer : ISapDatabaseInitializer
 
     private static MappingSeed EmptyMapping(string collectionName) =>
         new(DefaultMappingName(collectionName), collectionName, []);
+
+    private static bool FieldsMatchSeed(
+        IReadOnlyCollection<MapeamentoCampo> fields,
+        IReadOnlyCollection<MappingFieldSeed> fieldSeeds)
+    {
+        if (fields.Count != fieldSeeds.Count)
+        {
+            return false;
+        }
+
+        return fieldSeeds.All(seed =>
+            fields.Any(field =>
+                string.Equals(field.NomeCampo, seed.Name, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(field.DescricaoCampo, seed.Description, StringComparison.Ordinal) &&
+                field.IndiceColuna == seed.ColumnIndex &&
+                field.TipoCampo == seed.Type &&
+                string.Equals(field.Formato, seed.Format, StringComparison.Ordinal) &&
+                field.Ativo));
+    }
 
     private static string DefaultMappingName(string collectionName) =>
         $"Mapeamento Padrão - {collectionName}";

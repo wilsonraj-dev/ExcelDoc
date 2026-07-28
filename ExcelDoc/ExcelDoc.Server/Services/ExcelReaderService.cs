@@ -184,7 +184,7 @@ namespace ExcelDoc.Server.Services
             using var workbook = new XLWorkbook(stream);
             cancellationToken.ThrowIfCancellationRequested();
 
-            var worksheet = workbook.Worksheets.FirstOrDefault();
+            var worksheet = GetImportWorksheet(workbook);
             var firstRow = worksheet?.FirstRowUsed();
             var lastCell = firstRow?.LastCellUsed();
 
@@ -208,7 +208,8 @@ namespace ExcelDoc.Server.Services
             return Task.Run<IReadOnlyCollection<ExcelRowData>>(() =>
             {
                 using var workbook = new XLWorkbook(filePath);
-                var worksheet = workbook.Worksheets.First();
+                var worksheet = GetImportWorksheet(workbook)
+                    ?? throw new InvalidDataException("The Excel workbook does not contain worksheets.");
                 var rows = new List<ExcelRowData>();
 
                 foreach (var row in worksheet.RowsUsed())
@@ -233,5 +234,13 @@ namespace ExcelDoc.Server.Services
                 return rows;
             }, cancellationToken);
         }
+
+        private static IXLWorksheet? GetImportWorksheet(XLWorkbook workbook) =>
+            workbook.Worksheets.FirstOrDefault(worksheet =>
+                string.Equals(
+                    worksheet.Name,
+                    "Principal",
+                    StringComparison.OrdinalIgnoreCase))
+            ?? workbook.Worksheets.FirstOrDefault();
     }
 }
