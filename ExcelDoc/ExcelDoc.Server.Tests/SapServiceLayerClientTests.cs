@@ -193,6 +193,7 @@ public sealed class SapServiceLayerClientTests
 
         return new SapServiceLayerClient(
             factory,
+            new StubMessageService(),
             processingOptions,
             sapOptions,
             NullLogger<SapServiceLayerClient>.Instance);

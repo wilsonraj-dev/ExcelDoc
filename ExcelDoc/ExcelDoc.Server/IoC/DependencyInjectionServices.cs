@@ -25,7 +25,7 @@ namespace ExcelDoc.Server.IoC
             services.AddScoped<IPerfilMapeamentoRepository, PerfilMapeamentoRepository>();
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();
-            services.AddScoped<IMessageService, MessageService>();
+            services.AddSingleton<IMessageService, MessageService>();
             services.AddScoped<ISapSessionContextAccessor, SapSessionContextAccessor>();
             services.AddScoped<IHashArquivoService, HashArquivoService>();
             services.AddScoped<IArquivoStorageService, ArquivoStorageService>();

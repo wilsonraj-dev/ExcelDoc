@@ -6,6 +6,7 @@ using System.Threading.RateLimiting;
 using ExcelDoc.Server.Options;
 using ExcelDoc.Server.Sap;
 using ExcelDoc.Server.Services.Interfaces;
+using ExcelDoc.Server.Localization;
 using Microsoft.Extensions.Options;
 
 namespace ExcelDoc.Server.Services;
@@ -27,16 +28,19 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
     };
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<SapServiceLayerClient> _logger;
+    private readonly IMessageService _messageService;
     private readonly SapServiceLayerOptions _sapOptions;
     private readonly TokenBucketRateLimiter _rateLimiter;
 
     public SapServiceLayerClient(
         IHttpClientFactory httpClientFactory,
+        IMessageService messageService,
         IOptions<ProcessingOptions> processingOptions,
         IOptions<SapServiceLayerOptions> sapOptions,
         ILogger<SapServiceLayerClient> logger)
     {
         _httpClientFactory = httpClientFactory;
+        _messageService = messageService;
         _logger = logger;
         _sapOptions = sapOptions.Value;
 
@@ -196,7 +200,7 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         if (!lease.IsAcquired)
         {
             throw new InvalidOperationException(
-                "Não foi possível reservar uma chamada ao SAP Service Layer.");
+                _messageService.Get(MessageKeys.SapRequestReservationFailed));
         }
 
         using var response = await SendAsync(
@@ -216,11 +220,11 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         {
             throw new SapSessionExpiredException(
                 ExtractSapMessage(responseBody) ??
-                "A sessão do SAP Business One expirou. Entre novamente no sistema.");
+                _messageService.Get(MessageKeys.SapSessionExpired));
         }
 
         var exception = new SapServiceLayerException(
-            ExtractSapMessage(responseBody) ?? "Erro ao executar operação no SAP Service Layer.",
+            ExtractSapMessage(responseBody) ?? _messageService.Get(MessageKeys.SapServiceLayerOperationFailed),
             response.StatusCode,
             responseBody);
         exception.Data[RequestPayloadKey] = payload;
@@ -238,7 +242,7 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         if (!lease.IsAcquired)
         {
             throw new InvalidOperationException(
-                "Não foi possível reservar uma chamada ao SAP Service Layer.");
+                _messageService.Get(MessageKeys.SapRequestReservationFailed));
         }
 
         var requestPayload = JsonSerializer.Serialize(payload, ProcessingJsonOptions);
@@ -261,11 +265,11 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         {
             throw new SapSessionExpiredException(
                 ExtractSapMessage(responseBody) ??
-                "A sessão do SAP Business One expirou. Entre novamente no sistema.");
+                _messageService.Get(MessageKeys.SapSessionExpired));
         }
 
         var exception = new SapServiceLayerException(
-            ExtractSapMessage(responseBody) ?? "Erro ao executar operação no SAP Service Layer.",
+            ExtractSapMessage(responseBody) ?? _messageService.Get(MessageKeys.SapServiceLayerOperationFailed),
             response.StatusCode,
             responseBody);
         exception.Data[RequestPayloadKey] = requestPayload;
@@ -285,14 +289,15 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         return client;
     }
 
-    private static string BuildProcessamentoResponse(string responseBody)
+    private string BuildProcessamentoResponse(string responseBody)
     {
         using var document = JsonDocument.Parse(responseBody);
         var root = document.RootElement;
 
         if (root.ValueKind != JsonValueKind.Object)
         {
-            throw new JsonException("A resposta de sucesso da Service Layer não é um objeto JSON.");
+            throw new InvalidOperationException(
+                _messageService.Get(MessageKeys.SapProcessingResponseInvalid));
         }
 
         var documentLines = root.TryGetProperty("DocumentLines", out var lines) &&

@@ -80,6 +80,10 @@
   <data name="SelectAtLeastOneCollectionForProfile" xml:space="preserve"><value>Selecione ao menos uma cole&#xE7;&#xE3;o para compor o perfil.</value></data>
   <data name="SelectAtLeastOneLineCollection" xml:space="preserve"><value>Selecione ao menos uma cole&#xE7;&#xE3;o do tipo line para compor o perfil.</value></data>
   <data name="SelectAtLeastOneRootLineCollection" xml:space="preserve"><value>Selecione ao menos uma cole&#xE7;&#xE3;o de linha raiz para compor o perfil.</value></data>
+  <data name="SapProcessingResponseInvalid" xml:space="preserve"><value>A resposta de sucesso da Service Layer n&#xE3;o possui o formato esperado.</value></data>
+  <data name="SapRequestReservationFailed" xml:space="preserve"><value>N&#xE3;o foi poss&#xED;vel reservar uma chamada ao SAP Service Layer.</value></data>
+  <data name="SapServiceLayerOperationFailed" xml:space="preserve"><value>Erro ao executar opera&#xE7;&#xE3;o no SAP Service Layer.</value></data>
+  <data name="SapSessionExpired" xml:space="preserve"><value>A sess&#xE3;o do SAP Business One expirou. Entre novamente no sistema.</value></data>
   <data name="SpreadsheetEmptyRows" xml:space="preserve"><value>A planilha n&#xE3;o possui linhas preenchidas.</value></data>
   <data name="SpreadsheetNoDataRows" xml:space="preserve"><value>A planilha n&#xE3;o possui linhas de dados para processamento.</value></data>
   <data name="UserDoesNotHavePermissionToChangeMapping" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o possui permiss&#xE3;o para alterar este mapeamento.</value></data>

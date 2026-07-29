@@ -78,6 +78,10 @@ public static class MessageKeys
     public const string SelectAtLeastOneCollectionForProfile = nameof(SelectAtLeastOneCollectionForProfile);
     public const string SelectAtLeastOneLineCollection = nameof(SelectAtLeastOneLineCollection);
     public const string SelectAtLeastOneRootLineCollection = nameof(SelectAtLeastOneRootLineCollection);
+    public const string SapProcessingResponseInvalid = nameof(SapProcessingResponseInvalid);
+    public const string SapRequestReservationFailed = nameof(SapRequestReservationFailed);
+    public const string SapServiceLayerOperationFailed = nameof(SapServiceLayerOperationFailed);
+    public const string SapSessionExpired = nameof(SapSessionExpired);
     public const string SpreadsheetEmptyRows = nameof(SpreadsheetEmptyRows);
     public const string SpreadsheetNoDataRows = nameof(SpreadsheetNoDataRows);
     public const string UserDoesNotHavePermissionToChangeMapping = nameof(UserDoesNotHavePermissionToChangeMapping);
