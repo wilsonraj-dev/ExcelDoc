@@ -1,8 +1,9 @@
-using System.Text.Json;
 using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Models;
 using ExcelDoc.Server.Repositories.Interfaces;
 using ExcelDoc.Server.Services.Interfaces;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ExcelDoc.Server.Services
 {
@@ -10,7 +11,11 @@ namespace ExcelDoc.Server.Services
     {
         private const string RequestPayloadKey = "RequestPayload";
         private const string ResponseBodyKey = "ResponseBody";
-        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
         private readonly IExcelReaderService _excelReaderService;
         private readonly IJsonBuilderService _jsonBuilderService;
         private readonly IMessageService _messageService;

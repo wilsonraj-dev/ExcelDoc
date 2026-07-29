@@ -32,6 +32,21 @@ public sealed class JsonBuilderServiceTests
     }
 
     [Fact]
+    public void BuildDocumentPayload_OmitsFieldsWithNullValues()
+    {
+        var document = new Documento { Id = 1 };
+        var header = CreateItem(1, "Header", TipoColecao.Header, CreateMapping("Comments", 1));
+        var lines = CreateItem(2, "DocumentLines", TipoColecao.Line, CreateMapping("ItemCode", 2));
+        var profile = CreateProfile(document, header, lines);
+
+        var payload = _service.BuildDocumentPayload(
+            profile,
+            [CreateRow((1, null), (2, "A0001"))]);
+
+        Assert.False(payload.ContainsKey("Comments"));
+    }
+
+    [Fact]
     public void BuildDocumentPayload_TreatsZeroAndFalseAsMeaningfulIncludingNestedChild()
     {
         var document = new Documento { Id = 1 };

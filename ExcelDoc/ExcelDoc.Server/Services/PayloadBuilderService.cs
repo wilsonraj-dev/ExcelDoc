@@ -51,7 +51,12 @@ namespace ExcelDoc.Server.Services
                          .OrderBy(x => x.IndiceColuna))
             {
                 rowValues.TryGetValue(campo.IndiceColuna, out var rawValue);
-                payload[campo.NomeCampo] = ConvertValue(rawValue, campo);
+                var value = ConvertValue(rawValue, campo);
+
+                if (value is not null)
+                {
+                    payload[campo.NomeCampo] = value;
+                }
             }
 
             return payload;

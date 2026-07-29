@@ -212,6 +212,7 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(
             new MediaTypeWithQualityHeaderValue("application/json"));
+
         return client;
     }
 
