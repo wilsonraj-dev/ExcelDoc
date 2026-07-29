@@ -13,14 +13,11 @@
 
 .auth-shell {
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #eff6ff, #f8fafc 45%, #e2e8f0);
+  background: #f4f8fa;
 }
 
 .auth-shell__content {
-  width: min(100%, 460px);
+  width: 100%;
 }
 
 .workspace {
@@ -60,16 +57,16 @@
   gap: 0.35rem;
 }
 
-.topbar__session-item span {
-  font-size: 0.75rem;
-  color: #64748b;
-}
+  .topbar__session-item span {
+    font-size: 0.75rem;
+    color: #64748b;
+  }
 
-.topbar__session-item strong {
-  color: #0f172a;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
+  .topbar__session-item strong {
+    color: #0f172a;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
 
 .topbar__logout {
   margin-left: auto;
@@ -91,7 +88,7 @@
 
 @media (max-width: 720px) {
   .auth-shell {
-    padding: 1rem;
+    padding: 0;
   }
 
   .topbar {
