@@ -432,6 +432,7 @@
       "level": "Nivel",
       "actions": {
         "excelPreview": "Vista previa de Excel",
+        "downloadExampleSpreadsheet": "Descargue una hoja de cálculo de ejemplo.",
         "addField": "Agregar campo",
         "cancelChanges": "Cancelar cambios",
         "saveAll": "Guardar todo"

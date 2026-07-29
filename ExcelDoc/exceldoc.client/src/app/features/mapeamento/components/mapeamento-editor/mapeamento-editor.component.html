@@ -31,6 +31,14 @@
       </label>
 
       <button mat-stroked-button
+              type="button"
+              (click)="baixarPlanilhaExemplo()"
+              [disabled]="isDownloadingExample">
+        <mat-icon>download</mat-icon>
+        {{ 'mapeamento.mapeamentoEditor.actions.downloadExampleSpreadsheet' | translate }}
+      </button>
+
+      <button mat-stroked-button
               color="primary"
               type="button"
               (click)="adicionarCampo()"

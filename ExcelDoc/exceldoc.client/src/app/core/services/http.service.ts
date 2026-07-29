@@ -18,6 +18,10 @@ export class HttpService {
     return this.httpClient.get<T>(url, options);
   }
 
+  getBlob(url: string, options?: HttpRequestOptions): Observable<Blob> {
+    return this.httpClient.get(url, { ...options, responseType: 'blob' });
+  }
+
   post<TResponse, TRequest>(url: string, body: TRequest): Observable<TResponse> {
     return this.httpClient.post<TResponse>(url, body);
   }

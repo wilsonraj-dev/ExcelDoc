@@ -57,6 +57,7 @@ export class MapeamentoEditorComponent implements OnChanges {
   originalRows: MapeamentoCampoRow[] = [];
   isLoading = false;
   isSaving = false;
+  isDownloadingExample = false;
   excelPreviewData: string[] = [];
   searchTerm = '';
 
@@ -243,6 +244,34 @@ export class MapeamentoEditorComponent implements OnChanges {
     }
 
     this.fileInput?.nativeElement.click();
+  }
+
+  baixarPlanilhaExemplo(): void {
+    if (this.isDownloadingExample) {
+      return;
+    }
+
+    this.isDownloadingExample = true;
+    this.mapeamentoService.downloadPlanilhaExemplo()
+      .pipe(
+        finalize(() => { this.isDownloadingExample = false; }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (arquivo) => {
+          const url = URL.createObjectURL(arquivo);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'Planilha Exemplo.xlsx';
+          link.click();
+          URL.revokeObjectURL(url);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.notificationService.showError(
+            error.error?.detail ?? this.translate.instant('mapeamento.mapeamentoEditor.feedback.errors.downloadExampleSpreadsheet')
+          );
+        }
+      });
   }
 
   onExcelUpload(event: Event): void {

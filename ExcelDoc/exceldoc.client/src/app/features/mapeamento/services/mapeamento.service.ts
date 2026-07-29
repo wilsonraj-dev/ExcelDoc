@@ -70,4 +70,8 @@ export class MapeamentoService {
       formData
     );
   }
+
+  downloadPlanilhaExemplo(): Observable<Blob> {
+    return this.httpService.getBlob('/api/planilhas/exemplo');
+  }
 }

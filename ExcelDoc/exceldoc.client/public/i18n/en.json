@@ -432,6 +432,7 @@
       "level": "Level",
       "actions": {
         "excelPreview": "Excel preview",
+        "downloadExampleSpreadsheet": "Download example spreadsheet",
         "addField": "Add field",
         "cancelChanges": "Cancel changes",
         "saveAll": "Save all"
@@ -512,6 +513,7 @@
         },
         "errors": {
           "fixErrors": "Fix the errors before saving.",
+          "downloadExampleSpreadsheet": "Could not download the example spreadsheet.",
           "saveFields": "Could not save mapping fields.",
           "emptyExcel": "The Excel file is empty.",
           "readExcel": "Could not read the Excel file.",

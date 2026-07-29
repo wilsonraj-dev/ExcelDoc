@@ -432,6 +432,7 @@
       "level": "Nível",
       "actions": {
         "excelPreview": "Prévia do Excel",
+        "downloadExampleSpreadsheet": "Baixar planilha de exemplo",
         "addField": "Adicionar campo",
         "cancelChanges": "Cancelar alterações",
         "saveAll": "Salvar tudo"
@@ -512,6 +513,7 @@
         },
         "errors": {
           "fixErrors": "Corrija os erros antes de salvar.",
+          "downloadExampleSpreadsheet": "Não foi possível baixar a planilha de exemplo.",
           "saveFields": "Falha ao salvar os campos do mapeamento.",
           "emptyExcel": "O arquivo Excel está vazio.",
           "readExcel": "Erro ao ler o arquivo Excel.",
