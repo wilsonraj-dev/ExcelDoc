@@ -173,6 +173,15 @@ public sealed class AuthServiceAuthorizationTests
         {
             throw new NotSupportedException();
         }
+
+        public Task<string> PostProcessamentoAsync(
+            SapSessionContext session,
+            string endpoint,
+            object payload,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
     }
 
     private sealed class RecordingSessionAccessor : ISapSessionContextAccessor

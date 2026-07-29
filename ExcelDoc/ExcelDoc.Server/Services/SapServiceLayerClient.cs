@@ -1,7 +1,7 @@
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using ExcelDoc.Server.Options;
 using ExcelDoc.Server.Sap;
@@ -18,6 +18,12 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
     {
         PropertyNamingPolicy = null,
         DictionaryKeyPolicy = null
+    };
+    private static readonly JsonSerializerOptions ProcessingJsonOptions = new()
+    {
+        PropertyNamingPolicy = null,
+        DictionaryKeyPolicy = null,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<SapServiceLayerClient> _logger;
@@ -133,6 +139,23 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         object? payload = null,
         CancellationToken cancellationToken = default)
     {
+        return await SendAsync(
+            session,
+            method,
+            endpoint,
+            payload,
+            cancellationToken,
+            SapJsonOptions);
+    }
+
+    private async Task<HttpResponseMessage> SendAsync(
+        SapSessionContext session,
+        HttpMethod method,
+        string endpoint,
+        object? payload,
+        CancellationToken cancellationToken,
+        JsonSerializerOptions jsonOptions)
+    {
         var client = CreateClient(session.ServiceLayerBaseUrl);
         var request = new HttpRequestMessage(
             method,
@@ -145,7 +168,7 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         }
         else if (payload is not null)
         {
-            request.Content = JsonContent.Create(payload, options: SapJsonOptions);
+            request.Content = JsonContent.Create(payload, options: jsonOptions);
         }
 
         try
@@ -205,6 +228,52 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         throw exception;
     }
 
+    public async Task<string> PostProcessamentoAsync(
+        SapSessionContext session,
+        string endpoint,
+        object payload,
+        CancellationToken cancellationToken = default)
+    {
+        using var lease = await _rateLimiter.AcquireAsync(1, cancellationToken);
+        if (!lease.IsAcquired)
+        {
+            throw new InvalidOperationException(
+                "Não foi possível reservar uma chamada ao SAP Service Layer.");
+        }
+
+        var requestPayload = JsonSerializer.Serialize(payload, ProcessingJsonOptions);
+        using var response = await SendAsync(
+            session,
+            HttpMethod.Post,
+            endpoint,
+            payload,
+            cancellationToken,
+            ProcessingJsonOptions);
+
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        if (response.IsSuccessStatusCode)
+        {
+            return BuildProcessamentoResponse(responseBody);
+        }
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            throw new SapSessionExpiredException(
+                ExtractSapMessage(responseBody) ??
+                "A sessão do SAP Business One expirou. Entre novamente no sistema.");
+        }
+
+        var exception = new SapServiceLayerException(
+            ExtractSapMessage(responseBody) ?? "Erro ao executar operação no SAP Service Layer.",
+            response.StatusCode,
+            responseBody);
+        exception.Data[RequestPayloadKey] = requestPayload;
+        exception.Data[ResponseBodyKey] = responseBody;
+
+        throw exception;
+    }
+
     private HttpClient CreateClient(string baseUrl)
     {
         var client = _httpClientFactory.CreateClient("sap-service-layer");
@@ -215,6 +284,43 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
 
         return client;
     }
+
+    private static string BuildProcessamentoResponse(string responseBody)
+    {
+        using var document = JsonDocument.Parse(responseBody);
+        var root = document.RootElement;
+
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            throw new JsonException("A resposta de sucesso da Service Layer não é um objeto JSON.");
+        }
+
+        var documentLines = root.TryGetProperty("DocumentLines", out var lines) &&
+                            lines.ValueKind == JsonValueKind.Array
+            ? lines.EnumerateArray().Select(line => (object)new
+            {
+                ItemCode = GetJsonProperty(line, "ItemCode"),
+                Quantity = GetJsonProperty(line, "Quantity"),
+                Price = GetJsonProperty(line, "Price")
+            }).ToArray()
+            : Array.Empty<object>();
+
+        return JsonSerializer.Serialize(new
+        {
+            DocEntry = GetJsonProperty(root, "DocEntry"),
+            DocNum = GetJsonProperty(root, "DocNum"),
+            CardCode = GetJsonProperty(root, "CardCode"),
+            CardName = GetJsonProperty(root, "CardName"),
+            SequenceSerial = GetJsonProperty(root, "SequenceSerial"),
+            DocDate = GetJsonProperty(root, "DocDate"),
+            DocumentLines = documentLines
+        }, ProcessingJsonOptions);
+    }
+
+    private static JsonElement? GetJsonProperty(JsonElement source, string propertyName) =>
+        source.ValueKind == JsonValueKind.Object && source.TryGetProperty(propertyName, out var value)
+            ? value
+            : null;
 
     private static string BuildCookieHeader(
         HttpResponseMessage response,

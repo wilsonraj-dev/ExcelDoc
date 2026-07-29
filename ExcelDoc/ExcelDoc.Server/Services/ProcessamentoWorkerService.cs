@@ -137,10 +137,10 @@ namespace ExcelDoc.Server.Services
                     }
                     else
                     {
-                        var responseJson = await _sapServiceLayerClient.PostAsync(
+                        var responseJson = await _sapServiceLayerClient.PostProcessamentoAsync(
                             sapSession,
                             processamento.Documento.Endpoint,
-                            payloadJson,
+                            payload,
                             cancellationToken);
 
                         itemLog.JsonRetorno = responseJson;

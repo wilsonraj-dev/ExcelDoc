@@ -92,6 +92,73 @@ public sealed class SapServiceLayerClientTests
                 .ToArray());
     }
 
+    [Fact]
+    public async Task PostProcessamentoAsync_SerializesPayloadBeforeSending()
+    {
+        using var handler = new RecordingHttpMessageHandler();
+        var factory = new RecordingHttpClientFactory(handler);
+        using var client = CreateClient(factory);
+
+        await client.PostProcessamentoAsync(
+            CreateSession(),
+            "Invoices",
+            new
+            {
+                CardCode = "C20000",
+                Comments = (string?)null
+            });
+
+        Assert.Equal(HttpMethod.Post, handler.Method);
+        Assert.Equal(new Uri("https://sap.example.test:50000/b1s/v1/Invoices"), handler.RequestUri);
+
+        using var payload = JsonDocument.Parse(handler.RequestBody!);
+        Assert.Equal("C20000", payload.RootElement.GetProperty("CardCode").GetString());
+        Assert.False(payload.RootElement.TryGetProperty("Comments", out _));
+    }
+
+    [Fact]
+    public async Task PostProcessamentoAsync_ReturnsOnlyProcessingResponseFields()
+    {
+        using var handler = new RecordingHttpMessageHandler(
+            """
+            {
+              "DocEntry": 12,
+              "DocNum": 34,
+              "CardCode": "C20000",
+              "CardName": "Cliente",
+              "SequenceSerial": 56,
+              "DocDate": "2026-07-29",
+              "Comments": "Não deve retornar",
+              "DocumentLines": [
+                {
+                  "ItemCode": "A0001",
+                  "Quantity": 2,
+                  "Price": 19.9,
+                  "WarehouseCode": "01"
+                }
+              ]
+            }
+            """);
+        var factory = new RecordingHttpClientFactory(handler);
+        using var client = CreateClient(factory);
+
+        var result = await client.PostProcessamentoAsync(
+            CreateSession(),
+            "Invoices",
+            new { CardCode = "C20000" });
+
+        using var response = JsonDocument.Parse(result);
+        Assert.Equal(
+            ["DocEntry", "DocNum", "CardCode", "CardName", "SequenceSerial", "DocDate", "DocumentLines"],
+            response.RootElement.EnumerateObject().Select(property => property.Name).ToArray());
+
+        var line = Assert.Single(response.RootElement.GetProperty("DocumentLines").EnumerateArray());
+        Assert.Equal(
+            ["ItemCode", "Quantity", "Price"],
+            line.EnumerateObject().Select(property => property.Name).ToArray());
+        Assert.Equal("A0001", line.GetProperty("ItemCode").GetString());
+    }
+
     private static SapSessionContext CreateSession() =>
         new()
         {
@@ -143,7 +210,7 @@ public sealed class SapServiceLayerClientTests
         }
     }
 
-    private sealed class RecordingHttpMessageHandler : HttpMessageHandler
+    private sealed class RecordingHttpMessageHandler(string? responseBody = null) : HttpMessageHandler
     {
         public int RequestCount { get; private set; }
 
@@ -167,7 +234,7 @@ public sealed class SapServiceLayerClientTests
             var response = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(
-                    """{"SessionId":"sap-session","SessionTimeout":30}""",
+                    responseBody ?? """{"SessionId":"sap-session","SessionTimeout":30}""",
                     Encoding.UTF8,
                     "application/json"),
                 RequestMessage = request

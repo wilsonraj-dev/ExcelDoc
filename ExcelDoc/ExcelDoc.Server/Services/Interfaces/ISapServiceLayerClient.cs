@@ -26,5 +26,11 @@ namespace ExcelDoc.Server.Services.Interfaces
             string endpoint,
             string payload,
             CancellationToken cancellationToken = default);
+
+        Task<string> PostProcessamentoAsync(
+            SapSessionContext session,
+            string endpoint,
+            object payload,
+            CancellationToken cancellationToken = default);
     }
 }
