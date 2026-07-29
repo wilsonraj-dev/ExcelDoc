@@ -68,7 +68,7 @@ export class MapeamentoEditorComponent implements OnChanges {
     private readonly mapeamentoService: MapeamentoService,
     private readonly notificationService: NotificationService,
     private readonly translate: TranslateService
-  ) {}
+  ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['mapeamento']?.currentValue?.id) {

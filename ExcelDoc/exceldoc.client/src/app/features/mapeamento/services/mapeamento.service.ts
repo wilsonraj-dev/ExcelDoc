@@ -16,7 +16,7 @@ export class MapeamentoService {
   private readonly mapeamentosApiUrl = '/api/mapeamentos';
   private readonly mapeamentosCamposApiUrl = '/api/mapeamentos-campos';
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private readonly httpService: HttpService) { }
 
   getMapeamentosByColecao(colecaoId: number): Observable<Mapeamento[]> {
     return this.httpService.get<Mapeamento[]>(`${this.mapeamentosApiUrl}/colecao/${colecaoId}`);

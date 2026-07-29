@@ -185,10 +185,22 @@ namespace ExcelDoc.Server.Services
             cancellationToken.ThrowIfCancellationRequested();
 
             var worksheet = GetImportWorksheet(workbook);
-            var firstRow = worksheet?.FirstRowUsed();
-            var lastCell = firstRow?.LastCellUsed();
+            if (worksheet is null)
+            {
+                return Array.Empty<string>();
+            }
 
-            if (firstRow is null || lastCell is null)
+            // Prefer reading values from row 3 (linha 3). If row 3 is empty, try to find
+            // the first used row at or after row 3. As a last resort, fall back to the
+            // first used row in the worksheet.
+            var targetRow = worksheet.Row(3);
+            if (targetRow.IsEmpty())
+            {
+                targetRow = worksheet.RowsUsed().FirstOrDefault(r => r.RowNumber() >= 3) ?? worksheet.FirstRowUsed();
+            }
+
+            var lastCell = targetRow?.LastCellUsed();
+            if (targetRow is null || lastCell is null)
             {
                 return Array.Empty<string>();
             }
@@ -197,7 +209,7 @@ namespace ExcelDoc.Server.Services
             for (var columnNumber = 1; columnNumber <= lastCell.Address.ColumnNumber; columnNumber++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                columns.Add(firstRow.Cell(columnNumber).GetFormattedString());
+                columns.Add(targetRow.Cell(columnNumber).GetFormattedString());
             }
 
             return columns;
