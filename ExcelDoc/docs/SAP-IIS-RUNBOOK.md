@@ -84,7 +84,12 @@ O diretório de uploads precisa:
 - ficar fora da pasta versionada de publish;
 - usar caminho absoluto na configuração de produção;
 - conceder `Modify` apenas à identidade do application pool;
-- entrar na política de backup e retenção do cliente.
+- ser tratado como armazenamento temporário, sem necessidade de backup.
+
+O ExcelDoc mantém cada planilha somente enquanto o processamento está na fila,
+em execução ou aguardando uma nova tentativa. Ao concluir o job, com sucesso ou
+erro, o arquivo é removido. Falhas anteriores ao enfileiramento também removem o
+upload já gravado.
 
 A sessão SAP e a fila de trabalho atuais são mantidas em memória do processo. Uma reciclagem:
 

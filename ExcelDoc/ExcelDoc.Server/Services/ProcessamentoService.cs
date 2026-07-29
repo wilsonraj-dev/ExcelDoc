@@ -100,53 +100,65 @@ namespace ExcelDoc.Server.Services
 
             var fileName = $"{hash}_{Guid.NewGuid():N}{extension}";
             var filePath = await _arquivoStorageService.SaveAsync(fileName, content, cancellationToken);
-
-            var entity = new Processamento
-            {
-                UsuarioSAP = usuario.NomeUsuario,
-                FK_IdDocumento = documento.Id,
-                FK_IdPerfilMapeamento = perfilMapeamento.Id,
-                NomeArquivo = request.Arquivo.FileName,
-                DataExecucao = _systemClock.UtcNow,
-                Status = StatusProcessamento.Processando,
-                TotalErro = 0,
-                TotalIgnorado = 0,
-                TotalRegistros = 0,
-                TotalSucesso = 0,
-                HashArquivo = hash
-            };
-
-            await _processamentoRepository.AddAsync(entity, cancellationToken);
-            await _processamentoRepository.SaveChangesAsync(cancellationToken);
-
-            entity.Documento = documento;
-            entity.PerfilMapeamento = perfilMapeamento;
-
-            var sessionKey = _sapSessionContextAccessor.GetRequiredSessionKey();
-            if (!_sapSessionStore.TryAcquireJob(sessionKey))
-            {
-                throw new SapSessionExpiredException("A sessão do SAP Business One expirou antes do enfileiramento.");
-            }
+            var queued = false;
 
             try
             {
-                await _backgroundTaskQueue.EnqueueAsync(new ProcessamentoQueueItem
+                var entity = new Processamento
                 {
-                    ProcessamentoId = entity.Id,
-                    FilePath = filePath,
-                    SessionKey = sessionKey,
-                    Attempt = 0
-                }, cancellationToken);
+                    UsuarioSAP = usuario.NomeUsuario,
+                    FK_IdDocumento = documento.Id,
+                    FK_IdPerfilMapeamento = perfilMapeamento.Id,
+                    NomeArquivo = request.Arquivo.FileName,
+                    DataExecucao = _systemClock.UtcNow,
+                    Status = StatusProcessamento.Processando,
+                    TotalErro = 0,
+                    TotalIgnorado = 0,
+                    TotalRegistros = 0,
+                    TotalSucesso = 0,
+                    HashArquivo = hash
+                };
+
+                await _processamentoRepository.AddAsync(entity, cancellationToken);
+                await _processamentoRepository.SaveChangesAsync(cancellationToken);
+
+                entity.Documento = documento;
+                entity.PerfilMapeamento = perfilMapeamento;
+
+                var sessionKey = _sapSessionContextAccessor.GetRequiredSessionKey();
+                if (!_sapSessionStore.TryAcquireJob(sessionKey))
+                {
+                    throw new SapSessionExpiredException("A sessão do SAP Business One expirou antes do enfileiramento.");
+                }
+
+                try
+                {
+                    await _backgroundTaskQueue.EnqueueAsync(new ProcessamentoQueueItem
+                    {
+                        ProcessamentoId = entity.Id,
+                        FilePath = filePath,
+                        SessionKey = sessionKey,
+                        Attempt = 0
+                    }, cancellationToken);
+                    queued = true;
+                }
+                catch
+                {
+                    _sapSessionStore.ReleaseJob(sessionKey);
+                    throw;
+                }
+
+                _logger.LogInformation("Processamento {ProcessamentoId} criado para documento {DocumentoId} e perfil {PerfilMapeamentoId}", entity.Id, entity.FK_IdDocumento, entity.FK_IdPerfilMapeamento);
+
+                return Map(entity);
             }
-            catch
+            finally
             {
-                _sapSessionStore.ReleaseJob(sessionKey);
-                throw;
+                if (!queued)
+                {
+                    await TryDeleteUploadedFileAsync(filePath);
+                }
             }
-
-            _logger.LogInformation("Processamento {ProcessamentoId} criado para documento {DocumentoId} e perfil {PerfilMapeamentoId}", entity.Id, entity.FK_IdDocumento, entity.FK_IdPerfilMapeamento);
-
-            return Map(entity);
         }
 
         public async Task<ProcessamentoResponseDto> GetByIdAsync(int processamentoId, CancellationToken cancellationToken = default)
@@ -250,6 +262,21 @@ namespace ExcelDoc.Server.Services
         private static string? GetExceptionData(Exception exception, string key)
         {
             return exception.Data.Contains(key) ? exception.Data[key]?.ToString() : null;
+        }
+
+        private async Task TryDeleteUploadedFileAsync(string filePath)
+        {
+            try
+            {
+                await _arquivoStorageService.DeleteAsync(filePath, CancellationToken.None);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(
+                    exception,
+                    "Falha ao remover o arquivo temporário de upload {FilePath}.",
+                    filePath);
+            }
         }
 
         private static ProcessamentoResponseDto Map(Processamento processamento)

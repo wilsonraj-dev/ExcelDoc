@@ -45,6 +45,7 @@ public static class MessageKeys
     public const string InvalidIdExcelValueAtRow = nameof(InvalidIdExcelValueAtRow);
     public const string InvalidIntegerValue = nameof(InvalidIntegerValue);
     public const string InvalidNumericValue = nameof(InvalidNumericValue);
+    public const string InvalidOutputDirectory = nameof(InvalidOutputDirectory);
     public const string MappingDoesNotBelongToCollection = nameof(MappingDoesNotBelongToCollection);
     public const string MappingFieldColumnIndexAlreadyExists = nameof(MappingFieldColumnIndexAlreadyExists);
     public const string MappingFieldMappingCannotBeChanged = nameof(MappingFieldMappingCannotBeChanged);

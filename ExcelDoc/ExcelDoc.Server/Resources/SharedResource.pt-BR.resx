@@ -1,91 +1,375 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
-  <resheader name="version"><value>2.0</value></resheader>
-  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
-  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
-  <data name="ChildCollectionMustPointToSelectedParent" xml:space="preserve"><value>Toda cole&#xE7;&#xE3;o filha deve apontar para uma cole&#xE7;&#xE3;o pai selecionada no perfil.</value></data>
-  <data name="CollectionAlreadyExists" xml:space="preserve"><value>J&#xE1; existe uma cole&#xE7;&#xE3;o com o mesmo nome e tipo no escopo informado.</value></data>
-  <data name="CollectionCannotBeChildOfItself" xml:space="preserve"><value>Uma cole&#xE7;&#xE3;o n&#xE3;o pode ser filha dela mesma.</value></data>
-  <data name="CollectionDeleteActiveLinks" xml:space="preserve"><value>N&#xE3;o foi poss&#xED;vel excluir a cole&#xE7;&#xE3;o porque ela possui v&#xED;nculos ativos.</value></data>
-  <data name="CollectionDeleteLinkedDocuments" xml:space="preserve"><value>N&#xE3;o &#xE9; poss&#xED;vel excluir a cole&#xE7;&#xE3;o porque ela est&#xE1; vinculada a documentos.</value></data>
-  <data name="CollectionInvalid" xml:space="preserve"><value>Cole&#xE7;&#xE3;o inv&#xE1;lida.</value></data>
-  <data name="CollectionNameMaxLength" xml:space="preserve"><value>Nome da cole&#xE7;&#xE3;o deve ter no m&#xE1;ximo 150 caracteres.</value></data>
-  <data name="CollectionNameRequired" xml:space="preserve"><value>Nome da cole&#xE7;&#xE3;o &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="CollectionNotFound" xml:space="preserve"><value>Cole&#xE7;&#xE3;o n&#xE3;o encontrada.</value></data>
-  <data name="CollectionRequired" xml:space="preserve"><value>Cole&#xE7;&#xE3;o &#xE9; obrigat&#xF3;ria.</value></data>
-  <data name="ColumnIndexPositive" xml:space="preserve"><value>&#xCD;ndice da coluna deve ser um n&#xFA;mero positivo.</value></data>
-  <data name="ColumnIndexRequired" xml:space="preserve"><value>&#xCD;ndice da coluna &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="CloneNameMaxLength" xml:space="preserve"><value>Nome do clone deve ter no m&#xE1;ximo 150 caracteres.</value></data>
-  <data name="CloneNameRequired" xml:space="preserve"><value>Nome do clone &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="DateInvalid" xml:space="preserve"><value>Data inv&#xE1;lida: {0}</value></data>
-  <data name="DateTimeFieldFormatRequired" xml:space="preserve"><value>Formato &#xE9; obrigat&#xF3;rio quando o tipo do campo &#xE9; DateTime.</value></data>
-  <data name="DefaultMappingsCannotBeDeleted" xml:space="preserve"><value>Mapeamentos padr&#xE3;o n&#xE3;o podem ser exclu&#xED;dos.</value></data>
-  <data name="DocumentAlreadyExistsWithNameOrEndpoint" xml:space="preserve"><value>J&#xE1; existe um documento com o mesmo nome ou endpoint.</value></data>
-  <data name="DocumentAlreadyImportedWithSuccess" xml:space="preserve"><value>Documento ignorado porque j&#xE1; existe importa&#xE7;&#xE3;o anterior com sucesso para o mesmo identificador.</value></data>
-  <data name="DocumentDeleteLinkedRecords" xml:space="preserve"><value>N&#xE3;o foi poss&#xED;vel excluir o documento porque ele est&#xE1; vinculado a outros registros.</value></data>
-  <data name="DocumentEndpointInvalid" xml:space="preserve"><value>O endpoint deve ser apenas o nome relativo da entidade na Service Layer.</value></data>
-  <data name="DocumentEndpointRequired" xml:space="preserve"><value>Endpoint do documento &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="DocumentHasNoLinkedCollections" xml:space="preserve"><value>O documento informado n&#xE3;o possui cole&#xE7;&#xF5;es vinculadas.</value></data>
-  <data name="DocumentMustHaveHeaderCollection" xml:space="preserve"><value>O documento deve possuir ao menos uma cole&#xE7;&#xE3;o do tipo cabe&#xE7;alho vinculada.</value></data>
-  <data name="DocumentNameRequired" xml:space="preserve"><value>Nome do documento &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="DocumentNotFound" xml:space="preserve"><value>Documento n&#xE3;o encontrado.</value></data>
-  <data name="DocumentProcessedSuccessfully" xml:space="preserve"><value>Documento processado com sucesso.</value></data>
-  <data name="DocumentInvalid" xml:space="preserve"><value>Documento inv&#xE1;lido.</value></data>
-  <data name="DocumentRequired" xml:space="preserve"><value>Documento &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="DuplicateCollectionsProfile" xml:space="preserve"><value>N&#xE3;o &#xE9; permitido duplicar cole&#xE7;&#xF5;es dentro do mesmo perfil.</value></data>
-  <data name="EmptyIdExcelValueAtRow" xml:space="preserve"><value>Valor da coluna '#' vazio na linha {0}.</value></data>
-  <data name="FileRequired" xml:space="preserve"><value>Arquivo &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="FieldNameMaxLength" xml:space="preserve"><value>Nome do campo deve ter no m&#xE1;ximo 150 caracteres.</value></data>
-  <data name="FieldNameRequired" xml:space="preserve"><value>Nome do campo &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="FieldTypeRequired" xml:space="preserve"><value>Tipo do campo &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="FormatMaxLength" xml:space="preserve"><value>Formato deve ter no m&#xE1;ximo 50 caracteres.</value></data>
-  <data name="HeaderCollectionsCannotBeNested" xml:space="preserve"><value>Cole&#xE7;&#xF5;es de cabe&#xE7;alho n&#xE3;o podem ser aninhadas.</value></data>
-  <data name="InvalidBooleanValue" xml:space="preserve"><value>Valor booleano inv&#xE1;lido: {0}</value></data>
-  <data name="InvalidExcelFile" xml:space="preserve"><value>O arquivo Excel est&#xE1; vazio, corrompido ou em um formato inv&#xE1;lido.</value></data>
-  <data name="InvalidDocumentLinks" xml:space="preserve"><value>Os documentos informados para v&#xED;nculo s&#xE3;o inv&#xE1;lidos.</value></data>
-  <data name="InvalidIdExcelValueAtRow" xml:space="preserve"><value>Valor inv&#xE1;lido na coluna '#' na linha {0}: '{1}'. Informe um n&#xFA;mero inteiro.</value></data>
-  <data name="InvalidIntegerValue" xml:space="preserve"><value>Valor inteiro inv&#xE1;lido: {0}</value></data>
-  <data name="InvalidNumericValue" xml:space="preserve"><value>Valor num&#xE9;rico inv&#xE1;lido: {0}</value></data>
-  <data name="MappingCollectionCannotBeChanged" xml:space="preserve"><value>N&#xE3;o &#xE9; permitido alterar a cole&#xE7;&#xE3;o do mapeamento.</value></data>
-  <data name="MappingDoesNotBelongToCollection" xml:space="preserve"><value>Mapeamento {0} n&#xE3;o pertence &#xE0; cole&#xE7;&#xE3;o {1}.</value></data>
-  <data name="MappingFieldColumnIndexAlreadyExists" xml:space="preserve"><value>J&#xE1; existe um campo com o &#xED;ndice de coluna {0} neste mapeamento.</value></data>
-  <data name="MappingFieldMappingCannotBeChanged" xml:space="preserve"><value>N&#xE3;o &#xE9; permitido alterar o mapeamento do campo.</value></data>
-  <data name="MappingFieldNotFound" xml:space="preserve"><value>Campo de mapeamento n&#xE3;o encontrado.</value></data>
-  <data name="MappingInvalid" xml:space="preserve"><value>Mapeamento inv&#xE1;lido.</value></data>
-  <data name="MappingIdNotFound" xml:space="preserve"><value>Mapeamento {0} n&#xE3;o encontrado.</value></data>
-  <data name="MappingNameMaxLength" xml:space="preserve"><value>Nome do mapeamento deve ter no m&#xE1;ximo 150 caracteres.</value></data>
-  <data name="MappingNameRequired" xml:space="preserve"><value>Nome do mapeamento &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="MappingProfileDoesNotBelongToDocument" xml:space="preserve"><value>O perfil de mapeamento informado n&#xE3;o pertence ao documento selecionado.</value></data>
-  <data name="MappingProfileDocumentCannotBeChanged" xml:space="preserve"><value>N&#xE3;o &#xE9; permitido alterar o documento do perfil.</value></data>
-  <data name="MappingProfileHasNoItems" xml:space="preserve"><value>O perfil de mapeamento informado n&#xE3;o possui itens para processamento.</value></data>
-  <data name="MappingProfileNotFound" xml:space="preserve"><value>Perfil de mapeamento n&#xE3;o encontrado.</value></data>
-  <data name="MappingNotFound" xml:space="preserve"><value>Mapeamento n&#xE3;o encontrado.</value></data>
-  <data name="MappingRequired" xml:space="preserve"><value>Mapeamento &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="OnlyAdminsCanChangeDocuments" xml:space="preserve"><value>Apenas administradores podem alterar documentos.</value></data>
-  <data name="OnlyAdminsCanChangeSystemCollections" xml:space="preserve"><value>Apenas administradores podem alterar cole&#xE7;&#xF5;es padr&#xE3;o do sistema.</value></data>
-  <data name="OnlyAdminsCanCreateDefaultMappings" xml:space="preserve"><value>Apenas administradores podem criar mapeamentos padr&#xE3;o.</value></data>
-  <data name="OnlyAdminsCanCreateDefaultProfiles" xml:space="preserve"><value>Apenas administradores podem criar perfis padr&#xE3;o.</value></data>
-  <data name="OnlyExcelFilesAccepted" xml:space="preserve"><value>Apenas arquivos Excel .xlsx s&#xE3;o aceitos.</value></data>
-  <data name="OnlyLineCollectionsCanBeNested" xml:space="preserve"><value>Somente cole&#xE7;&#xF5;es do tipo line podem ser aninhadas.</value></data>
-  <data name="OneOrMoreDocumentsNotFound" xml:space="preserve"><value>Um ou mais documentos informados n&#xE3;o foram encontrados.</value></data>
-  <data name="ProcessingNotFound" xml:space="preserve"><value>Processamento n&#xE3;o encontrado.</value></data>
-  <data name="ProcessingWithoutMappingProfileNotSupported" xml:space="preserve"><value>Processamento sem perfil de mapeamento n&#xE3;o &#xE9; suportado.</value></data>
-  <data name="ProfileNameMaxLength" xml:space="preserve"><value>Nome do perfil deve ter no m&#xE1;ximo 150 caracteres.</value></data>
-  <data name="ProfileNameRequired" xml:space="preserve"><value>Nome do perfil &#xE9; obrigat&#xF3;rio.</value></data>
-  <data name="ProfileCollectionRelationshipCycle" xml:space="preserve"><value>O relacionamento entre cole&#xE7;&#xF5;es do perfil cont&#xE9;m um ciclo.</value></data>
-  <data name="ProfileContainsCollectionsNotInDocument" xml:space="preserve"><value>O perfil cont&#xE9;m cole&#xE7;&#xF5;es que n&#xE3;o pertencem ao documento selecionado.</value></data>
-  <data name="ProfileMustContainExactlyOneHeaderCollection" xml:space="preserve"><value>O perfil deve conter exatamente uma cole&#xE7;&#xE3;o do tipo cabe&#xE7;alho.</value></data>
-  <data name="RequiredIdExcelColumnNotFound" xml:space="preserve"><value>A coluna obrigat&#xF3;ria '#' n&#xE3;o foi encontrada nas linhas de cabe&#xE7;alho da planilha.</value></data>
-  <data name="SelectAtLeastOneCollectionForProfile" xml:space="preserve"><value>Selecione ao menos uma cole&#xE7;&#xE3;o para compor o perfil.</value></data>
-  <data name="SelectAtLeastOneLineCollection" xml:space="preserve"><value>Selecione ao menos uma cole&#xE7;&#xE3;o do tipo line para compor o perfil.</value></data>
-  <data name="SelectAtLeastOneRootLineCollection" xml:space="preserve"><value>Selecione ao menos uma cole&#xE7;&#xE3;o de linha raiz para compor o perfil.</value></data>
-  <data name="SapProcessingResponseInvalid" xml:space="preserve"><value>A resposta de sucesso da Service Layer n&#xE3;o possui o formato esperado.</value></data>
-  <data name="SapRequestReservationFailed" xml:space="preserve"><value>N&#xE3;o foi poss&#xED;vel reservar uma chamada ao SAP Service Layer.</value></data>
-  <data name="SapServiceLayerOperationFailed" xml:space="preserve"><value>Erro ao executar opera&#xE7;&#xE3;o no SAP Service Layer.</value></data>
-  <data name="SapSessionExpired" xml:space="preserve"><value>A sess&#xE3;o do SAP Business One expirou. Entre novamente no sistema.</value></data>
-  <data name="SpreadsheetEmptyRows" xml:space="preserve"><value>A planilha n&#xE3;o possui linhas preenchidas.</value></data>
-  <data name="SpreadsheetNoDataRows" xml:space="preserve"><value>A planilha n&#xE3;o possui linhas de dados para processamento.</value></data>
-  <data name="UserDoesNotHavePermissionToChangeMapping" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o possui permiss&#xE3;o para alterar este mapeamento.</value></data>
-  <data name="UserDoesNotHavePermissionToChangeProfile" xml:space="preserve"><value>Usu&#xE1;rio n&#xE3;o possui permiss&#xE3;o para alterar este perfil.</value></data>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ChildCollectionMustPointToSelectedParent" xml:space="preserve">
+    <value>Toda coleção filha deve apontar para uma coleção pai selecionada no perfil.</value>
+  </data>
+  <data name="CollectionAlreadyExists" xml:space="preserve">
+    <value>Já existe uma coleção com o mesmo nome e tipo no escopo informado.</value>
+  </data>
+  <data name="CollectionCannotBeChildOfItself" xml:space="preserve">
+    <value>Uma coleção não pode ser filha dela mesma.</value>
+  </data>
+  <data name="CollectionDeleteActiveLinks" xml:space="preserve">
+    <value>Não foi possível excluir a coleção porque ela possui vínculos ativos.</value>
+  </data>
+  <data name="CollectionDeleteLinkedDocuments" xml:space="preserve">
+    <value>Não é possível excluir a coleção porque ela está vinculada a documentos.</value>
+  </data>
+  <data name="CollectionInvalid" xml:space="preserve">
+    <value>Coleção inválida.</value>
+  </data>
+  <data name="CollectionNameMaxLength" xml:space="preserve">
+    <value>Nome da coleção deve ter no máximo 150 caracteres.</value>
+  </data>
+  <data name="CollectionNameRequired" xml:space="preserve">
+    <value>Nome da coleção é obrigatório.</value>
+  </data>
+  <data name="CollectionNotFound" xml:space="preserve">
+    <value>Coleção não encontrada.</value>
+  </data>
+  <data name="CollectionRequired" xml:space="preserve">
+    <value>Coleção é obrigatória.</value>
+  </data>
+  <data name="ColumnIndexPositive" xml:space="preserve">
+    <value>Índice da coluna deve ser um número positivo.</value>
+  </data>
+  <data name="ColumnIndexRequired" xml:space="preserve">
+    <value>Índice da coluna é obrigatório.</value>
+  </data>
+  <data name="CloneNameMaxLength" xml:space="preserve">
+    <value>Nome do clone deve ter no máximo 150 caracteres.</value>
+  </data>
+  <data name="CloneNameRequired" xml:space="preserve">
+    <value>Nome do clone é obrigatório.</value>
+  </data>
+  <data name="DateInvalid" xml:space="preserve">
+    <value>Data inválida: {0}</value>
+  </data>
+  <data name="DateTimeFieldFormatRequired" xml:space="preserve">
+    <value>Formato é obrigatório quando o tipo do campo é DateTime.</value>
+  </data>
+  <data name="DefaultMappingsCannotBeDeleted" xml:space="preserve">
+    <value>Mapeamentos padrão não podem ser excluídos.</value>
+  </data>
+  <data name="DocumentAlreadyExistsWithNameOrEndpoint" xml:space="preserve">
+    <value>Já existe um documento com o mesmo nome ou endpoint.</value>
+  </data>
+  <data name="DocumentAlreadyImportedWithSuccess" xml:space="preserve">
+    <value>Documento ignorado porque já existe importação anterior com sucesso para o mesmo identificador.</value>
+  </data>
+  <data name="DocumentDeleteLinkedRecords" xml:space="preserve">
+    <value>Não foi possível excluir o documento porque ele está vinculado a outros registros.</value>
+  </data>
+  <data name="DocumentEndpointInvalid" xml:space="preserve">
+    <value>O endpoint deve ser apenas o nome relativo da entidade na Service Layer.</value>
+  </data>
+  <data name="DocumentEndpointRequired" xml:space="preserve">
+    <value>Endpoint do documento é obrigatório.</value>
+  </data>
+  <data name="DocumentHasNoLinkedCollections" xml:space="preserve">
+    <value>O documento informado não possui coleções vinculadas.</value>
+  </data>
+  <data name="DocumentMustHaveHeaderCollection" xml:space="preserve">
+    <value>O documento deve possuir ao menos uma coleção do tipo cabeçalho vinculada.</value>
+  </data>
+  <data name="DocumentNameRequired" xml:space="preserve">
+    <value>Nome do documento é obrigatório.</value>
+  </data>
+  <data name="DocumentNotFound" xml:space="preserve">
+    <value>Documento não encontrado.</value>
+  </data>
+  <data name="DocumentProcessedSuccessfully" xml:space="preserve">
+    <value>Documento processado com sucesso.</value>
+  </data>
+  <data name="DocumentInvalid" xml:space="preserve">
+    <value>Documento inválido.</value>
+  </data>
+  <data name="DocumentRequired" xml:space="preserve">
+    <value>Documento é obrigatório.</value>
+  </data>
+  <data name="DuplicateCollectionsProfile" xml:space="preserve">
+    <value>Não é permitido duplicar coleções dentro do mesmo perfil.</value>
+  </data>
+  <data name="EmptyIdExcelValueAtRow" xml:space="preserve">
+    <value>Valor da coluna '#' vazio na linha {0}.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>Arquivo é obrigatório.</value>
+  </data>
+  <data name="FieldNameMaxLength" xml:space="preserve">
+    <value>Nome do campo deve ter no máximo 150 caracteres.</value>
+  </data>
+  <data name="FieldNameRequired" xml:space="preserve">
+    <value>Nome do campo é obrigatório.</value>
+  </data>
+  <data name="FieldTypeRequired" xml:space="preserve">
+    <value>Tipo do campo é obrigatório.</value>
+  </data>
+  <data name="FormatMaxLength" xml:space="preserve">
+    <value>Formato deve ter no máximo 50 caracteres.</value>
+  </data>
+  <data name="HeaderCollectionsCannotBeNested" xml:space="preserve">
+    <value>Coleções de cabeçalho não podem ser aninhadas.</value>
+  </data>
+  <data name="InvalidBooleanValue" xml:space="preserve">
+    <value>Valor booleano inválido: {0}</value>
+  </data>
+  <data name="InvalidExcelFile" xml:space="preserve">
+    <value>O arquivo Excel está vazio, corrompido ou em um formato inválido.</value>
+  </data>
+  <data name="InvalidDocumentLinks" xml:space="preserve">
+    <value>Os documentos informados para vínculo são inválidos.</value>
+  </data>
+  <data name="InvalidIdExcelValueAtRow" xml:space="preserve">
+    <value>Valor inválido na coluna '#' na linha {0}: '{1}'. Informe um número inteiro.</value>
+  </data>
+  <data name="InvalidIntegerValue" xml:space="preserve">
+    <value>Valor inteiro inválido: {0}</value>
+  </data>
+  <data name="InvalidNumericValue" xml:space="preserve">
+    <value>Valor numérico inválido: {0}</value>
+  </data>
+  <data name="MappingCollectionCannotBeChanged" xml:space="preserve">
+    <value>Não é permitido alterar a coleção do mapeamento.</value>
+  </data>
+  <data name="MappingDoesNotBelongToCollection" xml:space="preserve">
+    <value>Mapeamento {0} não pertence à coleção {1}.</value>
+  </data>
+  <data name="MappingFieldColumnIndexAlreadyExists" xml:space="preserve">
+    <value>Já existe um campo com o índice de coluna {0} neste mapeamento.</value>
+  </data>
+  <data name="MappingFieldMappingCannotBeChanged" xml:space="preserve">
+    <value>Não é permitido alterar o mapeamento do campo.</value>
+  </data>
+  <data name="MappingFieldNotFound" xml:space="preserve">
+    <value>Campo de mapeamento não encontrado.</value>
+  </data>
+  <data name="MappingInvalid" xml:space="preserve">
+    <value>Mapeamento inválido.</value>
+  </data>
+  <data name="MappingIdNotFound" xml:space="preserve">
+    <value>Mapeamento {0} não encontrado.</value>
+  </data>
+  <data name="MappingNameMaxLength" xml:space="preserve">
+    <value>Nome do mapeamento deve ter no máximo 150 caracteres.</value>
+  </data>
+  <data name="MappingNameRequired" xml:space="preserve">
+    <value>Nome do mapeamento é obrigatório.</value>
+  </data>
+  <data name="MappingProfileDoesNotBelongToDocument" xml:space="preserve">
+    <value>O perfil de mapeamento informado não pertence ao documento selecionado.</value>
+  </data>
+  <data name="MappingProfileDocumentCannotBeChanged" xml:space="preserve">
+    <value>Não é permitido alterar o documento do perfil.</value>
+  </data>
+  <data name="MappingProfileHasNoItems" xml:space="preserve">
+    <value>O perfil de mapeamento informado não possui itens para processamento.</value>
+  </data>
+  <data name="MappingProfileNotFound" xml:space="preserve">
+    <value>Perfil de mapeamento não encontrado.</value>
+  </data>
+  <data name="MappingNotFound" xml:space="preserve">
+    <value>Mapeamento não encontrado.</value>
+  </data>
+  <data name="MappingRequired" xml:space="preserve">
+    <value>Mapeamento é obrigatório.</value>
+  </data>
+  <data name="OnlyAdminsCanChangeDocuments" xml:space="preserve">
+    <value>Apenas administradores podem alterar documentos.</value>
+  </data>
+  <data name="OnlyAdminsCanChangeSystemCollections" xml:space="preserve">
+    <value>Apenas administradores podem alterar coleções padrão do sistema.</value>
+  </data>
+  <data name="OnlyAdminsCanCreateDefaultMappings" xml:space="preserve">
+    <value>Apenas administradores podem criar mapeamentos padrão.</value>
+  </data>
+  <data name="OnlyAdminsCanCreateDefaultProfiles" xml:space="preserve">
+    <value>Apenas administradores podem criar perfis padrão.</value>
+  </data>
+  <data name="OnlyExcelFilesAccepted" xml:space="preserve">
+    <value>Apenas arquivos Excel .xlsx são aceitos.</value>
+  </data>
+  <data name="OnlyLineCollectionsCanBeNested" xml:space="preserve">
+    <value>Somente coleções do tipo line podem ser aninhadas.</value>
+  </data>
+  <data name="OneOrMoreDocumentsNotFound" xml:space="preserve">
+    <value>Um ou mais documentos informados não foram encontrados.</value>
+  </data>
+  <data name="ProcessingNotFound" xml:space="preserve">
+    <value>Processamento não encontrado.</value>
+  </data>
+  <data name="ProcessingWithoutMappingProfileNotSupported" xml:space="preserve">
+    <value>Processamento sem perfil de mapeamento não é suportado.</value>
+  </data>
+  <data name="ProfileNameMaxLength" xml:space="preserve">
+    <value>Nome do perfil deve ter no máximo 150 caracteres.</value>
+  </data>
+  <data name="ProfileNameRequired" xml:space="preserve">
+    <value>Nome do perfil é obrigatório.</value>
+  </data>
+  <data name="ProfileCollectionRelationshipCycle" xml:space="preserve">
+    <value>O relacionamento entre coleções do perfil contém um ciclo.</value>
+  </data>
+  <data name="ProfileContainsCollectionsNotInDocument" xml:space="preserve">
+    <value>O perfil contém coleções que não pertencem ao documento selecionado.</value>
+  </data>
+  <data name="ProfileMustContainExactlyOneHeaderCollection" xml:space="preserve">
+    <value>O perfil deve conter exatamente uma coleção do tipo cabeçalho.</value>
+  </data>
+  <data name="RequiredIdExcelColumnNotFound" xml:space="preserve">
+    <value>A coluna obrigatória '#' não foi encontrada nas linhas de cabeçalho da planilha.</value>
+  </data>
+  <data name="SelectAtLeastOneCollectionForProfile" xml:space="preserve">
+    <value>Selecione ao menos uma coleção para compor o perfil.</value>
+  </data>
+  <data name="SelectAtLeastOneLineCollection" xml:space="preserve">
+    <value>Selecione ao menos uma coleção do tipo line para compor o perfil.</value>
+  </data>
+  <data name="SelectAtLeastOneRootLineCollection" xml:space="preserve">
+    <value>Selecione ao menos uma coleção de linha raiz para compor o perfil.</value>
+  </data>
+  <data name="SapProcessingResponseInvalid" xml:space="preserve">
+    <value>A resposta de sucesso da Service Layer não possui o formato esperado.</value>
+  </data>
+  <data name="SapRequestReservationFailed" xml:space="preserve">
+    <value>Não foi possível reservar uma chamada ao SAP Service Layer.</value>
+  </data>
+  <data name="SapServiceLayerOperationFailed" xml:space="preserve">
+    <value>Erro ao executar operação no SAP Service Layer.</value>
+  </data>
+  <data name="SapSessionExpired" xml:space="preserve">
+    <value>A sessão do SAP Business One expirou. Entre novamente no sistema.</value>
+  </data>
+  <data name="SpreadsheetEmptyRows" xml:space="preserve">
+    <value>A planilha não possui linhas preenchidas.</value>
+  </data>
+  <data name="SpreadsheetNoDataRows" xml:space="preserve">
+    <value>A planilha não possui linhas de dados para processamento.</value>
+  </data>
+  <data name="UserDoesNotHavePermissionToChangeMapping" xml:space="preserve">
+    <value>Usuário não possui permissão para alterar este mapeamento.</value>
+  </data>
+  <data name="UserDoesNotHavePermissionToChangeProfile" xml:space="preserve">
+    <value>Usuário não possui permissão para alterar este perfil.</value>
+  </data>
+  <data name="InvalidOutputDirectory" xml:space="preserve">
+    <value>O arquivo está fora do diretório de upload configurado.</value>
+  </data>
 </root>

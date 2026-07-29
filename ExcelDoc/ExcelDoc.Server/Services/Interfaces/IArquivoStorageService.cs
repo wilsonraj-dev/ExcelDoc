@@ -5,5 +5,7 @@ namespace ExcelDoc.Server.Services.Interfaces
         Task<string> SaveAsync(string fileName, byte[] content, CancellationToken cancellationToken = default);
 
         Task<Stream> OpenReadAsync(string filePath, CancellationToken cancellationToken = default);
+
+        Task DeleteAsync(string filePath, CancellationToken cancellationToken = default);
     }
 }

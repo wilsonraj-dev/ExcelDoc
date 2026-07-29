@@ -60,6 +60,7 @@ public sealed class QueuedProcessingHostedService : BackgroundService
             }
             finally
             {
+                await DeleteUploadedFileAsync(item);
                 await ReleaseLeaseAsync(item);
             }
         }
@@ -161,6 +162,25 @@ public sealed class QueuedProcessingHostedService : BackgroundService
                 exception,
                 "Falha no logout SAP adiado após finalizar o processamento {ProcessamentoId}.",
                 item.ProcessamentoId);
+        }
+    }
+
+    private async Task DeleteUploadedFileAsync(ProcessamentoQueueItem item)
+    {
+        try
+        {
+            using var scope = _serviceScopeFactory.CreateScope();
+            var storage = scope.ServiceProvider
+                .GetRequiredService<IArquivoStorageService>();
+            await storage.DeleteAsync(item.FilePath, CancellationToken.None);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(
+                exception,
+                "Falha ao remover o arquivo temporário do processamento {ProcessamentoId}: {FilePath}.",
+                item.ProcessamentoId,
+                item.FilePath);
         }
     }
 }
