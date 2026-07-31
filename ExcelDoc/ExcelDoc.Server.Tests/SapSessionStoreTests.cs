@@ -126,7 +126,6 @@ public sealed class SapSessionStoreTests
             ServiceLayerBaseUrl = "https://sap.example.test:50000/b1s/v1/",
             Database = database,
             UserName = "manager",
-            CookieHeader = "B1SESSION=session; ROUTEID=.node1",
             SessionTimeoutMinutes = 30,
             ExpiresAtUtc = expiresAtUtc
         };

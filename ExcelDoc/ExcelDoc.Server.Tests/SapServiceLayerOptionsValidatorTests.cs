@@ -116,7 +116,6 @@ public sealed class SapServiceLayerOptionsValidatorTests
         {
             BaseUrl = "https://sap.example.test:50000/b1s/v1/",
             RequestTimeoutSeconds = 100,
-            AllowInvalidServerCertificate = false,
             Bases =
             [
                 new SapBaseOptions

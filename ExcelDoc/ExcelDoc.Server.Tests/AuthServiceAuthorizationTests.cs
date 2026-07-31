@@ -132,7 +132,6 @@ public sealed class AuthServiceAuthorizationTests
             ServiceLayerBaseUrl = "https://sap.example.local:50000/b1s/v1",
             Database = "SBODEMO_BR",
             UserName = "test",
-            CookieHeader = "B1SESSION=test",
             ExpiresAtUtc = DateTime.UtcNow.AddHours(1)
         };
 

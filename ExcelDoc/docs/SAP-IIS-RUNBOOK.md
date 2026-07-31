@@ -37,7 +37,7 @@ Não adicione:
 - certificado ignorado em produção;
 - segredos com os valores de exemplo do repositório.
 
-Use HTTPS e mantenha `AllowInvalidServerCertificate=false`. Quando a Service Layer usar uma CA interna, instale a CA raiz/intermediária no repositório de certificados da máquina. Não contorne falhas de TLS no código.
+Use HTTPS para a URL da Service Layer. O transporte, a sessão e as renovações de autenticação são gerenciados pelo B1SLayer; não configure um `HttpClient` paralelo para essas chamadas.
 
 Defina também `Jwt__SecretKey` como segredo protegido da instalação, com pelo
 menos 32 caracteres aleatórios. O valor não está no `appsettings.json` de

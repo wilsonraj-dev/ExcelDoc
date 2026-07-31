@@ -31,7 +31,6 @@ A configuração por instalação fica na seção `SapServiceLayer`:
   "SapServiceLayer": {
     "BaseUrl": "https://sap-interno:50000/b1s/v1/",
     "RequestTimeoutSeconds": 100,
-    "AllowInvalidServerCertificate": false,
     "Bases": [
       {
         "Database": "SBOPROD_BR",
@@ -48,8 +47,12 @@ Regras operacionais:
 - `Database` deve ser exatamente o `CompanyDB` aceito pelo SAP.
 - somente `Database` e `Description` são expostos na lista pública da tela de login;
 - nomes de bases devem ser únicos, sem espaços nas extremidades;
-- `AllowInvalidServerCertificate` deve permanecer `false` fora de desenvolvimento;
 - credenciais SAP são as do usuário no login e não devem ser gravadas no arquivo de configuração.
+
+As chamadas à Service Layer usam B1SLayer. Cada login mantém uma única
+`SLConnection` para a combinação de base e usuário durante toda a sessão; a
+biblioteca gerencia os cookies, a renovação da sessão, as tentativas e o
+transporte HTTPS.
 
 Segredos de JWT e qualquer outro segredo de produção devem ser fornecidos por configuração protegida do servidor, nunca mantidos com valores padrão no repositório.
 O `appsettings.json` de produção não contém `Jwt:SecretKey` de propósito:

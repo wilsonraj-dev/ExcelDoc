@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="B1SLayer" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
     <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy">

@@ -1,18 +1,21 @@
-using System.Net.Http.Headers;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using B1SLayer;
+using ExcelDoc.Server.Localization;
 using ExcelDoc.Server.Options;
 using ExcelDoc.Server.Sap;
 using ExcelDoc.Server.Services.Interfaces;
-using ExcelDoc.Server.Localization;
+using Flurl.Http;
 using Microsoft.Extensions.Options;
 
 namespace ExcelDoc.Server.Services;
 
 public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
 {
+    private const int PortugueseLanguageCode = 29;
     private const string RequestPayloadKey = "RequestPayload";
     private const string ResponseBodyKey = "ResponseBody";
     private static readonly JsonSerializerOptions SapJsonOptions = new()
@@ -26,20 +29,17 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         DictionaryKeyPolicy = null,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<SapServiceLayerClient> _logger;
     private readonly IMessageService _messageService;
     private readonly SapServiceLayerOptions _sapOptions;
     private readonly TokenBucketRateLimiter _rateLimiter;
 
     public SapServiceLayerClient(
-        IHttpClientFactory httpClientFactory,
         IMessageService messageService,
         IOptions<ProcessingOptions> processingOptions,
         IOptions<SapServiceLayerOptions> sapOptions,
         ILogger<SapServiceLayerClient> logger)
     {
-        _httpClientFactory = httpClientFactory;
         _messageService = messageService;
         _logger = logger;
         _sapOptions = sapOptions.Value;
@@ -62,77 +62,85 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         string password,
         CancellationToken cancellationToken = default)
     {
-        using var client = CreateClient(_sapOptions.BaseUrl);
-        using var loginContent = JsonContent.Create(
-            new
-            {
-                CompanyDB = database,
-                UserName = userName,
-                Password = password
-            },
-            options: SapJsonOptions);
-        using var response = await client.PostAsync(
-            "Login",
-            loginContent,
-            cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
-        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-        if (!response.IsSuccessStatusCode)
+        var connection = new SLConnection(
+            NormalizeBaseAddress(_sapOptions.BaseUrl),
+            database,
+            userName,
+            password,
+            PortugueseLanguageCode);
+
+        try
         {
+            var login = await connection.LoginAsync();
+            var timeoutMinutes = Math.Max(1, login.SessionTimeout);
+
+            return new SapSessionContext
+            {
+                Connection = connection,
+                ServiceLayerBaseUrl = connection.ServiceLayerRoot.ToString(),
+                Database = database,
+                UserName = userName,
+                SessionTimeoutMinutes = timeoutMinutes,
+                ExpiresAtUtc = DateTime.UtcNow.AddMinutes(timeoutMinutes)
+            };
+        }
+        catch (Exception exception) when (IsServiceLayerException(exception))
+        {
+            var error = await GetErrorAsync(exception);
+            connection.Client.Dispose();
+
             _logger.LogWarning(
+                exception,
                 "Login recusado pelo SAP Service Layer para usuário {UserName} e base {Database}. StatusCode={StatusCode}",
                 userName,
                 database,
-                response.StatusCode);
+                error.StatusCode);
 
-            throw new UnauthorizedAccessException(
-                ExtractSapMessage(responseBody) ?? "Usuário, senha ou base SAP inválidos.");
-        }
+            if (error.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException(
+                    error.Message ?? "Usuário, senha ou base SAP inválidos.",
+                    exception);
+            }
 
-        using var document = JsonDocument.Parse(responseBody);
-        var root = document.RootElement;
-        var sessionId = root.TryGetProperty("SessionId", out var sessionIdElement)
-            ? sessionIdElement.GetString()
-            : null;
-        var timeoutMinutes = root.TryGetProperty("SessionTimeout", out var timeoutElement) &&
-                             timeoutElement.TryGetInt32(out var parsedTimeout)
-            ? Math.Max(1, parsedTimeout)
-            : 30;
-
-        var cookieHeader = BuildCookieHeader(response, sessionId);
-        if (string.IsNullOrWhiteSpace(cookieHeader))
-        {
             throw new InvalidOperationException(
-                "O SAP Service Layer autenticou o usuário, mas não retornou o cookie B1SESSION.");
+                error.Message ?? "Não foi possível conectar ao SAP Service Layer.",
+                exception);
         }
-
-        return new SapSessionContext
+        catch
         {
-            ServiceLayerBaseUrl = NormalizeBaseAddress(_sapOptions.BaseUrl).ToString(),
-            Database = database,
-            UserName = userName,
-            CookieHeader = cookieHeader,
-            SessionTimeoutMinutes = timeoutMinutes,
-            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(timeoutMinutes)
-        };
+            connection.Client.Dispose();
+            throw;
+        }
     }
 
     public async Task LogoutAsync(
         SapSessionContext session,
         CancellationToken cancellationToken = default)
     {
-        using var response = await SendAsync(
-            session,
-            HttpMethod.Post,
-            "Logout",
-            cancellationToken: cancellationToken);
+        ArgumentNullException.ThrowIfNull(session);
 
-        if (!response.IsSuccessStatusCode)
+        var connection = session.GetRequiredConnection();
+        try
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            await connection.LogoutAsync();
+        }
+        catch (Exception exception) when (IsServiceLayerException(exception))
+        {
+            var error = await GetErrorAsync(exception);
             _logger.LogDebug(
+                exception,
                 "SAP Service Layer não confirmou logout. Base={Database} StatusCode={StatusCode}",
                 session.Database,
-                response.StatusCode);
+                error.StatusCode);
+        }
+        finally
+        {
+            session.ExpiresAtUtc = DateTime.UtcNow;
+            connection.Client.Dispose();
         }
     }
 
@@ -160,33 +168,33 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         CancellationToken cancellationToken,
         JsonSerializerOptions jsonOptions)
     {
-        var client = CreateClient(session.ServiceLayerBaseUrl);
-        var request = new HttpRequestMessage(
-            method,
-            NormalizeRelativeEndpoint(endpoint));
-        request.Headers.TryAddWithoutValidation("Cookie", session.CookieHeader);
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(method);
+        cancellationToken.ThrowIfCancellationRequested();
 
-        if (payload is string json)
-        {
-            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-        }
-        else if (payload is not null)
-        {
-            request.Content = JsonContent.Create(payload, options: jsonOptions);
-        }
+        var resource = NormalizeRelativeEndpoint(endpoint);
+        var request = session
+            .GetRequiredConnection()
+            .Request(resource)
+            .WithJsonSerializerOptions(jsonOptions)
+            .WithTimeout(_sapOptions.RequestTimeoutSeconds);
 
         try
         {
-            var response = await client.SendAsync(request, cancellationToken);
-            session.ExpiresAtUtc = response.StatusCode == System.Net.HttpStatusCode.Unauthorized
+            var (statusCode, responseBody) = await ExecuteAsync(request, method, payload);
+            session.ExpiresAtUtc = DateTime.UtcNow.AddMinutes(session.SessionTimeoutMinutes);
+            return CreateResponse(statusCode, responseBody);
+        }
+        catch (Exception exception) when (IsServiceLayerException(exception))
+        {
+            var error = await GetErrorAsync(exception);
+            session.ExpiresAtUtc = error.StatusCode == HttpStatusCode.Unauthorized
                 ? DateTime.UtcNow
                 : DateTime.UtcNow.AddMinutes(session.SessionTimeoutMinutes);
-            return response;
-        }
-        finally
-        {
-            request.Dispose();
-            client.Dispose();
+
+            return CreateResponse(
+                error.StatusCode ?? HttpStatusCode.InternalServerError,
+                error.ResponseBody ?? error.Message ?? string.Empty);
         }
     }
 
@@ -203,11 +211,12 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
                 _messageService.Get(MessageKeys.SapRequestReservationFailed));
         }
 
+        using var document = JsonDocument.Parse(payload);
         using var response = await SendAsync(
             session,
             HttpMethod.Post,
             endpoint,
-            payload,
+            document.RootElement.Clone(),
             cancellationToken);
         var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
@@ -216,20 +225,8 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
             return responseBody;
         }
 
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-        {
-            throw new SapSessionExpiredException(
-                ExtractSapMessage(responseBody) ??
-                _messageService.Get(MessageKeys.SapSessionExpired));
-        }
-
-        var exception = new SapServiceLayerException(
-            ExtractSapMessage(responseBody) ?? _messageService.Get(MessageKeys.SapServiceLayerOperationFailed),
-            response.StatusCode,
-            responseBody);
-        exception.Data[RequestPayloadKey] = payload;
-        exception.Data[ResponseBodyKey] = responseBody;
-        throw exception;
+        ThrowServiceLayerException(response.StatusCode, responseBody, payload);
+        return string.Empty;
     }
 
     public async Task<string> PostProcessamentoAsync(
@@ -253,7 +250,6 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
             payload,
             cancellationToken,
             ProcessingJsonOptions);
-
         var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
         if (response.IsSuccessStatusCode)
@@ -261,7 +257,50 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
             return BuildProcessamentoResponse(responseBody);
         }
 
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        ThrowServiceLayerException(response.StatusCode, responseBody, requestPayload);
+        return string.Empty;
+    }
+
+    private static async Task<(HttpStatusCode StatusCode, string ResponseBody)> ExecuteAsync(
+        SLRequest request,
+        HttpMethod method,
+        object? payload)
+    {
+        if (method == HttpMethod.Get)
+        {
+            return (HttpStatusCode.OK, await request.GetStringAsync());
+        }
+
+        if (method == HttpMethod.Post)
+        {
+            var responseBody = payload is null
+                ? await request.PostReceiveStringAsync()
+                : await request.PostReceiveStringAsync(payload);
+            return (HttpStatusCode.Created, responseBody);
+        }
+
+        if (method == HttpMethod.Patch)
+        {
+            await request.PatchAsync(payload ?? new { });
+            return (HttpStatusCode.NoContent, string.Empty);
+        }
+
+        if (method == HttpMethod.Delete)
+        {
+            await request.DeleteAsync();
+            return (HttpStatusCode.NoContent, string.Empty);
+        }
+
+        throw new NotSupportedException(
+            $"O método HTTP {method.Method} não é suportado para chamadas ao SAP Service Layer.");
+    }
+
+    private void ThrowServiceLayerException(
+        HttpStatusCode statusCode,
+        string responseBody,
+        string requestPayload)
+    {
+        if (statusCode == HttpStatusCode.Unauthorized)
         {
             throw new SapSessionExpiredException(
                 ExtractSapMessage(responseBody) ??
@@ -269,24 +308,13 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         }
 
         var exception = new SapServiceLayerException(
-            ExtractSapMessage(responseBody) ?? _messageService.Get(MessageKeys.SapServiceLayerOperationFailed),
-            response.StatusCode,
+            ExtractSapMessage(responseBody) ??
+            _messageService.Get(MessageKeys.SapServiceLayerOperationFailed),
+            statusCode,
             responseBody);
         exception.Data[RequestPayloadKey] = requestPayload;
         exception.Data[ResponseBodyKey] = responseBody;
-
         throw exception;
-    }
-
-    private HttpClient CreateClient(string baseUrl)
-    {
-        var client = _httpClientFactory.CreateClient("sap-service-layer");
-        client.BaseAddress = NormalizeBaseAddress(baseUrl);
-        client.DefaultRequestHeaders.Accept.Clear();
-        client.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/json"));
-
-        return client;
     }
 
     private string BuildProcessamentoResponse(string responseBody)
@@ -327,30 +355,70 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
             ? value
             : null;
 
-    private static string BuildCookieHeader(
-        HttpResponseMessage response,
-        string? sessionId)
-    {
-        var cookies = response.Headers.TryGetValues("Set-Cookie", out var values)
-            ? values
-                .Select(value => value.Split(';', StringSplitOptions.RemoveEmptyEntries)[0].Trim())
-                .Where(value =>
-                    value.StartsWith("B1SESSION=", StringComparison.OrdinalIgnoreCase) ||
-                    value.StartsWith("ROUTEID=", StringComparison.OrdinalIgnoreCase))
-                .ToList()
-            : [];
+    private static bool IsServiceLayerException(Exception exception) =>
+        FindFlurlException(exception) is not null ||
+        exception is SLException;
 
-        if (!cookies.Any(value =>
-                value.StartsWith("B1SESSION=", StringComparison.OrdinalIgnoreCase)) &&
-            !string.IsNullOrWhiteSpace(sessionId))
+    private static async Task<ServiceLayerError> GetErrorAsync(Exception exception)
+    {
+        var flurlException = FindFlurlException(exception);
+        var rawStatusCode = flurlException?.Call.Response?.StatusCode;
+        var statusCode = rawStatusCode.HasValue
+            ? (HttpStatusCode?)rawStatusCode.Value
+            : null;
+        string? responseBody = null;
+
+        if (flurlException is not null)
         {
-            cookies.Insert(0, $"B1SESSION={sessionId}");
+            try
+            {
+                responseBody = await flurlException.GetResponseStringAsync();
+            }
+            catch
+            {
+                // A mensagem tipada da B1SLayer permanece disponível abaixo.
+            }
         }
 
-        return string.Join("; ", cookies);
+        return new ServiceLayerError(
+            statusCode,
+            responseBody,
+            ExtractSapMessage(responseBody) ?? exception.Message);
     }
 
-    private static string? ExtractSapMessage(string responseBody)
+    private static FlurlHttpException? FindFlurlException(Exception exception)
+    {
+        if (exception is FlurlHttpException flurlException)
+        {
+            return flurlException;
+        }
+
+        if (exception is AggregateException aggregateException)
+        {
+            foreach (var innerException in aggregateException.Flatten().InnerExceptions)
+            {
+                var match = FindFlurlException(innerException);
+                if (match is not null)
+                {
+                    return match;
+                }
+            }
+        }
+
+        return exception.InnerException is null
+            ? null
+            : FindFlurlException(exception.InnerException);
+    }
+
+    private static HttpResponseMessage CreateResponse(
+        HttpStatusCode statusCode,
+        string responseBody) =>
+        new(statusCode)
+        {
+            Content = new StringContent(responseBody, Encoding.UTF8, "application/json")
+        };
+
+    private static string? ExtractSapMessage(string? responseBody)
     {
         if (string.IsNullOrWhiteSpace(responseBody))
         {
@@ -377,22 +445,21 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
         }
         catch (JsonException)
         {
-            // The status code remains available to the caller even for non-JSON responses.
+            // A mensagem da exceção B1SLayer será usada quando a resposta não for JSON.
         }
 
         return null;
     }
 
-    private static Uri NormalizeBaseAddress(string linkServiceLayer)
+    private static string NormalizeBaseAddress(string serviceLayerUrl)
     {
-        var normalized = linkServiceLayer.Trim().TrimEnd('/');
-
+        var normalized = serviceLayerUrl.Trim().TrimEnd('/');
         if (!normalized.Contains("/b1s/", StringComparison.OrdinalIgnoreCase))
         {
             normalized = $"{normalized}/b1s/v1";
         }
 
-        return new Uri($"{normalized}/", UriKind.Absolute);
+        return normalized;
     }
 
     private static string NormalizeRelativeEndpoint(string endpoint)
@@ -426,4 +493,9 @@ public sealed class SapServiceLayerClient : ISapServiceLayerClient, IDisposable
     {
         _rateLimiter.Dispose();
     }
+
+    private sealed record ServiceLayerError(
+        HttpStatusCode? StatusCode,
+        string? ResponseBody,
+        string? Message);
 }

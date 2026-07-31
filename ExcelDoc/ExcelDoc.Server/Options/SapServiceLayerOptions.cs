@@ -11,8 +11,6 @@ public sealed class SapServiceLayerOptions
 
     public int RequestTimeoutSeconds { get; set; } = 100;
 
-    public bool AllowInvalidServerCertificate { get; set; }
-
     public List<SapBaseOptions> Bases { get; set; } = [];
 }
 

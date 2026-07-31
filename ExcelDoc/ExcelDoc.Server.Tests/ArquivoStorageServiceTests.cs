@@ -56,7 +56,10 @@ public sealed class ArquivoStorageServiceTests : IDisposable
             UploadDirectory = "App_Data/Uploads"
         });
 
-        return new ArquivoStorageService(environment, options);
+        return new ArquivoStorageService(
+            environment,
+            options,
+            new StubMessageService());
     }
 
     private sealed class TestHostEnvironment : IHostEnvironment

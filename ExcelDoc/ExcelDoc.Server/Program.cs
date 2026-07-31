@@ -20,14 +20,6 @@ if (jwtValidation.Failed)
         string.Join(Environment.NewLine, jwtValidation.Failures));
 }
 
-var allowInvalidSapCertificate = builder.Configuration.GetValue<bool>(
-    $"{SapServiceLayerOptions.SectionName}:AllowInvalidServerCertificate");
-if (allowInvalidSapCertificate && !builder.Environment.IsDevelopment())
-{
-    throw new InvalidOperationException(
-        "AllowInvalidServerCertificate somente pode ser habilitado no ambiente Development.");
-}
-
 builder.Services.Configure<ProcessingOptions>(
     builder.Configuration.GetSection(ProcessingOptions.SectionName));
 builder.Services.Configure<StorageOptions>(
@@ -47,33 +39,6 @@ builder.Services.AddSingleton<
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.AddInfrastructureLanguages();
-
-builder.Services
-    .AddHttpClient("sap-service-layer")
-    .ConfigureHttpClient((serviceProvider, client) =>
-    {
-        var options = serviceProvider
-            .GetRequiredService<IOptions<SapServiceLayerOptions>>()
-            .Value;
-        client.Timeout = TimeSpan.FromSeconds(options.RequestTimeoutSeconds);
-    })
-    .ConfigurePrimaryHttpMessageHandler(serviceProvider =>
-    {
-        var options = serviceProvider
-            .GetRequiredService<IOptions<SapServiceLayerOptions>>()
-            .Value;
-        var handler = new HttpClientHandler
-        {
-            UseCookies = false
-        };
-        if (options.AllowInvalidServerCertificate)
-        {
-            handler.ServerCertificateCustomValidationCallback =
-                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        }
-
-        return handler;
-    });
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
