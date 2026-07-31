@@ -1,3 +1,4 @@
+using B1SLayer;
 using ExcelDoc.Server.Sap;
 using ExcelDoc.Server.Services.Interfaces;
 
@@ -68,19 +69,24 @@ public sealed class SapSessionCleanupHostedService : BackgroundService
 
             try
             {
-                using var response = await _sapClient.SendAsync(
-                    session,
-                    HttpMethod.Get,
-                    $"{SapUdtSchema.Schema}?$top=1&$select=Code",
-                    cancellationToken: stoppingToken);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.LogWarning(
-                        "Keep-alive da sessão SAP do usuário {UserName} falhou com status {StatusCode}.",
-                        session.UserName,
-                        response.StatusCode);
-                }
+                stoppingToken.ThrowIfCancellationRequested();
+                await session
+                    .GetRequiredConnection()
+                    .Request($"{SapUdtSchema.Schema}?$top=1&$select=Code")
+                    .WithTimeout(session.RequestTimeoutSeconds)
+                    .GetStringAsync();
+                session.RenewExpiration();
+            }
+            catch (Exception exception) when (
+                SapServiceLayerErrors.IsServiceLayerException(exception))
+            {
+                var error = await SapServiceLayerErrors.ReadAsync(exception);
+                SapServiceLayerErrors.UpdateSessionExpiration(session, error.StatusCode);
+                _logger.LogWarning(
+                    exception,
+                    "Falha no keep-alive da sessão SAP do usuário {UserName}. Status: {StatusCode}.",
+                    session.UserName,
+                    error.StatusCode);
             }
             catch (Exception exception)
             {

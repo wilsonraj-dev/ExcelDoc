@@ -1,35 +1,34 @@
 using ExcelDoc.Server.Options;
 using ExcelDoc.Server.Sap;
 using ExcelDoc.Server.Services;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ExcelDoc.Server.Tests;
 
 public sealed class SapServiceLayerClientTests
 {
     [Fact]
-    public async Task SendAsync_RejectsAbsoluteEndpointBeforeResolvingConnection()
+    public async Task PostProcessamentoAsync_RejectsAbsoluteEndpointBeforeResolvingConnection()
     {
         using var client = CreateClient();
         var session = CreateSession();
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            client.SendAsync(
+            client.PostProcessamentoAsync(
                 session,
-                HttpMethod.Get,
-                "https://untrusted.example.test/b1s/v1/Users"));
+                "https://untrusted.example.test/b1s/v1/Orders",
+                new { }));
 
         Assert.Contains("caminho relativo seguro", exception.Message);
     }
 
     [Fact]
-    public async Task SendAsync_RequiresLongLivedB1SlayerConnection()
+    public async Task PostProcessamentoAsync_RequiresLongLivedB1SlayerConnection()
     {
         using var client = CreateClient();
         var session = CreateSession();
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            client.SendAsync(session, HttpMethod.Get, "Users"));
+            client.PostProcessamentoAsync(session, "Orders", new { }));
 
         Assert.Contains("B1SLayer", exception.Message);
     }
@@ -83,7 +82,6 @@ public sealed class SapServiceLayerClientTests
         return new SapServiceLayerClient(
             new StubMessageService(),
             processingOptions,
-            sapOptions,
-            NullLogger<SapServiceLayerClient>.Instance);
+            sapOptions);
     }
 }

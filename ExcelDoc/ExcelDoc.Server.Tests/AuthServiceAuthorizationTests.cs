@@ -154,25 +154,6 @@ public sealed class AuthServiceAuthorizationTests
             return Task.CompletedTask;
         }
 
-        public Task<HttpResponseMessage> SendAsync(
-            SapSessionContext session,
-            HttpMethod method,
-            string endpoint,
-            object? payload = null,
-            CancellationToken cancellationToken = default)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task<string> PostAsync(
-            SapSessionContext session,
-            string endpoint,
-            string payload,
-            CancellationToken cancellationToken = default)
-        {
-            throw new NotSupportedException();
-        }
-
         public Task<string> PostProcessamentoAsync(
             SapSessionContext session,
             string endpoint,

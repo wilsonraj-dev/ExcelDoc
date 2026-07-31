@@ -64,7 +64,7 @@ public sealed class SapDatabaseInitializerTests
             });
         var initializer = new SapDatabaseInitializer(
             NullLogger<SapDatabaseInitializer>.Instance,
-            new SapSchemaInstaller(null!, null!),
+            new SapSchemaInstaller(null!),
             store);
         var session = new SapSessionContext
         {

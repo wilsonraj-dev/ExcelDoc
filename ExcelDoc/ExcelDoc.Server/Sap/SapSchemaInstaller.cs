@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using B1SLayer;
 using ExcelDoc.Server.Services.Interfaces;
 
 namespace ExcelDoc.Server.Sap;
@@ -11,14 +12,15 @@ public sealed record SapSchemaInstallResult(
 
 public sealed class SapSchemaInstaller
 {
-    private readonly ISapServiceLayerClient _client;
+    private static readonly JsonSerializerOptions SapJsonOptions = new()
+    {
+        PropertyNamingPolicy = null,
+        DictionaryKeyPolicy = null
+    };
     private readonly ISapSessionContextAccessor _sessionAccessor;
 
-    public SapSchemaInstaller(
-        ISapServiceLayerClient client,
-        ISapSessionContextAccessor sessionAccessor)
+    public SapSchemaInstaller(ISapSessionContextAccessor sessionAccessor)
     {
-        _client = client;
         _sessionAccessor = sessionAccessor;
     }
 
@@ -154,13 +156,25 @@ public sealed class SapSchemaInstaller
         var endpoint =
             $"UserKeysMD?$filter={Uri.EscapeDataString(filter)}&$select=KeyIndex&$top=1";
 
-        using var response = await _client.SendAsync(
-            session,
-            HttpMethod.Get,
-            endpoint,
-            cancellationToken: cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-        EnsureSuccess(response, body);
+        cancellationToken.ThrowIfCancellationRequested();
+        string body;
+        try
+        {
+            body = await session
+                .GetRequiredConnection()
+                .Request(endpoint)
+                .WithTimeout(session.RequestTimeoutSeconds)
+                .GetStringAsync();
+            session.RenewExpiration();
+        }
+        catch (Exception exception) when (
+            SapServiceLayerErrors.IsServiceLayerException(exception))
+        {
+            throw await TranslateExceptionAsync(
+                session,
+                exception,
+                "Falha ao consultar chaves de usuário no SAP Service Layer.");
+        }
 
         using var document = JsonDocument.Parse(body);
         return document.RootElement.TryGetProperty("value", out var value) &&
@@ -173,20 +187,32 @@ public sealed class SapSchemaInstaller
         string objectCode,
         CancellationToken cancellationToken)
     {
-        using var response = await _client.SendAsync(
-            session,
-            HttpMethod.Get,
-            $"UserObjectsMD({SapOData.String(objectCode)})?$select=Code",
-            cancellationToken: cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-
-        if (response.StatusCode == HttpStatusCode.NotFound)
+        cancellationToken.ThrowIfCancellationRequested();
+        try
         {
-            return false;
+            await session
+                .GetRequiredConnection()
+                .Request($"UserObjectsMD({SapOData.String(objectCode)})?$select=Code")
+                .WithTimeout(session.RequestTimeoutSeconds)
+                .GetStringAsync();
+            session.RenewExpiration();
+            return true;
         }
+        catch (Exception exception) when (
+            SapServiceLayerErrors.IsServiceLayerException(exception))
+        {
+            var error = await SapServiceLayerErrors.ReadAsync(exception);
+            SapServiceLayerErrors.UpdateSessionExpiration(session, error.StatusCode);
+            if (error.StatusCode == HttpStatusCode.NotFound)
+            {
+                return false;
+            }
 
-        EnsureSuccess(response, body);
-        return true;
+            throw CreateException(
+                error,
+                exception,
+                "Falha ao consultar objetos de usuário no SAP Service Layer.");
+        }
     }
 
     private async Task<bool> TableExistsAsync(
@@ -194,20 +220,32 @@ public sealed class SapSchemaInstaller
         string tableName,
         CancellationToken cancellationToken)
     {
-        using var response = await _client.SendAsync(
-            session,
-            HttpMethod.Get,
-            $"UserTablesMD({SapOData.String(tableName)})?$select=TableName",
-            cancellationToken: cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-
-        if (response.StatusCode == HttpStatusCode.NotFound)
+        cancellationToken.ThrowIfCancellationRequested();
+        try
         {
-            return false;
+            await session
+                .GetRequiredConnection()
+                .Request($"UserTablesMD({SapOData.String(tableName)})?$select=TableName")
+                .WithTimeout(session.RequestTimeoutSeconds)
+                .GetStringAsync();
+            session.RenewExpiration();
+            return true;
         }
+        catch (Exception exception) when (
+            SapServiceLayerErrors.IsServiceLayerException(exception))
+        {
+            var error = await SapServiceLayerErrors.ReadAsync(exception);
+            SapServiceLayerErrors.UpdateSessionExpiration(session, error.StatusCode);
+            if (error.StatusCode == HttpStatusCode.NotFound)
+            {
+                return false;
+            }
 
-        EnsureSuccess(response, body);
-        return true;
+            throw CreateException(
+                error,
+                exception,
+                "Falha ao consultar tabelas de usuário no SAP Service Layer.");
+        }
     }
 
     private async Task<bool> FieldExistsAsync(
@@ -222,13 +260,25 @@ public sealed class SapSchemaInstaller
         var endpoint =
             $"UserFieldsMD?$filter={Uri.EscapeDataString(filter)}&$select=FieldID&$top=1";
 
-        using var response = await _client.SendAsync(
-            session,
-            HttpMethod.Get,
-            endpoint,
-            cancellationToken: cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-        EnsureSuccess(response, body);
+        cancellationToken.ThrowIfCancellationRequested();
+        string body;
+        try
+        {
+            body = await session
+                .GetRequiredConnection()
+                .Request(endpoint)
+                .WithTimeout(session.RequestTimeoutSeconds)
+                .GetStringAsync();
+            session.RenewExpiration();
+        }
+        catch (Exception exception) when (
+            SapServiceLayerErrors.IsServiceLayerException(exception))
+        {
+            throw await TranslateExceptionAsync(
+                session,
+                exception,
+                "Falha ao consultar campos de usuário no SAP Service Layer.");
+        }
 
         using var document = JsonDocument.Parse(body);
         return document.RootElement.TryGetProperty("value", out var value) &&
@@ -242,48 +292,59 @@ public sealed class SapSchemaInstaller
         object payload,
         CancellationToken cancellationToken)
     {
-        using var response = await _client.SendAsync(
-            session,
-            HttpMethod.Post,
-            endpoint,
-            payload,
-            cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-
-        if (response.IsSuccessStatusCode || IsAlreadyExists(response.StatusCode, body))
+        cancellationToken.ThrowIfCancellationRequested();
+        try
         {
+            await session
+                .GetRequiredConnection()
+                .Request(endpoint)
+                .WithJsonSerializerOptions(SapJsonOptions)
+                .WithTimeout(session.RequestTimeoutSeconds)
+                .PostAsync(payload);
+            session.RenewExpiration();
             return;
         }
+        catch (Exception exception) when (
+            SapServiceLayerErrors.IsServiceLayerException(exception))
+        {
+            var error = await SapServiceLayerErrors.ReadAsync(exception);
+            SapServiceLayerErrors.UpdateSessionExpiration(session, error.StatusCode);
+            var errorText = $"{error.ResponseBody}\n{error.Message}";
+            if (IsAlreadyExists(error.StatusCode, errorText))
+            {
+                return;
+            }
 
-        EnsureSuccess(response, body);
+            throw CreateException(
+                error,
+                exception,
+                "Falha ao instalar metadados no SAP Service Layer.");
+        }
     }
 
-    private static bool IsAlreadyExists(HttpStatusCode statusCode, string body) =>
+    private static bool IsAlreadyExists(HttpStatusCode? statusCode, string body) =>
         statusCode is HttpStatusCode.BadRequest or HttpStatusCode.Conflict &&
         (body.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
          body.Contains("duplicate", StringComparison.OrdinalIgnoreCase) ||
          body.Contains("-2035", StringComparison.Ordinal));
 
-    private static void EnsureSuccess(
-        HttpResponseMessage response,
-        string responseBody)
+    private static async Task<Exception> TranslateExceptionAsync(
+        SapSessionContext session,
+        Exception exception,
+        string fallbackMessage)
     {
-        if (response.IsSuccessStatusCode)
-        {
-            return;
-        }
-
-        if (response.StatusCode == HttpStatusCode.Unauthorized)
-        {
-            throw new SapSessionExpiredException(
-                SapUdtStore.ExtractMessage(responseBody) ??
-                "A sessão do SAP Business One expirou. Entre novamente no sistema.");
-        }
-
-        throw new SapServiceLayerException(
-            SapUdtStore.ExtractMessage(responseBody) ??
-            $"Falha ao instalar metadados no SAP: {(int)response.StatusCode} ({response.StatusCode}).",
-            response.StatusCode,
-            responseBody);
+        var error = await SapServiceLayerErrors.ReadAsync(exception);
+        SapServiceLayerErrors.UpdateSessionExpiration(session, error.StatusCode);
+        return CreateException(error, exception, fallbackMessage);
     }
+
+    private static Exception CreateException(
+        SapServiceLayerError error,
+        Exception exception,
+        string fallbackMessage) =>
+        SapServiceLayerErrors.CreateException(
+            error,
+            exception,
+            fallbackMessage,
+            "A sessão do SAP Business One expirou. Entre novamente no sistema.");
 }

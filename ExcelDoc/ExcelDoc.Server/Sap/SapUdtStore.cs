@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
 using System.Text.Json;
+using B1SLayer;
 using ExcelDoc.Server.Services.Interfaces;
 
 namespace ExcelDoc.Server.Sap;
@@ -12,15 +13,16 @@ public sealed class SapUdtStore : ISapUdtStore
     private const int MaxInsertAttempts = 3;
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> CodeLocks =
         new(StringComparer.Ordinal);
+    private static readonly JsonSerializerOptions SapJsonOptions = new()
+    {
+        PropertyNamingPolicy = null,
+        DictionaryKeyPolicy = null
+    };
 
-    private readonly ISapServiceLayerClient _client;
     private readonly ISapSessionContextAccessor _sessionAccessor;
 
-    public SapUdtStore(
-        ISapServiceLayerClient client,
-        ISapSessionContextAccessor sessionAccessor)
+    public SapUdtStore(ISapSessionContextAccessor sessionAccessor)
     {
-        _client = client;
         _sessionAccessor = sessionAccessor;
     }
 
@@ -45,13 +47,22 @@ public sealed class SapUdtStore : ISapUdtStore
 
         while (!string.IsNullOrWhiteSpace(endpoint))
         {
-            using var response = await _client.SendAsync(
-                session,
-                HttpMethod.Get,
-                endpoint,
-                cancellationToken: cancellationToken);
-            var body = await response.Content.ReadAsStringAsync(cancellationToken);
-            await EnsureSuccessAsync(response, body);
+            cancellationToken.ThrowIfCancellationRequested();
+            string body;
+            try
+            {
+                body = await session
+                    .GetRequiredConnection()
+                    .Request(endpoint)
+                    .WithTimeout(session.RequestTimeoutSeconds)
+                    .GetStringAsync();
+                session.RenewExpiration();
+            }
+            catch (Exception exception) when (
+                SapServiceLayerErrors.IsServiceLayerException(exception))
+            {
+                throw await TranslateExceptionAsync(session, exception);
+            }
 
             if (string.IsNullOrWhiteSpace(body))
             {
@@ -89,19 +100,30 @@ public sealed class SapUdtStore : ISapUdtStore
         CancellationToken cancellationToken = default)
     {
         var session = _sessionAccessor.GetRequiredSession();
-        using var response = await _client.SendAsync(
-            session,
-            HttpMethod.Get,
-            EntityEndpoint(tableName, id),
-            cancellationToken: cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-
-        if (response.StatusCode == HttpStatusCode.NotFound)
+        cancellationToken.ThrowIfCancellationRequested();
+        string body;
+        try
         {
-            return null;
+            body = await session
+                .GetRequiredConnection()
+                .Request(EntityEndpoint(tableName, id))
+                .WithTimeout(session.RequestTimeoutSeconds)
+                .GetStringAsync();
+            session.RenewExpiration();
+        }
+        catch (Exception exception) when (
+            SapServiceLayerErrors.IsServiceLayerException(exception))
+        {
+            var error = await SapServiceLayerErrors.ReadAsync(exception);
+            SapServiceLayerErrors.UpdateSessionExpiration(session, error.StatusCode);
+            if (error.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            throw CreateException(error, exception);
         }
 
-        await EnsureSuccessAsync(response, body);
         using var document = JsonDocument.Parse(body);
         return new SapUdtRecord(document.RootElement);
     }
@@ -118,13 +140,22 @@ public sealed class SapUdtStore : ISapUdtStore
         }
 
         var session = _sessionAccessor.GetRequiredSession();
-        using var response = await _client.SendAsync(
-            session,
-            HttpMethod.Get,
-            endpoint,
-            cancellationToken: cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-        await EnsureSuccessAsync(response, body);
+        cancellationToken.ThrowIfCancellationRequested();
+        string body;
+        try
+        {
+            body = await session
+                .GetRequiredConnection()
+                .Request(endpoint)
+                .WithTimeout(session.RequestTimeoutSeconds)
+                .GetStringAsync();
+            session.RenewExpiration();
+        }
+        catch (Exception exception) when (
+            SapServiceLayerErrors.IsServiceLayerException(exception))
+        {
+            throw await TranslateExceptionAsync(session, exception);
+        }
 
         return int.TryParse(
             body.Trim().Trim('"'),
@@ -157,25 +188,32 @@ public sealed class SapUdtStore : ISapUdtStore
                 payload["Code"] = code;
                 payload["Name"] = string.IsNullOrWhiteSpace(name) ? code : name;
 
-                using var response = await _client.SendAsync(
-                    session,
-                    HttpMethod.Post,
-                    SapUdtSchema.Endpoint(tableName),
-                    payload,
-                    cancellationToken);
-                var body = await response.Content.ReadAsStringAsync(cancellationToken);
-
-                if (response.IsSuccessStatusCode)
+                cancellationToken.ThrowIfCancellationRequested();
+                try
                 {
+                    await session
+                        .GetRequiredConnection()
+                        .Request(SapUdtSchema.Endpoint(tableName))
+                        .WithJsonSerializerOptions(SapJsonOptions)
+                        .WithTimeout(session.RequestTimeoutSeconds)
+                        .PostAsync(payload);
+                    session.RenewExpiration();
                     return nextId;
                 }
-
-                if (attempt + 1 < MaxInsertAttempts && IsDuplicate(response.StatusCode, body))
+                catch (Exception exception) when (
+                    SapServiceLayerErrors.IsServiceLayerException(exception))
                 {
-                    continue;
-                }
+                    var error = await SapServiceLayerErrors.ReadAsync(exception);
+                    SapServiceLayerErrors.UpdateSessionExpiration(session, error.StatusCode);
+                    var errorText = $"{error.ResponseBody}\n{error.Message}";
+                    if (attempt + 1 < MaxInsertAttempts &&
+                        IsDuplicate(error.StatusCode, errorText))
+                    {
+                        continue;
+                    }
 
-                await EnsureSuccessAsync(response, body);
+                    throw CreateException(error, exception);
+                }
             }
 
             throw new InvalidOperationException(
@@ -194,14 +232,22 @@ public sealed class SapUdtStore : ISapUdtStore
         CancellationToken cancellationToken = default)
     {
         var session = _sessionAccessor.GetRequiredSession();
-        using var response = await _client.SendAsync(
-            session,
-            HttpMethod.Patch,
-            EntityEndpoint(tableName, id),
-            BuildPayload(fields),
-            cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-        await EnsureSuccessAsync(response, body);
+        cancellationToken.ThrowIfCancellationRequested();
+        try
+        {
+            await session
+                .GetRequiredConnection()
+                .Request(EntityEndpoint(tableName, id))
+                .WithJsonSerializerOptions(SapJsonOptions)
+                .WithTimeout(session.RequestTimeoutSeconds)
+                .PatchAsync(BuildPayload(fields));
+            session.RenewExpiration();
+        }
+        catch (Exception exception) when (
+            SapServiceLayerErrors.IsServiceLayerException(exception))
+        {
+            throw await TranslateExceptionAsync(session, exception);
+        }
     }
 
     public async Task DeleteAsync(
@@ -210,19 +256,28 @@ public sealed class SapUdtStore : ISapUdtStore
         CancellationToken cancellationToken = default)
     {
         var session = _sessionAccessor.GetRequiredSession();
-        using var response = await _client.SendAsync(
-            session,
-            HttpMethod.Delete,
-            EntityEndpoint(tableName, id),
-            cancellationToken: cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-
-        if (response.StatusCode == HttpStatusCode.NotFound)
+        cancellationToken.ThrowIfCancellationRequested();
+        try
         {
-            return;
+            await session
+                .GetRequiredConnection()
+                .Request(EntityEndpoint(tableName, id))
+                .WithTimeout(session.RequestTimeoutSeconds)
+                .DeleteAsync();
+            session.RenewExpiration();
         }
+        catch (Exception exception) when (
+            SapServiceLayerErrors.IsServiceLayerException(exception))
+        {
+            var error = await SapServiceLayerErrors.ReadAsync(exception);
+            SapServiceLayerErrors.UpdateSessionExpiration(session, error.StatusCode);
+            if (error.StatusCode == HttpStatusCode.NotFound)
+            {
+                return;
+            }
 
-        await EnsureSuccessAsync(response, body);
+            throw CreateException(error, exception);
+        }
     }
 
     private async Task<int> GetNextIdAsync(
@@ -384,7 +439,7 @@ public sealed class SapUdtStore : ISapUdtStore
         return nextLink.PathAndQuery[(servicePath.Length + 1)..];
     }
 
-    private static bool IsDuplicate(HttpStatusCode statusCode, string responseBody)
+    private static bool IsDuplicate(HttpStatusCode? statusCode, string responseBody)
     {
         return statusCode is HttpStatusCode.BadRequest or HttpStatusCode.Conflict &&
                (responseBody.Contains("duplicate", StringComparison.OrdinalIgnoreCase) ||
@@ -392,57 +447,21 @@ public sealed class SapUdtStore : ISapUdtStore
                 responseBody.Contains("-2035", StringComparison.Ordinal));
     }
 
-    private static Task EnsureSuccessAsync(
-        HttpResponseMessage response,
-        string responseBody)
+    private static async Task<Exception> TranslateExceptionAsync(
+        SapSessionContext session,
+        Exception exception)
     {
-        if (response.IsSuccessStatusCode)
-        {
-            return Task.CompletedTask;
-        }
-
-        if (response.StatusCode == HttpStatusCode.Unauthorized)
-        {
-            throw new SapSessionExpiredException(
-                ExtractMessage(responseBody) ??
-                "A sessão do SAP Business One expirou. Entre novamente no sistema.");
-        }
-
-        throw new SapServiceLayerException(
-            ExtractMessage(responseBody) ??
-            $"O SAP Service Layer retornou {(int)response.StatusCode} ({response.StatusCode}).",
-            response.StatusCode,
-            responseBody);
+        var error = await SapServiceLayerErrors.ReadAsync(exception);
+        SapServiceLayerErrors.UpdateSessionExpiration(session, error.StatusCode);
+        return CreateException(error, exception);
     }
 
-    internal static string? ExtractMessage(string responseBody)
-    {
-        if (string.IsNullOrWhiteSpace(responseBody))
-        {
-            return null;
-        }
-
-        try
-        {
-            using var document = JsonDocument.Parse(responseBody);
-            if (!document.RootElement.TryGetProperty("error", out var error) ||
-                !error.TryGetProperty("message", out var message))
-            {
-                return null;
-            }
-
-            if (message.ValueKind == JsonValueKind.String)
-            {
-                return message.GetString();
-            }
-
-            return message.TryGetProperty("value", out var value)
-                ? value.GetString()
-                : null;
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
-    }
+    private static Exception CreateException(
+        SapServiceLayerError error,
+        Exception exception) =>
+        SapServiceLayerErrors.CreateException(
+            error,
+            exception,
+            "O SAP Service Layer não conseguiu concluir a operação solicitada.",
+            "A sessão do SAP Business One expirou. Entre novamente no sistema.");
 }

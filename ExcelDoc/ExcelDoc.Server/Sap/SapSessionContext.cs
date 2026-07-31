@@ -16,7 +16,12 @@ public sealed class SapSessionContext
 
     public int SessionTimeoutMinutes { get; init; } = 30;
 
+    public int RequestTimeoutSeconds { get; init; } = 100;
+
     public DateTime ExpiresAtUtc { get; set; }
+
+    public void RenewExpiration() =>
+        ExpiresAtUtc = DateTime.UtcNow.AddMinutes(SessionTimeoutMinutes);
 
     public SLConnection GetRequiredConnection() =>
         Connection ?? throw new InvalidOperationException(
