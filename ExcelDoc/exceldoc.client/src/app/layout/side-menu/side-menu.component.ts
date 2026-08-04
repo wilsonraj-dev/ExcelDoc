@@ -37,6 +37,13 @@ export class SideMenuComponent {
       roles: [AUTH_ROLES.administrator, AUTH_ROLES.user]
     },
     {
+      labelKey: 'layout.sideMenu.items.mappingProfile.label',
+      icon: 'schema',
+      route: '/perfil-mapeamento',
+      roles: [AUTH_ROLES.administrator],
+      exact: true
+    },
+    {
       labelKey: 'layout.sideMenu.items.collections.label',
       icon: 'folder_copy',
       route: '/colecoes',

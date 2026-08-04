@@ -37,7 +37,7 @@ const routes: Routes = [
     path: 'perfil-mapeamento',
     loadChildren: () => import('./features/perfil-mapeamento/perfil-mapeamento.module').then((module) => module.PerfilMapeamentoModule),
     canActivate: [AuthGuard],
-    data: { roles: [AUTH_ROLES.administrator, AUTH_ROLES.user] }
+    data: { roles: [AUTH_ROLES.administrator] }
   },
   {
     path: 'processamento',
