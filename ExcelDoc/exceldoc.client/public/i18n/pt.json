@@ -525,6 +525,7 @@
   "perfilMapeamento": {
     "common": {
       "document": "Documento",
+      "adminOnly": "Somente administradores",
       "scope": {
         "default": "Padrão",
         "custom": "Personalizado"
@@ -574,6 +575,7 @@
         "defaultProfile": "Perfil padrão não pode ser editado"
       },
       "empty": {
+        "title": "Nenhum perfil configurado",
         "noProfiles": "Nenhum perfil de mapeamento encontrado para este documento."
       },
       "cloneDialog": {
@@ -598,6 +600,7 @@
       }
     },
     "perfilForm": {
+      "subtitle": "Defina o documento, as coleções e o mapeamento usado por cada parte da estrutura.",
       "title": {
         "create": "Novo perfil de mapeamento",
         "edit": "Editar perfil de mapeamento",
@@ -618,11 +621,17 @@
       },
       "sections": {
         "mappingsByCollection": "Mapeamentos por coleção",
+        "structureDescription": "Monte a estrutura do documento e escolha o mapeamento aplicado a cada coleção.",
         "headerCollection": "Coleção de cabeçalho",
         "headerCollectionDescription": "Selecione qual coleção do tipo cabeçalho deve compor o perfil.",
         "lineCollections": "Coleções de linha",
         "lineCollectionsDescription": "Marque as coleções de linha que deseja utilizar e defina um mapeamento para cada uma."
       },
+      "empty": {
+        "noCollectionsTitle": "Documento sem coleções vinculadas",
+        "noCollectionsDescription": "Vincule ao menos uma coleção de cabeçalho ao documento antes de criar o perfil."
+      },
+      "footerHint": "As coleções selecionadas formarão a estrutura exibida na tela de mapeamento.",
       "lineCollection": {
         "included": "Coleção incluída no perfil.",
         "optional": "Coleção opcional.",

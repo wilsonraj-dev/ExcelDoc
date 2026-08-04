@@ -525,6 +525,7 @@
   "perfilMapeamento": {
     "common": {
       "document": "Document",
+      "adminOnly": "Administrators only",
       "scope": {
         "default": "Default",
         "custom": "Custom"
@@ -574,6 +575,7 @@
         "defaultProfile": "Default profile cannot be edited"
       },
       "empty": {
+        "title": "No profiles configured",
         "noProfiles": "No mapping profile found for this document."
       },
       "cloneDialog": {
@@ -598,6 +600,7 @@
       }
     },
     "perfilForm": {
+      "subtitle": "Define the document, collections, and mapping used by each part of the structure.",
       "title": {
         "create": "New mapping profile",
         "edit": "Edit mapping profile",
@@ -618,11 +621,17 @@
       },
       "sections": {
         "mappingsByCollection": "Mappings by collection",
+        "structureDescription": "Build the document structure and choose the mapping applied to each collection.",
         "headerCollection": "Header collection",
         "headerCollectionDescription": "Select which header collection should make up the profile.",
         "lineCollections": "Line collections",
         "lineCollectionsDescription": "Select the line collections you want to use and set a mapping for each one."
       },
+      "empty": {
+        "noCollectionsTitle": "Document has no linked collections",
+        "noCollectionsDescription": "Link at least one header collection to the document before creating the profile."
+      },
+      "footerHint": "The selected collections will form the structure displayed on the mapping screen.",
       "lineCollection": {
         "included": "Collection included in the profile.",
         "optional": "Optional collection.",

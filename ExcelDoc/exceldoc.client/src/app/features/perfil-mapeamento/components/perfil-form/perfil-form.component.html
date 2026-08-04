@@ -1,146 +1,244 @@
-<section class="feature-page">
-  <h2>{{ pageTitle }}</h2>
+<section class="profile-form-workspace">
+  <nav class="context-bar" [attr.aria-label]="pageTitle">
+    <div class="breadcrumbs">
+      <button type="button"
+              mat-icon-button
+              class="back-button"
+              [attr.aria-label]="'perfilMapeamento.common.actions.cancel' | translate"
+              (click)="cancelar()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span>{{ 'colecoes.colecaoList.breadcrumbs.administration' | translate }}</span>
+      <mat-icon class="breadcrumbs__separator" aria-hidden="true">chevron_right</mat-icon>
+      <span>{{ 'perfilMapeamento.perfilList.header.title' | translate }}</span>
+      <mat-icon class="breadcrumbs__separator" aria-hidden="true">chevron_right</mat-icon>
+      <strong>{{ pageTitle }}</strong>
+    </div>
 
-  <div class="loading-state" *ngIf="isLoading">
-    <app-loading-spinner [message]="'perfilMapeamento.perfilForm.loading.profile' | translate"></app-loading-spinner>
-  </div>
+    <span class="admin-chip">
+      <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+      {{ 'perfilMapeamento.common.adminOnly' | translate }}
+    </span>
+  </nav>
 
-  <mat-card *ngIf="!isLoading" appearance="outlined">
-    <mat-card-content>
-      <form [formGroup]="form" (ngSubmit)="salvar()">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>{{ 'perfilMapeamento.perfilForm.fields.profileName' | translate }}</mat-label>
-          <input matInput formControlName="nome" [placeholder]="'perfilMapeamento.perfilForm.placeholders.profileName' | translate" />
-          <mat-error>{{ 'perfilMapeamento.perfilForm.validation.profileNameRequired' | translate }}</mat-error>
-        </mat-form-field>
+  <form class="workspace-card" [formGroup]="form" (ngSubmit)="salvar()">
+    <header class="workspace-header">
+      <div class="workspace-header__copy">
+        <span class="workspace-header__icon">
+          <mat-icon>{{ isEditMode ? 'edit_note' : 'post_add' }}</mat-icon>
+        </span>
+        <div>
+          <div class="workspace-header__title-row">
+            <h1>{{ pageTitle }}</h1>
+            <span class="scope-chip" *ngIf="perfil">
+              <mat-icon>{{ perfil.isPadrao ? 'verified' : 'edit_note' }}</mat-icon>
+              {{ (perfil.isPadrao ? 'perfilMapeamento.common.scope.default' : 'perfilMapeamento.common.scope.custom') | translate }}
+            </span>
+          </div>
+          <p>{{ 'perfilMapeamento.perfilForm.subtitle' | translate }}</p>
+        </div>
+      </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>{{ 'perfilMapeamento.common.document' | translate }}</mat-label>
-          <mat-select formControlName="documentoId" [disabled]="isEditMode">
-            <mat-option *ngFor="let doc of documentos" [value]="doc.id">
-              {{ doc.nomeDocumento }}
-            </mat-option>
-          </mat-select>
-          <mat-hint *ngIf="isLoadingDocumentos">{{ 'perfilMapeamento.common.loading.documents' | translate }}</mat-hint>
-          <mat-error>{{ 'perfilMapeamento.perfilForm.validation.documentRequired' | translate }}</mat-error>
-        </mat-form-field>
+      <div class="workspace-header__actions">
+        <button type="button" mat-stroked-button (click)="cancelar()" [disabled]="isSaving">
+          {{ 'perfilMapeamento.common.actions.cancel' | translate }}
+        </button>
+        <button type="submit"
+                mat-flat-button
+                color="primary"
+                [disabled]="isLoading || !isFormValid || isSaving || isReadonly">
+          <mat-icon>{{ isSaving ? 'hourglass_top' : 'save' }}</mat-icon>
+          {{ isSaving ? ('perfilMapeamento.common.actions.saving' | translate) : ('perfilMapeamento.common.actions.save' | translate) }}
+        </button>
+      </div>
+    </header>
 
-        <div class="colecao-groups" *ngIf="hasHeaderColecoes || hasLineColecoes">
-          <h3>{{ 'perfilMapeamento.perfilForm.sections.mappingsByCollection' | translate }}</h3>
+    <div class="loading-state" *ngIf="isLoading">
+      <app-loading-spinner [message]="'perfilMapeamento.perfilForm.loading.profile' | translate"></app-loading-spinner>
+    </div>
 
-          <section class="colecao-section" *ngIf="hasHeaderColecoes">
-            <div class="colecao-section__heading">
-              <span class="colecao-group__tipo colecao-group__tipo--header">{{ 'perfilMapeamento.collectionTypes.header' | translate }}</span>
-              <div>
-                <h4>{{ 'perfilMapeamento.perfilForm.sections.headerCollection' | translate }}</h4>
-                <p>{{ 'perfilMapeamento.perfilForm.sections.headerCollectionDescription' | translate }}</p>
-              </div>
-            </div>
+    <div class="form-content" *ngIf="!isLoading">
+      <section class="form-panel identity-panel">
+        <header class="form-panel__header">
+          <span><mat-icon>badge</mat-icon></span>
+          <div>
+            <h2>{{ pageTitle }}</h2>
+            <p>{{ 'perfilMapeamento.perfilForm.subtitle' | translate }}</p>
+          </div>
+        </header>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'perfilMapeamento.perfilForm.fields.headerCollection' | translate }}</mat-label>
-              <mat-select [formControl]="headerColecaoControl" [disabled]="isReadonly">
-                <mat-option *ngFor="let option of headerColecoes" [value]="option.colecao.id">
-                  {{ option.colecao.nomeColecao }}
-                </mat-option>
-              </mat-select>
-              <mat-error>{{ 'perfilMapeamento.perfilForm.validation.headerCollectionRequired' | translate }}</mat-error>
-            </mat-form-field>
+        <div class="form-panel__body identity-grid">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'perfilMapeamento.perfilForm.fields.profileName' | translate }}</mat-label>
+            <input matInput
+                   formControlName="nome"
+                   [placeholder]="'perfilMapeamento.perfilForm.placeholders.profileName' | translate" />
+            <mat-icon matPrefix>schema</mat-icon>
+            <mat-error>{{ 'perfilMapeamento.perfilForm.validation.profileNameRequired' | translate }}</mat-error>
+          </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'perfilMapeamento.perfilForm.fields.headerMapping' | translate }}</mat-label>
-              <mat-select [formControl]="headerMapeamentoControl"
-                          [disabled]="selectedHeaderColecao?.isLoadingMapeamentos || isReadonly || !selectedHeaderColecao">
-                <mat-option *ngFor="let mapeamento of selectedHeaderMapeamentos" [value]="mapeamento.id">
-                  <div class="mapping-option">
-                    <span>{{ mapeamento.nome }}</span>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'perfilMapeamento.common.document' | translate }}</mat-label>
+            <mat-select formControlName="documentoId" [disabled]="isEditMode">
+              <mat-option *ngFor="let doc of documentos" [value]="doc.id">
+                {{ doc.nomeDocumento }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matPrefix>description</mat-icon>
+            <mat-hint *ngIf="isLoadingDocumentos">{{ 'perfilMapeamento.common.loading.documents' | translate }}</mat-hint>
+            <mat-error>{{ 'perfilMapeamento.perfilForm.validation.documentRequired' | translate }}</mat-error>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="form-panel structure-panel">
+        <header class="form-panel__header">
+          <span><mat-icon>account_tree</mat-icon></span>
+          <div>
+            <h2>{{ 'perfilMapeamento.perfilForm.sections.mappingsByCollection' | translate }}</h2>
+            <p>{{ 'perfilMapeamento.perfilForm.sections.structureDescription' | translate }}</p>
+          </div>
+          <strong class="selection-count" *ngIf="hasHeaderColecoes || hasLineColecoes">
+            {{ (selectedHeaderColecao ? 1 : 0) + selectedLineGroups.length }}
+          </strong>
+        </header>
+
+        <div class="loading-state loading-state--inline" *ngIf="isLoadingColecoes">
+          <app-loading-spinner [message]="'perfilMapeamento.common.loading.collections' | translate"></app-loading-spinner>
+        </div>
+
+        <div class="form-panel__body collection-structure" *ngIf="!isLoadingColecoes && (hasHeaderColecoes || hasLineColecoes)">
+          <section class="collection-section" *ngIf="hasHeaderColecoes">
+            <header class="collection-section__header">
+              <div class="section-identity">
+                <span class="type-icon type-icon--header"><mat-icon>description</mat-icon></span>
+                <div>
+                  <div class="section-title-row">
+                    <h3>{{ 'perfilMapeamento.perfilForm.sections.headerCollection' | translate }}</h3>
+                    <span class="type-chip type-chip--header">{{ 'perfilMapeamento.collectionTypes.header' | translate }}</span>
                   </div>
-                </mat-option>
-              </mat-select>
-              <mat-hint *ngIf="selectedHeaderColecao?.isLoadingMapeamentos">{{ 'perfilMapeamento.common.loading.mappings' | translate }}</mat-hint>
-              <mat-error>{{ 'perfilMapeamento.perfilForm.validation.headerMappingRequired' | translate }}</mat-error>
-            </mat-form-field>
+                  <p>{{ 'perfilMapeamento.perfilForm.sections.headerCollectionDescription' | translate }}</p>
+                </div>
+              </div>
+            </header>
+
+            <div class="collection-fields">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'perfilMapeamento.perfilForm.fields.headerCollection' | translate }}</mat-label>
+                <mat-select [formControl]="headerColecaoControl" [disabled]="isReadonly">
+                  <mat-option *ngFor="let option of headerColecoes" [value]="option.colecao.id">
+                    {{ option.colecao.nomeColecao }}
+                  </mat-option>
+                </mat-select>
+                <mat-icon matPrefix>folder_open</mat-icon>
+                <mat-error>{{ 'perfilMapeamento.perfilForm.validation.headerCollectionRequired' | translate }}</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'perfilMapeamento.perfilForm.fields.headerMapping' | translate }}</mat-label>
+                <mat-select [formControl]="headerMapeamentoControl"
+                            [disabled]="selectedHeaderColecao?.isLoadingMapeamentos || isReadonly || !selectedHeaderColecao">
+                  <mat-option *ngFor="let mapeamento of selectedHeaderMapeamentos" [value]="mapeamento.id">
+                    {{ mapeamento.nome }}
+                  </mat-option>
+                </mat-select>
+                <mat-icon matPrefix>schema</mat-icon>
+                <mat-hint *ngIf="selectedHeaderColecao?.isLoadingMapeamentos">{{ 'perfilMapeamento.common.loading.mappings' | translate }}</mat-hint>
+                <mat-error>{{ 'perfilMapeamento.perfilForm.validation.headerMappingRequired' | translate }}</mat-error>
+              </mat-form-field>
+            </div>
           </section>
 
-          <section class="colecao-section" *ngIf="hasLineColecoes">
-            <div class="colecao-section__heading">
-              <span class="colecao-group__tipo">{{ 'perfilMapeamento.collectionTypes.line' | translate }}</span>
-              <div>
-                <h4>{{ 'perfilMapeamento.perfilForm.sections.lineCollections' | translate }}</h4>
-                <p>{{ 'perfilMapeamento.perfilForm.sections.lineCollectionsDescription' | translate }}</p>
+          <section class="collection-section" *ngIf="hasLineColecoes">
+            <header class="collection-section__header">
+              <div class="section-identity">
+                <span class="type-icon"><mat-icon>table_rows</mat-icon></span>
+                <div>
+                  <div class="section-title-row">
+                    <h3>{{ 'perfilMapeamento.perfilForm.sections.lineCollections' | translate }}</h3>
+                    <span class="type-chip">{{ 'perfilMapeamento.collectionTypes.line' | translate }}</span>
+                  </div>
+                  <p>{{ 'perfilMapeamento.perfilForm.sections.lineCollectionsDescription' | translate }}</p>
+                </div>
               </div>
-            </div>
+            </header>
 
-            <div class="line-colecoes">
-              <div class="colecao-group" *ngFor="let group of lineColecaoGroups">
-                <div class="colecao-group__header colecao-group__header--stacked">
-                  <mat-checkbox class="colecao-group__checkbox"
+            <div class="line-collections">
+              <article class="line-card"
+                       *ngFor="let group of lineColecaoGroups"
+                       [class.line-card--selected]="group.selectedControl.value">
+                <header class="line-card__header">
+                  <mat-checkbox class="line-card__checkbox"
                                 [formControl]="group.selectedControl"
                                 [disabled]="isReadonly"
                                 (change)="onLineColecaoSelectionChange(group)">
                     {{ group.colecao.nomeColecao }}
                   </mat-checkbox>
 
-                  <div class="colecao-group__details">
-                    <span class="colecao-group__tipo">
-                      {{ getTipoColecaoLabel(group.colecao) }}
-                    </span>
-                    <span class="colecao-group__description">
-                      {{ group.selectedControl.value ? ('perfilMapeamento.perfilForm.lineCollection.included' | translate) : ('perfilMapeamento.perfilForm.lineCollection.optional' | translate) }}
-                    </span>
-                  </div>
+                  <span class="status-chip" [class.status-chip--selected]="group.selectedControl.value">
+                    <mat-icon>{{ group.selectedControl.value ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                    {{ (group.selectedControl.value ? 'perfilMapeamento.perfilForm.lineCollection.included' : 'perfilMapeamento.perfilForm.lineCollection.optional') | translate }}
+                  </span>
+                </header>
+
+                <div class="line-card__fields">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>{{ 'perfilMapeamento.perfilForm.fields.mapping' | translate }}</mat-label>
+                    <mat-select [formControl]="group.mapeamentoControl"
+                                [disabled]="group.isLoadingMapeamentos || !group.selectedControl.value || isReadonly">
+                      <mat-option *ngFor="let mapeamento of group.mapeamentos" [value]="mapeamento.id">
+                        {{ mapeamento.nome }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>schema</mat-icon>
+                    <mat-hint *ngIf="group.isLoadingMapeamentos">{{ 'perfilMapeamento.common.loading.mappings' | translate }}</mat-hint>
+                    <mat-hint *ngIf="!group.isLoadingMapeamentos && !group.selectedControl.value">{{ 'perfilMapeamento.perfilForm.lineCollection.enableMappingHint' | translate }}</mat-hint>
+                    <mat-error>{{ 'perfilMapeamento.perfilForm.validation.lineMappingRequired' | translate }}</mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>{{ 'perfilMapeamento.perfilForm.fields.parentCollection' | translate }}</mat-label>
+                    <mat-select [formControl]="group.parentColecaoControl"
+                                [disabled]="!group.selectedControl.value || isReadonly"
+                                (selectionChange)="onLineParentSelectionChange(group)">
+                      <mat-option [value]="null">
+                        {{ 'perfilMapeamento.perfilForm.lineCollection.topLevel' | translate }}
+                      </mat-option>
+                      <mat-option *ngFor="let parentGroup of getParentOptions(group)" [value]="parentGroup.colecao.id">
+                        {{ parentGroup.colecao.nomeColecao }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>subdirectory_arrow_right</mat-icon>
+                    <mat-hint>{{ 'perfilMapeamento.perfilForm.lineCollection.parentHint' | translate }}</mat-hint>
+                  </mat-form-field>
                 </div>
-
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>{{ 'perfilMapeamento.perfilForm.fields.mapping' | translate }}</mat-label>
-                  <mat-select [formControl]="group.mapeamentoControl"
-                              [disabled]="group.isLoadingMapeamentos || !group.selectedControl.value || isReadonly">
-                    <mat-option *ngFor="let mapeamento of group.mapeamentos" [value]="mapeamento.id">
-                      <div class="mapping-option">
-                        <span>{{ mapeamento.nome }}</span>
-                      </div>
-                    </mat-option>
-                  </mat-select>
-                  <mat-hint *ngIf="group.isLoadingMapeamentos">{{ 'perfilMapeamento.common.loading.mappings' | translate }}</mat-hint>
-                  <mat-hint *ngIf="!group.isLoadingMapeamentos && !group.selectedControl.value">{{ 'perfilMapeamento.perfilForm.lineCollection.enableMappingHint' | translate }}</mat-hint>
-                  <mat-error>{{ 'perfilMapeamento.perfilForm.validation.lineMappingRequired' | translate }}</mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>{{ 'perfilMapeamento.perfilForm.fields.parentCollection' | translate }}</mat-label>
-                  <mat-select [formControl]="group.parentColecaoControl"
-                              [disabled]="!group.selectedControl.value || isReadonly"
-                              (selectionChange)="onLineParentSelectionChange(group)">
-                    <mat-option [value]="null">
-                      {{ 'perfilMapeamento.perfilForm.lineCollection.topLevel' | translate }}
-                    </mat-option>
-                    <mat-option *ngFor="let parentGroup of getParentOptions(group)" [value]="parentGroup.colecao.id">
-                      {{ parentGroup.colecao.nomeColecao }}
-                    </mat-option>
-                  </mat-select>
-                  <mat-hint>{{ 'perfilMapeamento.perfilForm.lineCollection.parentHint' | translate }}</mat-hint>
-                </mat-form-field>
-              </div>
+              </article>
             </div>
           </section>
         </div>
 
-        <div class="loading-state loading-state--inline" *ngIf="isLoadingColecoes">
-          <app-loading-spinner [message]="'perfilMapeamento.common.loading.collections' | translate"></app-loading-spinner>
-        </div>
+        <section class="collections-empty"
+                 *ngIf="!isLoadingColecoes && form.controls['documentoId'].value && !hasHeaderColecoes && !hasLineColecoes">
+          <span><mat-icon>account_tree</mat-icon></span>
+          <h3>{{ 'perfilMapeamento.perfilForm.empty.noCollectionsTitle' | translate }}</h3>
+          <p>{{ 'perfilMapeamento.perfilForm.empty.noCollectionsDescription' | translate }}</p>
+        </section>
+      </section>
 
-        <div class="actions">
-          <button mat-raised-button color="primary" type="submit"
-                  [disabled]="!isFormValid || isSaving || isReadonly">
-            <mat-icon>save</mat-icon>
-            {{ isSaving ? ('perfilMapeamento.common.actions.saving' | translate) : ('perfilMapeamento.common.actions.save' | translate) }}
-          </button>
-          <button mat-stroked-button type="button" (click)="cancelar()">
+      <footer class="form-footer">
+        <span><mat-icon>info</mat-icon>{{ 'perfilMapeamento.perfilForm.footerHint' | translate }}</span>
+        <div>
+          <button type="button" mat-stroked-button (click)="cancelar()" [disabled]="isSaving">
             {{ 'perfilMapeamento.common.actions.cancel' | translate }}
           </button>
-          <mat-spinner *ngIf="isSaving" diameter="24"></mat-spinner>
+          <button type="submit"
+                  mat-flat-button
+                  color="primary"
+                  [disabled]="!isFormValid || isSaving || isReadonly">
+            {{ isSaving ? ('perfilMapeamento.common.actions.saving' | translate) : ('perfilMapeamento.common.actions.save' | translate) }}
+          </button>
         </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
+      </footer>
+    </div>
+  </form>
 </section>
